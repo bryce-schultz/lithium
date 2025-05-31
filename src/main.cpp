@@ -15,7 +15,7 @@ int runInteractiveMode();
 int runFileMode(const std::string &filename);
 
 int main(int argc, char **argv)
-{   
+{
     // if a file is specified, run in file mode
     if (argc == 2)
     {
@@ -52,7 +52,7 @@ int runInteractiveMode()
 int runFileMode(const string &filename)
 {
     string input;
-    try 
+    try
     {
         input = Utils::readWholeFile(filename);
     }
@@ -64,19 +64,16 @@ int runFileMode(const string &filename)
 
     Parser parser;
     Result<Node> result = parser.parse(input, filename);
-    if (result.success)
+    if (!result.success)
     {
-        XmlVisitor xmlVisitor;
-        xmlVisitor.visitAllChildren(result.node);
-
-        std::cout << xmlVisitor.getOutput();
-        delete result.node; // Clean up the parsed node
-    }
-    else
-    {
-        std::cout << "parsing failed." << std::endl;
         return 1;
     }
+
+    XmlVisitor xmlVisitor;
+    xmlVisitor.visitAllChildren(result.node);
+
+    std::cout << xmlVisitor.getOutput();
+    delete result.node; // clean up the parsed tree
 
     return 0;
 }

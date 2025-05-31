@@ -4,8 +4,6 @@
 #include <memory>
 #include <string>
 
-#include "FileCache.h"
-
 using std::string;
 using std::pair;
 using std::shared_ptr;

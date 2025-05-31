@@ -15,7 +15,6 @@
 
 #include "Token.h"
 #include "Location.h"
-#include "FileCache.h"
 
 using std::string;
 using std::istream;

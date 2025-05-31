@@ -7,17 +7,15 @@
 // tracks positions in the source code for error reporting.
 //**************************************************
 
-#include "Location.h"
-
-#include "FileCache.h"
-
 #include <sstream>
+
+#include "Location.h"
 
 using std::stringstream;
 
 Location::Location():
     pos(0),
-    input(nullptr) 
+    input(nullptr)
 { }
 
 Location::Location(size_t pos, shared_ptr<string> input, shared_ptr<string> filename):
@@ -28,14 +26,14 @@ Location::Location(size_t pos, shared_ptr<string> input, shared_ptr<string> file
 
 
 Location::Location(const Location &other):
-    pos(other.pos), 
+    pos(other.pos),
     input(other.input),
     filename(other.filename)
 {  }
 
 Location &Location::operator=(const Location &other)
 {
-    if (this != &other) 
+    if (this != &other)
     {
         pos = other.pos;
         input = other.input; // copy the shared_ptr
@@ -46,7 +44,7 @@ Location &Location::operator=(const Location &other)
 
 string Location::getSourceLine() const
 {
-    if (!input || input->empty()) 
+    if (!input || input->empty())
     {
         static string emptyLine; // return an empty line if no input is available
         return emptyLine;
@@ -56,11 +54,11 @@ string Location::getSourceLine() const
     size_t lineStart = 0;
     size_t currentLine = 1;
 
-    for (size_t i = 0; i < input->length(); ++i) 
+    for (size_t i = 0; i < input->length(); ++i)
     {
-        if ((*input)[i] == '\n') 
+        if ((*input)[i] == '\n')
         {
-            if (currentLine == lineColumn.first) 
+            if (currentLine == lineColumn.first)
             {
                 return input->substr(lineStart, i - lineStart);
             }
@@ -90,7 +88,7 @@ size_t Location::getPos() const
 
 string Location::getFilename() const
 {
-    if (filename) 
+    if (filename)
     {
         return *filename; // return the filename if it exists
     }
@@ -115,11 +113,11 @@ bool Location::operator!=(const Location& other) const
 
 bool Location::operator<(const Location& other) const
 {
-    if (pos < other.pos) 
+    if (pos < other.pos)
     {
         return true; // this location is before the other
     }
-    if (pos > other.pos) 
+    if (pos > other.pos)
     {
         return false; // this location is after the other
     }
@@ -158,7 +156,7 @@ string Location::toString() const
 
 pair<size_t, size_t> Location::calculateLineAndColumn() const
 {
-    if (!input || input->empty()) 
+    if (!input || input->empty())
     {
         return {1, 1}; // default to line 1, column 1 if no input
     }
@@ -166,14 +164,14 @@ pair<size_t, size_t> Location::calculateLineAndColumn() const
     size_t line = 1;
     size_t column = 1;
 
-    for (size_t i = 0; i < pos && i < input->length(); ++i) 
+    for (size_t i = 0; i < pos && i < input->length(); ++i)
     {
-        if ((*input)[i] == '\n') 
+        if ((*input)[i] == '\n')
         {
             line++;
             column = 1; // reset column on new line
-        } 
-        else 
+        }
+        else
         {
             column++;
         }
