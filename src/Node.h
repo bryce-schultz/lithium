@@ -1,3 +1,12 @@
+//**************************************************
+// File: Node.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the Node base class for AST
+// nodes, supporting children and range management.
+//**************************************************
+
 #pragma once
 
 #include <vector>

@@ -1,41 +1,69 @@
-#include <iostream>
-#include <sstream>
+//**************************************************
+// File: main.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Entry point for the Lithium interpreter.
+// Handles interactive mode and file execution.
+//**************************************************
 
+#include "Utils.h"
 #include "Parser.h"
 #include "XmlVisitor.h"
 
+int runInteractiveMode();
+int runFileMode(const std::string &filename);
+
 int main(int argc, char **argv)
-{
-    auto id = global::files.openFile("test.li");
-    if (id == INVALID_FILE_ID)
+{   
+    // if a file is specified, run in file mode
+    if (argc == 2)
     {
-        std::cerr << "error opening file: test.li" << std::endl;
+        return runFileMode(argv[1]);
+    }
+
+    // if no file is specified, run in interactive mode
+    std::cout << "lithium v0.1. type 'exit' to quit." << std::endl;
+    return runInteractiveMode();
+}
+
+int runInteractiveMode()
+{
+    Parser parser;
+    //InterpreterVisitor interpreter;
+    string line;
+    while ((line = Utils::getInputLine()) != "exit")
+    {
+        Result<Node> result = parser.parse(line, "cin");
+        if (result.success)
+        {
+            XmlVisitor xmlVisitor;
+            xmlVisitor.visitAllChildren(result.node);
+
+            std::cout << xmlVisitor.getOutput();
+            delete result.node; // Clean up the parsed node
+        }
+        line.clear();
+    }
+
+    return 0;
+}
+
+int runFileMode(const string &filename)
+{
+    string input;
+    try 
+    {
+        input = Utils::readWholeFile(filename);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << std::endl;
         return 1;
     }
 
-    Tokenizer tester(id);
-    
-    Token token;
-    while (token != Token::END)
-    {
-        token = tester.lex();
-        std::cout << token.toString() << " @ " << token.getRange().getStart().toString() << std::endl;
-    }
-
-    istream *input = &std::cin;
-    if (argc == 2)
-    {
-        input = new std::ifstream(argv[1]);
-        if (!input->good())
-        {
-            std::cerr << "error opening file: " << argv[1] << std::endl;
-            return 1;
-        }
-    }
-
     Parser parser;
-    Result<Node> result = parser.parse(*input, argc == 2 ? argv[1] : "cin");
-
+    Result<Node> result = parser.parse(input, filename);
     if (result.success)
     {
         XmlVisitor xmlVisitor;
@@ -46,12 +74,8 @@ int main(int argc, char **argv)
     }
     else
     {
-        std::cout << "Parsing failed." << std::endl;
-    }
-
-    if (input != &std::cin)
-    {
-        delete input; // Clean up if we opened a file
+        std::cout << "parsing failed." << std::endl;
+        return 1;
     }
 
     return 0;

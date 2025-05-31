@@ -1,3 +1,12 @@
+//**************************************************
+// File: XmlVisitor.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the XmlVisitor class, which
+// traverses the AST and outputs XML representation.
+//**************************************************
+
 #pragma once
 
 #include <string>
@@ -29,6 +38,7 @@ public:
     void visit(ArgListNode *node) override;
     void visit(OpNode *node) override;
     void visit(BlockNode *node) override;
+    void visit(MemberAccessNode *node) override;
 private:
     void openTag(const string &tagName, vector<string> attributes = {}, bool selfClosing = false);
     void closeTag(const string &tagName);

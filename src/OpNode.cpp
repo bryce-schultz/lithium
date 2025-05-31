@@ -1,3 +1,12 @@
+//**************************************************
+// File: OpNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the OpNode class, representing
+// operator nodes in the AST for expressions.
+//**************************************************
+
 #include "OpNode.h"
 
 OpNode::OpNode(Token op):

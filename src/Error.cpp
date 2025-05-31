@@ -1,3 +1,12 @@
+//**************************************************
+// File: Error.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the Error class, which
+// represents errors with messages and source ranges.
+//**************************************************
+
 #include "Error.h"
 
 Error::Error(): 
@@ -24,4 +33,41 @@ Range Error::getRange() const
 string Error::toString() const
 {
     return "error: " + range.getStart().toString() + ": " + message;
+}
+
+string getErrorLineSquiggles(Range range)
+{
+    string line = range.getStart().getSourceLine();
+    size_t start = range.getStart().getColumn() - 1; // Convert to 0-based index
+    size_t end = range.getEnd().getColumn() - 1; // Convert to 0-based index
+
+    if (start > line.length()) start = line.length() - 1;
+    if (end > line.length()) end = line.length() - 1;
+
+    if (start == end)
+    {
+        end = start + 1; // ensure at least one character is highlighted, for expected end tokens like ';'
+    }
+
+    string result = line + "\n";
+    result += string(start, ' ');
+    result += red + string(end - start, '~') + reset; // Add squiggles from start to end position
+    result += "\n";
+    result += string(start, ' ') + blodLightRed + "^" + reset; // Add caret at the start position
+
+    return result;
+}
+
+void tokenError(const string &msg, const Token &token, const string &cppFile, int cppLine)
+{
+    stringstream ss;
+    ss << red << "error" << reset << ": " << token.getRange().getStart().toString() << ": " << msg << "\n" 
+    << getErrorLineSquiggles(token.getRange());
+
+    if (!cppFile.empty() && cppLine > 0)
+    {
+        ss << "\n-> " << cppFile << ":" << cppLine;
+    }
+
+    cerr << ss.str() << endl;
 }

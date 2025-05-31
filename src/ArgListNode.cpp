@@ -1,3 +1,12 @@
+//**************************************************
+// File: ArgListNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the ArgListNode class, which
+// manages argument lists for function calls in the AST.
+//**************************************************
+
 #include "ArgListNode.h"
 
 ArgListNode::ArgListNode(ExpressionNode *arg)

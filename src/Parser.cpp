@@ -1,15 +1,27 @@
+//**************************************************
+// File: Parser.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the Parser class, which
+// parses tokens into an abstract syntax tree (AST).
+//**************************************************
+
 #include <iostream>
 
 #include "Parser.h"
+#include "Error.h"
 
 #define red "\033[31m"
 #define reset "\033[0m"
 
 #define error(msg) \
-    std::cerr << red << "error" << reset << ": " << currentToken.getRange().getStart().toString()  << ":\n" << msg << std::endl; hadError = true
+    tokenError(msg, currentToken); \
+    hadError = true; \
+    reject()
 
-#define expected(expected, found) \
-    error("expected '" + string(expected) + "' but found '" + found.toString() + "'")
+#define expected(expected) \
+    error("expected '" + string(expected) + "' but found '" + currentToken.toString() + "'")
 
 #define accept(x) return { true, x }
 #define reject() return { false, nullptr }
@@ -25,8 +37,7 @@
 
 #define expectToken(x) \
     if (peekToken() != x) { \
-        error("expected token " + x.toString() + " but found " + peekToken().toString()); \
-        reject(); \
+        expected(x); \
     } \
     advanceToken()
 
@@ -39,7 +50,7 @@ Parser::Parser():
 
 void Parser::initFirstSets()
 {
-    exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::PRINT, Token::LET, Token::CONST, '(', '[', ';' };
+    exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::PRINT, Token::LET, Token::CONST, '(', '[', ';', '-', '+' };
     forStmtFirsts = { Token::FOR };
     whileStmtFirsts = { Token::WHILE };
     ifStmtFirsts = { Token::IF };
@@ -48,8 +59,8 @@ void Parser::initFirstSets()
     letStmtFirsts = { Token::LET };
     constStmtFirsts = { Token::CONST };
     printStmtFirsts = { Token::PRINT };
-    exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, '(', '[', Token::PRINT, Token::LET, Token::CONST };
-    assignFirsts = { Token::IDENT, Token::NUMBER, Token::STRING, '(', '[', Token::PRINT, Token::LET, Token::CONST };
+    exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, '(', '[', Token::PRINT, Token::LET, Token::CONST, '-', '+' };
+    assignFirsts = { Token::IDENT, Token::NUMBER, Token::STRING, '(', '[', Token::PRINT, Token::LET, Token::CONST, '-', '+' };
     orFirsts = { Token::OR };
     andFirsts = { Token::AND };
     equalityFirsts = { Token::EQ, Token::NE };
@@ -58,6 +69,7 @@ void Parser::initFirstSets()
     multFirsts = { '*', '/', '%' };
     unaryFirsts = { '+', '-', '!', '~' };
     argListFirsts = exprFirsts;
+    postPFirsts = { '(', '[', '.', Token::INC, Token::DEC };
 }
 
 Token Parser::peekToken() const
@@ -75,21 +87,20 @@ bool Parser::isInFirstSet(const Token &token, const set<int> &firstSet) const
     return firstSet.count(token.getType()) > 0;
 }
 
-Result<Node> Parser::parse(istream &inputStream, const string &filename)
-{
-    // open the file in the file cache
-    FileId fileId = global::files.openFile(inputStream, filename);
 
-    tokenizer = Tokenizer(fileId);
-    // prime the tokenizer with the first token
-    if (currentToken.getType() == Token::NONE)
-    {
-        currentToken = tokenizer.lex();
-    }
+Result<Node> Parser::parse(const string &input, const string &filename)
+{
+    tokenizer = Tokenizer(input, filename);
+    hadError = false;
+    currentToken = tokenizer.lex();
 
     auto result = parseStmts();
     if (!result.success || hadError)
     {
+        if (result.node)
+        {
+            delete result.node; // Clean up the node if it was created
+        }
         reject();
     }
     accept(result.node);
@@ -101,7 +112,7 @@ Result<StatementsNode> Parser::parseStmts()
 {
     StatementsNode *statements = new StatementsNode();
     Token token = peekToken();
-    while (token != Token::END && token != '}')
+    while (token != Token::END)
     {
         // parse a single statement
         auto result = parseStmt();
@@ -153,11 +164,14 @@ Result<StatementNode> Parser::parseStmt()
     }
     else if (isInFirstSet(token, returnStmtFirsts))
     {
-        //acceptNode(parseReturnStmt());
+        acceptNode(parseReturnStmt());
+    }
+    else if (token == '}' && depth != 0)
+    {
+        reject();
     }
 
-    error("unexpected token: " + token.toString());
-    reject();
+    error("unexpected token");
 }
 
 // exprStmt -> expr ;                       - firsts: NUMBER, IDENT, STRING, (, [
@@ -197,8 +211,7 @@ Result<StatementNode> Parser::parseExprStmt()
         token = peekToken();
         if (token != ';')
         {
-            expected(";", token);
-            reject();
+            expected(";");
         }
         advanceToken(); // consume ';'
 
@@ -213,9 +226,9 @@ Result<BlockNode> Parser::parseBlock()
     Token token = peekToken();
     if (token != '{')
     {
-        expected("{", token);
-        reject();
+        expected("{");
     }
+    depth++;
     Token blockStart = token;
     advanceToken(); // consume '{'
 
@@ -223,6 +236,7 @@ Result<BlockNode> Parser::parseBlock()
     if (token == '}')
     {
         advanceToken(); // consume '}'
+        depth--;
         BlockNode *emptyBlock = new BlockNode();
         emptyBlock->setRangeStart(blockStart.getRange().getStart());
         emptyBlock->setRangeEnd(token.getRange().getEnd());
@@ -238,10 +252,10 @@ Result<BlockNode> Parser::parseBlock()
     token = peekToken();
     if (token != '}')
     {
-        expected("}", token);
-        reject();
+        expected("}");
     }
     advanceToken(); // consume '}'
+    depth--;
 
     BlockNode *blockNode = new BlockNode(stmtsResult.node);
     blockNode->setRangeStart(blockStart.getRange().getStart());
@@ -250,14 +264,43 @@ Result<BlockNode> Parser::parseBlock()
     accept(blockNode);
 }
 
+Result<ReturnStatementNode> Parser::parseReturnStmt()
+{
+    Token token = peekToken();
+    if (token != Token::RETURN)
+    {
+        expected("return");
+    }
+    Token returnToken = token;
+    advanceToken(); // consume 'return'
+
+    auto exprResult = parseExpr();
+    if (!exprResult.success)
+    {
+        reject();
+    }
+
+    token = peekToken();
+    if (token != ';')
+    {
+        expected(";");
+    }
+    advanceToken(); // consume ';'
+
+    ReturnStatementNode *returnStmt = new ReturnStatementNode(exprResult.node);
+    returnStmt->setRangeStart(returnToken.getRange().getStart());
+    returnStmt->setRangeEnd(token.getRange().getEnd());
+
+    accept(returnStmt);
+}
+
 // letStmt -> LET IDENT = expr ;
 Result<VarDeclNode> Parser::parseLetStmt()
 {
     Token token = peekToken();
     if (token != Token::LET)
     {
-        expected("let", token);
-        reject();
+        expected("let");
     }
     Token let = token;
     advanceToken(); // consume 'let'
@@ -265,16 +308,14 @@ Result<VarDeclNode> Parser::parseLetStmt()
     token = peekToken();
     if (token.getType() != Token::IDENT)
     {
-        expected("identifier", token);
-        reject();
+        expected("identifier");
     }
     advanceToken(); // consume identifier
 
     token = peekToken();
     if (token != '=')
     {
-        expected("=", token);
-        reject();
+        expected("=");
     }
     advanceToken(); // consume '='
 
@@ -287,8 +328,7 @@ Result<VarDeclNode> Parser::parseLetStmt()
     token = peekToken();
     if (token != ';')
     {
-        expected(";", token);
-        reject();
+        expected(";");
     }
     advanceToken(); // consume ';'
 
@@ -312,16 +352,14 @@ Result<VarDeclNode> Parser::parseConstStmt()
     token = peekToken();
     if (token.getType() != Token::IDENT)
     {
-        //expected("identifier", token);
-        reject();
+        expected("identifier");
     }
     advanceToken(); // consume identifier
 
     token = peekToken();
     if (token != '=')
     {
-        //expected("=", token);
-        reject();
+        expected("=");
     }
     advanceToken(); // consume '='
 
@@ -334,8 +372,7 @@ Result<VarDeclNode> Parser::parseConstStmt()
     token = peekToken();
     if (token != ';')
     {
-        //expected(";", token);
-        reject();
+        expected(";");
     }
     advanceToken(); // consume ';'
 
@@ -351,8 +388,7 @@ Result<PrintStatementNode> Parser::parsePrintStmt()
     Token token = peekToken();
     if (token != Token::PRINT)
     {
-        expected("print", token);
-        reject();
+        expected("print");
     }
     Token printToken = token;
     advanceToken(); // consume
@@ -360,8 +396,7 @@ Result<PrintStatementNode> Parser::parsePrintStmt()
     token = peekToken();
     if (token != '(')
     {
-        expected("(", token);
-        reject();
+        expected("(");
     }
     advanceToken(); // consume '('
 
@@ -374,16 +409,14 @@ Result<PrintStatementNode> Parser::parsePrintStmt()
     token = peekToken();
     if (token != ')')
     {
-        expected(")", token);
-        reject();
+        expected(")");
     }
     advanceToken(); // consume ')'
 
     token = peekToken();
     if (token != ';')
     {
-        error("expected ';' after print statement");
-        reject();
+        expected(";");
     }
     Token semicolonToken = token;
     advanceToken(); // consume ';'
@@ -875,8 +908,7 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         token = peekToken();
         if (token != ']')
         {
-            expected("]", token);
-            reject();
+            expected("]");
         }
         advanceToken(); // consume ']'
 
@@ -896,13 +928,26 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         token = peekToken();
         if (token != ')')
         {
-            expected(")", token);
-            reject();
+            expected(")");
         }
         advanceToken(); // consume ')'
 
         accept(new CallNode(lhs, argListResult.node));
     }
+    else if (token == '.')
+    {
+        advanceToken(); // consume '.'
+
+        token = peekToken();
+        if (token.getType() != Token::IDENT)
+        {
+            expected("identifier");
+        }
+        advanceToken(); // consume identifier
+
+        accept(new MemberAccessNode(lhs, token));
+    }
+    
     else if (token.getType() == Token::IDENT)
     {
         advanceToken(); // consume identifier
@@ -921,11 +966,10 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
 Result<ExpressionNode> Parser::parsePostPP(ExpressionNode *lhs)
 {
     Token token = peekToken();
-    if (token != '[' && token != '(' && token.getType() != Token::IDENT && token != Token::INC && token != Token::DEC)
+    if (!isInFirstSet(token, postPFirsts))
     {
         accept(lhs);
     }
-    advanceToken(); // consume 'post'
 
     auto result = parsePostP(lhs);
     if (!result.success)
@@ -965,8 +1009,7 @@ Result<ExpressionNode> Parser::parsePrimary()
         token = peekToken();
         if (token != ')')
         {
-            //expected(")", token);
-            reject();
+            expected(")");
         }
         advanceToken(); // consume ')'
 
@@ -985,8 +1028,7 @@ Result<ExpressionNode> Parser::parsePrimary()
         token = peekToken();
         if (token != ']')
         {
-            //expected("]", token);
-            reject();
+            expected("]");
         }
         advanceToken(); // consume ']'
 
@@ -1008,6 +1050,5 @@ Result<ExpressionNode> Parser::parsePrimary()
         //accept(new StringNode(token));
     }
 
-    expected("primary expression", token);
-    reject();
+    expected("primary expression");
 }

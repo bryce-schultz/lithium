@@ -1,3 +1,12 @@
+//**************************************************
+// File: Range.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the Range class, which
+// represents a range of source code locations.
+//**************************************************
+
 #include "Range.h"
 
 Range::Range()

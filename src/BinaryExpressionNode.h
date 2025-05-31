@@ -1,3 +1,12 @@
+//**************************************************
+// File: BinaryExpressionNode.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the BinaryExpressionNode class,
+// representing binary expressions in the AST.
+//**************************************************
+
 #pragma once
 
 #include "ExpressionNode.h"

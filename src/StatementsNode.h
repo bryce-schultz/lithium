@@ -1,3 +1,12 @@
+//**************************************************
+// File: StatementsNode.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the StatementsNode class,
+// representing a sequence of statements in the AST.
+//**************************************************
+
 #pragma once
 
 #include "Node.h"

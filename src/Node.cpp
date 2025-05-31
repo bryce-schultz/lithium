@@ -1,3 +1,12 @@
+//**************************************************
+// File: Node.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the Node base class for AST
+// nodes, including child management and range info.
+//**************************************************
+
 #include "Node.h"
 
 Node::~Node()

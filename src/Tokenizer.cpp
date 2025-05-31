@@ -1,16 +1,29 @@
+//**************************************************
+// File: Tokenizer.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the Tokenizer class, which
+// tokenizes input source code into tokens for 
+// parsing.
+//**************************************************
+
 #include "Tokenizer.h"
 
 Tokenizer::Tokenizer():
-    fileId(INVALID_FILE_ID),
-    location(0),
+    input(),
+    location(),
     endOfFile(true)
 { }
 
-Tokenizer::Tokenizer(FileId fileId): 
-    fileId(fileId),
-    location(0, fileId),
+Tokenizer::Tokenizer(const string &input, const string &filename):
+    input(make_shared<string>(input)),
+    filename(make_shared<string>(filename)),
+    location(),
     endOfFile(false)
-{ }
+{
+    location = Location(0, this->input, this->filename);
+}
 
 Token Tokenizer::lex()
 {
@@ -134,6 +147,23 @@ Token Tokenizer::lex()
             advance();
             return Token(Token::DEC, Range(start, location), "--");
         }
+        else if (isdigit(peek()))
+        {
+            c = peek();
+            bool isFloat = false;
+            string number = "-"; // start with minus sign
+            while (isdigit(c) || (c == '.' && !isFloat))
+            {
+                if (c == '.') 
+                {
+                    isFloat = true; // mark as float
+                }
+                number += c;
+                advance();
+                c = peek();
+            }
+            return Token(Token::NUMBER, Range(start, location), number);
+        }
         return Token(static_cast<int>(c), Range(start, location), c);
     }
 
@@ -224,29 +254,36 @@ void Tokenizer::skipWhitespace()
 
 char Tokenizer::peek() const
 {
-    auto record = global::files.getFileRecord(fileId);
-    if (!record) 
+    if (!input)
     {
-        return '\0'; // no input or file record available
+        return '\0'; // no input, return null character
     }
-    istream *input = record->stream;
 
-    return input->good() ? input->peek() : '\0';
+    if (location.getPos() >= input->size()) 
+    {
+        return '\0'; // out of bounds, return null character
+    }
+
+    return input->at(location.getPos());
 }
 
 void Tokenizer::advance()
 {   
-    auto record = global::files.getFileRecord(fileId);
-    if (!record) 
+    if (!input)
     {
-        return;
+        return; // no input, do nothing
     }
-    istream *input = record->stream;
-    
-    char current = '\0';
-    if (input->good()) 
+
+    if (location.getPos() < input->size() - 1) 
     {
-        input->get(current);
-        location.move(1);
+        location.move(1); // move to the next character
+    } 
+    else 
+    {
+        if (!endOfFile)
+        {
+            location.move(1); // move past the last character once
+        }
+        endOfFile = true; // reached the end of the file
     }
 }

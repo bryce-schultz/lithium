@@ -1,32 +1,33 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 
 #include "FileCache.h"
 
 using std::string;
 using std::pair;
+using std::shared_ptr;
+using std::make_shared;
 
 class Location
 {
 public:
     Location();
-    Location(int pos, FileId fileId = INVALID_FILE_ID);
-    ~Location();
+    Location(size_t pos, shared_ptr<string> input, shared_ptr<string> filename = nullptr);
 
     Location(const Location& other);
     Location& operator=(const Location& other);
-    Location(Location&& other) noexcept;
-    Location& operator=(Location&& other) noexcept;
 
-    int getLine() const;
-    int getColumn() const;
-    FileId getFileId() const;
+    string getSourceLine() const;
+
+    size_t getLine() const;
+    size_t getColumn() const;
+    size_t getPos() const;
     string getFilename() const;
 
     void move(int offset);
-    void moveTo(int pos, FileId fileId = INVALID_FILE_ID);
 
     bool operator==(const Location& other) const;
     bool operator!=(const Location& other) const;
@@ -37,8 +38,9 @@ public:
 
     string toString() const;
 private:
-    pair<int, int> calculateLineAndColumn() const;
+    pair<size_t, size_t> calculateLineAndColumn() const;
 private:
-    int pos;
-    FileId fileId;
+    size_t pos;
+    shared_ptr<string> input;
+    shared_ptr<string> filename;
 };

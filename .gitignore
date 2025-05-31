@@ -2,6 +2,7 @@
 *.o
 
 # files:
+li
 
 # directories:
 .vscode/

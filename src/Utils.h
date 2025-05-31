@@ -1,0 +1,25 @@
+//**************************************************
+// File: Utils.h
+//
+// Author: Bryce Schultz
+//
+// Purpose:  Declares utility functions for reading files
+// and getting input lines, including handling indentation
+// and multi-line input in a user-friendly way.
+// This is useful for parsing and interpreting code in a
+// more natural way, allowing users to write code that
+// spans multiple lines without worrying about syntax errors
+// due to line breaks or indentation issues.
+//**************************************************
+#pragma once
+
+#include <string>
+
+namespace Utils
+{
+    using std::string;
+
+    string readWholeFile(const string &filename);
+
+    string getInputLine();
+}

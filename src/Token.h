@@ -1,3 +1,12 @@
+//**************************************************
+// File: Token.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the Token class, representing
+// lexical tokens and their types for parsing.
+//**************************************************
+
 #pragma once
 
 #include <string>
@@ -33,7 +42,7 @@ public:
         DEC,
         JUNK
     };
-    string tokenTypeToString(int type) const;
+    static string tokenTypeToString(int type);
 public:
     Token();
     Token(int type, const Range& range, const std::string& value);

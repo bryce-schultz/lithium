@@ -1,3 +1,12 @@
+//**************************************************
+// File: Parser.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the Parser class, which parses
+// tokens into an abstract syntax tree (AST).
+//**************************************************
+
 #pragma once
 
 #include <string>
@@ -22,7 +31,7 @@ class Parser
 {
 public:
     Parser();
-    Result<Node> parse(istream &inputStream, const string &filename = "");
+    Result<Node> parse(const string &input, const string &filename = "");
 private:
     Token peekToken() const;
     void advanceToken();
@@ -65,7 +74,7 @@ private:
 
     // returnStmt -> RETURN expr ;
     //             | RETURN ;
-    //Result<ReturnStatementNode> parseReturnStmt();
+    Result<ReturnStatementNode> parseReturnStmt();
 
     // letStmt -> LET IDENT = expr ;
     Result<VarDeclNode> parseLetStmt();
@@ -203,8 +212,10 @@ private:
     set<int> unaryFirsts;
     set<int> argListFirsts;
     set<int> postFirsts;
+    set<int> postPFirsts;
 private:
     Tokenizer tokenizer;
     Token currentToken;
     bool hadError = false;
+    int depth = 0;
 };

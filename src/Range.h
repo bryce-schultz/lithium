@@ -1,3 +1,12 @@
+//**************************************************
+// File: Range.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the Range class, representing
+// a range of source code locations (start and end).
+//**************************************************
+
 #pragma once
 
 #include "Location.h"

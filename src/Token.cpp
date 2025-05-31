@@ -1,7 +1,16 @@
+//**************************************************
+// File: Token.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the Token class, which
+// represents lexical tokens in the source code.
+//**************************************************
+
 #include "Token.h"
 #include "Node.h"
 
-string Token::tokenTypeToString(int type) const
+string Token::tokenTypeToString(int type)
 {
     switch (type) {
         case NONE: return "none";
@@ -20,14 +29,14 @@ string Token::tokenTypeToString(int type) const
         case CLASS: return "class";
         case IMPORT: return "import";
         case PRINT: return "print";
-        case EQ: return "equal";
-        case NE: return "not_equal";
-        case LE: return "less_or_equal";
-        case GE: return "greater_or_equal";
-        case OR: return "or";
-        case AND: return "and";
-        case INC: return "increment";
-        case DEC: return "decrement";
+        case EQ: return "==";
+        case NE: return "!=";
+        case LE: return "<=";
+        case GE: return ">=";
+        case OR: return "||";
+        case AND: return "&&";
+        case INC: return "++";
+        case DEC: return "--";
         case JUNK: return "junk";
         default:
         {

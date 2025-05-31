@@ -1,3 +1,12 @@
+//**************************************************
+// File: ArgListNode.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the ArgListNode class, which
+// represents a list of arguments in function calls.
+//**************************************************
+
 #pragma once
 
 #include "ExpressionNode.h"

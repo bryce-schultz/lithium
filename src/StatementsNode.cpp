@@ -1,3 +1,12 @@
+//**************************************************
+// File: StatementsNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the StatementsNode class,
+// representing a sequence of statements in the AST.
+//**************************************************
+
 #include "StatementsNode.h"
 
 StatementsNode::StatementsNode(StatementNode *statement)

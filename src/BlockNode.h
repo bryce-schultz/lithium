@@ -1,3 +1,12 @@
+//**************************************************
+// File: BlockNode.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the BlockNode class, which
+// represents a block of statements in the AST.
+//**************************************************
+
 #pragma once
 
 #include "StatementNode.h"

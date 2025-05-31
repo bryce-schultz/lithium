@@ -1,3 +1,12 @@
+//**************************************************
+// File: XmlVisitor.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the XmlVisitor class, which
+// traverses the AST and generates XML output.
+//**************************************************
+
 #include "XmlVisitor.h"
 
 #include "Nodes.h"
@@ -119,7 +128,7 @@ void XmlVisitor::visit(ArgListNode *node)
 
 void XmlVisitor::visit(OpNode *node)
 {
-    openTag("Op", {"type=\"" + std::to_string(node->getType()) + "\""}, true);
+    openTag("Op", {"type=\"" + Token::tokenTypeToString(node->getType()) + "\""}, true);
 }
 
 void XmlVisitor::visit(BlockNode *node)
@@ -127,4 +136,11 @@ void XmlVisitor::visit(BlockNode *node)
     openTag("Block");
     node->visitAllChildren(this);
     closeTag("Block");
+}
+
+void XmlVisitor::visit(MemberAccessNode *node)
+{
+    openTag("MemberAccess", {"identifier=\"" + node->getIdentifier().getValue() + "\""}, false);
+    node->visitAllChildren(this);
+    closeTag("MemberAccess");
 }

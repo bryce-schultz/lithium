@@ -1,3 +1,12 @@
+//**************************************************
+// File: BlockNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the BlockNode class, which
+// represents a block of statements in the AST.
+//**************************************************
+
 #include "BlockNode.h"
 
 BlockNode::BlockNode(StatementsNode *statements)
@@ -6,10 +15,6 @@ BlockNode::BlockNode(StatementsNode *statements)
     {
         addChild(statements);
         setRange(statements->getRange());
-    }
-    else
-    {
-        setRange(Range(Location(1, 1), Location(1, 1))); // Default empty range
     }
 }
 

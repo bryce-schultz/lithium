@@ -1,3 +1,12 @@
+//**************************************************
+// File: OpNode.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the OpNode class, representing
+// operator nodes in the AST for expressions.
+//**************************************************
+
 #pragma once
 
 #include "Node.h"

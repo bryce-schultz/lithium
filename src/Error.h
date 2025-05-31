@@ -1,10 +1,27 @@
+//**************************************************
+// File: Error.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the Error class, representing
+// errors with messages and source code ranges.
+//**************************************************
+
 #pragma once
 
 #include <string>
+#include <iostream>
+#include <sstream>
 
 #include "Range.h"
+#include "Token.h"
+#include "Location.h"
+#include "Color.h"
 
 using std::string;
+using std::cerr;
+using std::stringstream;
+using std::endl;
 
 class Error
 {
@@ -19,3 +36,7 @@ private:
     string message;
     Range range;
 };
+
+string getErrorLineSquiggles(Range range);
+
+void tokenError(const string &msg, const Token &token, const string &cppFile = "", int cppLine = 0);

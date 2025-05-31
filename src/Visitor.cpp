@@ -1,3 +1,12 @@
+//**************************************************
+// File: Visitor.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the Visitor base class for
+// traversing AST nodes using the visitor pattern.
+//**************************************************
+
 #include "Visitor.h"
 
 #include "Nodes.h"
@@ -69,6 +78,11 @@ void Visitor::visit(OpNode *node)
 }
 
 void Visitor::visit(BlockNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(MemberAccessNode *node)
 {
     node->visitAllChildren(this);
 }

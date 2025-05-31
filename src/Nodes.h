@@ -1,3 +1,12 @@
+//**************************************************
+// File: Nodes.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Aggregates all AST node class headers
+// for convenient inclusion in the parser and visitors.
+//**************************************************
+
 #pragma once
 
 #include "Node.h"
@@ -14,3 +23,4 @@
 #include "CallNode.h"
 #include "OpNode.h"
 #include "BlockNode.h"
+#include "MemberAccessNode.h"

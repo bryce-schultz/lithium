@@ -1,3 +1,12 @@
+//**************************************************
+// File: FileCache.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the FileCache class, which
+// manages file streams and caching for source files.
+//**************************************************
+
 #pragma once
 #include <unordered_map>
 #include <string>

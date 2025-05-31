@@ -1,116 +1,111 @@
+//**************************************************
+// File: Location.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the Location class, which
+// tracks positions in the source code for error reporting.
+//**************************************************
+
 #include "Location.h"
+
+#include "FileCache.h"
+
+#include <sstream>
+
+using std::stringstream;
 
 Location::Location():
     pos(0),
-    fileId(INVALID_FILE_ID) 
+    input(nullptr) 
 { }
 
-Location::Location(int pos, FileId fileId):
+Location::Location(size_t pos, shared_ptr<string> input, shared_ptr<string> filename):
     pos(pos),
-    fileId(fileId) 
-{
-}
+    input(input),
+    filename(filename)
+{ }
 
-Location::~Location()
-{
-    pos = 0;
-    fileId = INVALID_FILE_ID;
-}
 
 Location::Location(const Location &other):
     pos(other.pos), 
-    fileId(other.fileId)
-{ }
+    input(other.input),
+    filename(other.filename)
+{  }
 
 Location &Location::operator=(const Location &other)
 {
     if (this != &other) 
     {
         pos = other.pos;
-        fileId = other.fileId;
+        input = other.input; // copy the shared_ptr
+        filename = other.filename; // copy the filename if needed
     }
-
     return *this;
 }
 
-Location::Location(Location &&other) noexcept
+string Location::getSourceLine() const
 {
-    pos = other.pos;
-    fileId = other.fileId;
-    
-    pos = 0;
-    other.fileId = INVALID_FILE_ID;
-}
-
-Location &Location::operator=(Location &&other) noexcept
-{
-    if (this != &other) 
+    if (!input || input->empty()) 
     {
-        pos = other.pos;
-        fileId = other.fileId;
-        
-        other.pos = 0;
-        other.fileId = INVALID_FILE_ID;
+        static string emptyLine; // return an empty line if no input is available
+        return emptyLine;
     }
 
-    return *this;
+    auto lineColumn = calculateLineAndColumn();
+    size_t lineStart = 0;
+    size_t currentLine = 1;
+
+    for (size_t i = 0; i < input->length(); ++i) 
+    {
+        if ((*input)[i] == '\n') 
+        {
+            if (currentLine == lineColumn.first) 
+            {
+                return input->substr(lineStart, i - lineStart);
+            }
+            lineStart = i + 1; // move to the start of the next line
+            currentLine++;
+        }
+    }
+
+    // If we reach here, it means we are at the last line
+    return input->substr(lineStart); // return the last line
 }
 
-int Location::getLine() const
+size_t Location::getLine() const
 {
     return calculateLineAndColumn().first;
 }
 
-int Location::getColumn() const
+size_t Location::getColumn() const
 {
     return calculateLineAndColumn().second;
 }
 
-FileId Location::getFileId() const
+size_t Location::getPos() const
 {
-    return fileId;
+    return pos;
 }
 
 string Location::getFilename() const
 {
-    auto record = global::files.getFileRecord(fileId);
-    if (!record) 
+    if (filename) 
     {
-        return "";
+        return *filename; // return the filename if it exists
     }
 
-    return record->filename;
+    return ""; // return empty string if no filename is available
 }
 
 void Location::move(int offset)
 {
-    if (fileId == INVALID_FILE_ID) 
-    {
-        return; // cannot move if fileId is invalid
-    }
-
-    pos += offset;
-    if (pos < 0) 
-    {
-        pos = 0; // prevent negative position
-    }
-}
-
-void Location::moveTo(int pos, FileId fileId)
-{
-    if (fileId == INVALID_FILE_ID) 
-    {
-        fileId = this->fileId; // use current fileId if not provided
-    }
-
-    this->pos = pos;
-    this->fileId = fileId;
+    pos += offset; // if no input, just adjust position
 }
 
 bool Location::operator==(const Location &other) const
 {
-    return pos == other.pos &&
-        fileId == other.fileId;
+    return pos == other.pos;
 }
 
 bool Location::operator!=(const Location& other) const
@@ -120,10 +115,14 @@ bool Location::operator!=(const Location& other) const
 
 bool Location::operator<(const Location& other) const
 {
-    if (fileId < other.fileId) return true;
-    if (fileId > other.fileId) return false;
-    if (pos < other.pos) return true;
-    if (pos > other.pos) return false;
+    if (pos < other.pos) 
+    {
+        return true; // this location is before the other
+    }
+    if (pos > other.pos) 
+    {
+        return false; // this location is after the other
+    }
 
     return false; // equal positions
 }
@@ -145,53 +144,40 @@ bool Location::operator>=(const Location& other) const
 
 string Location::toString() const
 {
-    auto record = global::files.getFileRecord(fileId);
-    if (!record)
+    std::string result;
+    if (filename)
     {
-        return std::to_string(getLine()) + ":" + std::to_string(getColumn());
+        result += *filename + ":";
     }
-    string filename = record->filename;
 
-    return filename + ":" + std::to_string(getLine()) + ":" + std::to_string(getColumn());
+    auto lineColumn = calculateLineAndColumn();
+    result += std::to_string(lineColumn.first) + ":" + std::to_string(lineColumn.second);
+
+    return result;
 }
 
-pair<int, int> Location::calculateLineAndColumn() const
+pair<size_t, size_t> Location::calculateLineAndColumn() const
 {
-    auto record = global::files.getFileRecord(fileId);
-    if (!record || !record->stream) 
+    if (!input || input->empty()) 
     {
-        return {1, 1}; // Default to line 1, column 1 if no file record or stream
+        return {1, 1}; // default to line 1, column 1 if no input
     }
 
-    istream *input = record->stream;
-    // save the current position
-    auto savePos = input->tellg();
-    if (input->eof() || savePos == std::streampos(-1))
-    {
-        input->clear(); // Clear the eofbit flag
-    }
-    input->seekg(0, std::ios::beg); // Reset to the beginning of the file
+    size_t line = 1;
+    size_t column = 1;
 
-    int lineCount = 1;
-    int columnCount = 1;
-    char c;
-    while (input->get(c)) 
+    for (size_t i = 0; i < pos && i < input->length(); ++i) 
     {
-        if (input->tellg() > pos)
+        if ((*input)[i] == '\n') 
         {
-            break; // Stop when we reach the position
-        }
-        if (c == '\n') 
-        {
-            lineCount++;
-            columnCount = 1; // Reset column count on new line
+            line++;
+            column = 1; // reset column on new line
         } 
         else 
         {
-            columnCount++;
+            column++;
         }
     }
 
-    input->seekg(savePos); // Restore the original position
-    return {lineCount, columnCount};
+    return {line, column};
 }

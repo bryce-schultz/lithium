@@ -1,3 +1,12 @@
+//**************************************************
+// File: FileCache.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the FileCache class, which
+// manages file streams and caching for source files.
+//**************************************************
+
 #include "FileCache.h"
 
 int FileCache::nextId = 0;
@@ -24,6 +33,8 @@ FileId FileCache::openFile(istream &stream, const string &filename)
 {
     FileId id = nextId++;
     records[id] = {filename, &stream};
+    stream.clear();
+    stream.seekg(0, std::ios::beg); // Reset the stream position to the beginning
     if (filename.empty())
     {
         records[id].filename = "stream"; // Default name for unnamed streams

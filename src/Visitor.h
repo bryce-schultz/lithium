@@ -1,3 +1,12 @@
+//**************************************************
+// File: Visitor.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the Visitor base class for
+// traversing AST nodes using the visitor pattern.
+//**************************************************
+
 #pragma once
 
 class Node;
@@ -14,6 +23,7 @@ class BinaryExpressionNode;
 class ArgListNode;
 class OpNode;
 class BlockNode;
+class MemberAccessNode;
 
 class Visitor
 {
@@ -38,4 +48,5 @@ public:
     virtual void visit(ArgListNode *node);
     virtual void visit(OpNode *node);
     virtual void visit(BlockNode *node);
+    virtual void visit(MemberAccessNode *node);
 };
