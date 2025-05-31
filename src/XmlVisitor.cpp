@@ -121,3 +121,10 @@ void XmlVisitor::visit(OpNode *node)
 {
     openTag("Op", {"type=\"" + std::to_string(node->getType()) + "\""}, true);
 }
+
+void XmlVisitor::visit(BlockNode *node)
+{
+    openTag("Block");
+    node->visitAllChildren(this);
+    closeTag("Block");
+}

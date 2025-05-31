@@ -2,13 +2,13 @@
 
 Tokenizer::Tokenizer():
     fileId(INVALID_FILE_ID),
-    location(1, 1),
+    location(0),
     endOfFile(true)
 { }
 
 Tokenizer::Tokenizer(FileId fileId): 
     fileId(fileId),
-    location(1, 1, fileId),
+    location(0, fileId),
     endOfFile(false)
 { }
 
@@ -247,14 +247,6 @@ void Tokenizer::advance()
     if (input->good()) 
     {
         input->get(current);
-        if (current == '\n') 
-        {
-            location.incrementLine();
-            location.resetColumn();
-        } 
-        else 
-        {
-            location.incrementColumn();
-        }
+        location.move(1);
     }
 }

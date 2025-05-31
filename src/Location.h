@@ -6,12 +6,13 @@
 #include "FileCache.h"
 
 using std::string;
+using std::pair;
 
 class Location
 {
 public:
     Location();
-    Location(int line, int column, FileId fileId = INVALID_FILE_ID);
+    Location(int pos, FileId fileId = INVALID_FILE_ID);
     ~Location();
 
     Location(const Location& other);
@@ -24,15 +25,8 @@ public:
     FileId getFileId() const;
     string getFilename() const;
 
-    void setLine(int line);
-    void setColumn(int column);
-
-    void incrementLine(int count = 1);
-    void incrementColumn(int count = 1);
-    void decrementLine(int count = 1);
-    void decrementColumn(int count = 1);
-    void resetLine(int line = 1);
-    void resetColumn(int column = 1);
+    void move(int offset);
+    void moveTo(int pos, FileId fileId = INVALID_FILE_ID);
 
     bool operator==(const Location& other) const;
     bool operator!=(const Location& other) const;
@@ -43,7 +37,8 @@ public:
 
     string toString() const;
 private:
-    int line;
-    int column;
+    pair<int, int> calculateLineAndColumn() const;
+private:
+    int pos;
     FileId fileId;
 };

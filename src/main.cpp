@@ -6,6 +6,22 @@
 
 int main(int argc, char **argv)
 {
+    auto id = global::files.openFile("test.li");
+    if (id == INVALID_FILE_ID)
+    {
+        std::cerr << "error opening file: test.li" << std::endl;
+        return 1;
+    }
+
+    Tokenizer tester(id);
+    
+    Token token;
+    while (token != Token::END)
+    {
+        token = tester.lex();
+        std::cout << token.toString() << " @ " << token.getRange().getStart().toString() << std::endl;
+    }
+
     istream *input = &std::cin;
     if (argc == 2)
     {
@@ -22,7 +38,6 @@ int main(int argc, char **argv)
 
     if (result.success)
     {
-        std::cout << "Parsing succeeded." << std::endl;
         XmlVisitor xmlVisitor;
         xmlVisitor.visitAllChildren(result.node);
 

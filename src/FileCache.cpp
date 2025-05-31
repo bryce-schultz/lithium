@@ -11,6 +11,11 @@ FileId FileCache::openFile(const string &filename)
 {
     FileId id = nextId++;
     ifstream *stream = new ifstream(filename);
+    if (!stream->good())
+    {
+        delete stream; // Clean up if the file could not be opened
+        return INVALID_FILE_ID; // Return an invalid ID if the file cannot be opened
+    }
     records[id] = {filename, stream};
     return id;
 }

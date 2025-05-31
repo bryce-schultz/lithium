@@ -13,6 +13,7 @@ class CallNode;
 class BinaryExpressionNode;
 class ArgListNode;
 class OpNode;
+class BlockNode;
 
 class Visitor
 {
@@ -36,4 +37,5 @@ public:
     virtual void visit(BinaryExpressionNode *node);
     virtual void visit(ArgListNode *node);
     virtual void visit(OpNode *node);
+    virtual void visit(BlockNode *node);
 };

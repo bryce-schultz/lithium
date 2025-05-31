@@ -67,3 +67,8 @@ void Visitor::visit(OpNode *node)
 {
     node->visitAllChildren(this);
 }
+
+void Visitor::visit(BlockNode *node)
+{
+    node->visitAllChildren(this);
+}

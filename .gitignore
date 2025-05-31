@@ -1,0 +1,7 @@
+# file types:
+*.o
+
+# files:
+
+# directories:
+.vscode/

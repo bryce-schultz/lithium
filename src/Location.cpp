@@ -1,28 +1,24 @@
 #include "Location.h"
 
 Location::Location():
-    line(0), 
-    column(0), 
+    pos(0),
     fileId(INVALID_FILE_ID) 
 { }
 
-Location::Location(int line, int column, FileId fileId):
-    line(line), 
-    column(column), 
+Location::Location(int pos, FileId fileId):
+    pos(pos),
     fileId(fileId) 
 {
 }
 
 Location::~Location()
 {
-    line = 0;
-    column = 0;
+    pos = 0;
     fileId = INVALID_FILE_ID;
 }
 
 Location::Location(const Location &other):
-    line(other.line), 
-    column(other.column), 
+    pos(other.pos), 
     fileId(other.fileId)
 { }
 
@@ -30,8 +26,7 @@ Location &Location::operator=(const Location &other)
 {
     if (this != &other) 
     {
-        line = other.line;
-        column = other.column;
+        pos = other.pos;
         fileId = other.fileId;
     }
 
@@ -40,12 +35,10 @@ Location &Location::operator=(const Location &other)
 
 Location::Location(Location &&other) noexcept
 {
-    line = other.line;
-    column = other.column;
+    pos = other.pos;
     fileId = other.fileId;
     
-    other.line = 0;
-    other.column = 0;
+    pos = 0;
     other.fileId = INVALID_FILE_ID;
 }
 
@@ -53,12 +46,10 @@ Location &Location::operator=(Location &&other) noexcept
 {
     if (this != &other) 
     {
-        line = other.line;
-        column = other.column;
+        pos = other.pos;
         fileId = other.fileId;
         
-        other.line = 0;
-        other.column = 0;
+        other.pos = 0;
         other.fileId = INVALID_FILE_ID;
     }
 
@@ -67,12 +58,12 @@ Location &Location::operator=(Location &&other) noexcept
 
 int Location::getLine() const
 {
-    return line;
+    return calculateLineAndColumn().first;
 }
 
 int Location::getColumn() const
 {
-    return column;
+    return calculateLineAndColumn().second;
 }
 
 FileId Location::getFileId() const
@@ -91,64 +82,34 @@ string Location::getFilename() const
     return record->filename;
 }
 
-void Location::setLine(int line)
+void Location::move(int offset)
 {
-    this->line = line;
-}
-
-void Location::setColumn(int column)
-{
-    this->column = column;
-}
-
-void Location::incrementLine(int count)
-{
-    line += count;
-}
-
-void Location::incrementColumn(int count)
-{
-    column += count;
-}
-
-void Location::decrementLine(int count)
-{
-    if (line > count) 
+    if (fileId == INVALID_FILE_ID) 
     {
-        line -= count;
-    } 
-    else 
+        return; // cannot move if fileId is invalid
+    }
+
+    pos += offset;
+    if (pos < 0) 
     {
-        line = 1; // Prevent going below line 1
+        pos = 0; // prevent negative position
     }
 }
 
-void Location::decrementColumn(int count)
+void Location::moveTo(int pos, FileId fileId)
 {
-    if (column > count) 
+    if (fileId == INVALID_FILE_ID) 
     {
-        column -= count;
-    } 
-    else 
-    {
-        column = 1; // Prevent going below column 1
+        fileId = this->fileId; // use current fileId if not provided
     }
+
+    this->pos = pos;
+    this->fileId = fileId;
 }
 
-void Location::resetLine(int line)
+bool Location::operator==(const Location &other) const
 {
-    this->line = line > 0 ? line : 1; // Ensure line is at least 1
-}
-
-void Location::resetColumn(int column)
-{
-    this->column = column > 0 ? column : 1; // Ensure column is at least 1
-}
-
-bool Location::operator==(const Location& other) const
-{
-    return line == other.line &&
-        column == other.column &&
+    return pos == other.pos &&
         fileId == other.fileId;
 }
 
@@ -161,9 +122,10 @@ bool Location::operator<(const Location& other) const
 {
     if (fileId < other.fileId) return true;
     if (fileId > other.fileId) return false;
-    if (line < other.line) return true;
-    if (line > other.line) return false;
-    return column < other.column;
+    if (pos < other.pos) return true;
+    if (pos > other.pos) return false;
+
+    return false; // equal positions
 }
 
 bool Location::operator<=(const Location& other) const
@@ -186,9 +148,50 @@ string Location::toString() const
     auto record = global::files.getFileRecord(fileId);
     if (!record)
     {
-        return std::to_string(line) + ":" + std::to_string(column);
+        return std::to_string(getLine()) + ":" + std::to_string(getColumn());
     }
     string filename = record->filename;
 
-    return filename + ":" + std::to_string(line) + ":" + std::to_string(column);
+    return filename + ":" + std::to_string(getLine()) + ":" + std::to_string(getColumn());
+}
+
+pair<int, int> Location::calculateLineAndColumn() const
+{
+    auto record = global::files.getFileRecord(fileId);
+    if (!record || !record->stream) 
+    {
+        return {1, 1}; // Default to line 1, column 1 if no file record or stream
+    }
+
+    istream *input = record->stream;
+    // save the current position
+    auto savePos = input->tellg();
+    if (input->eof() || savePos == std::streampos(-1))
+    {
+        input->clear(); // Clear the eofbit flag
+    }
+    input->seekg(0, std::ios::beg); // Reset to the beginning of the file
+
+    int lineCount = 1;
+    int columnCount = 1;
+    char c;
+    while (input->get(c)) 
+    {
+        if (input->tellg() > pos)
+        {
+            break; // Stop when we reach the position
+        }
+        if (c == '\n') 
+        {
+            lineCount++;
+            columnCount = 1; // Reset column count on new line
+        } 
+        else 
+        {
+            columnCount++;
+        }
+    }
+
+    input->seekg(savePos); // Restore the original position
+    return {lineCount, columnCount};
 }

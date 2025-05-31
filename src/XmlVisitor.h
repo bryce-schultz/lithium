@@ -28,6 +28,7 @@ public:
     void visit(BinaryExpressionNode *node) override;
     void visit(ArgListNode *node) override;
     void visit(OpNode *node) override;
+    void visit(BlockNode *node) override;
 private:
     void openTag(const string &tagName, vector<string> attributes = {}, bool selfClosing = false);
     void closeTag(const string &tagName);

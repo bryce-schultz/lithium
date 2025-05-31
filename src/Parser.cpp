@@ -208,6 +208,48 @@ Result<StatementNode> Parser::parseExprStmt()
     reject();
 }
 
+Result<BlockNode> Parser::parseBlock()
+{
+    Token token = peekToken();
+    if (token != '{')
+    {
+        expected("{", token);
+        reject();
+    }
+    Token blockStart = token;
+    advanceToken(); // consume '{'
+
+    token = peekToken();
+    if (token == '}')
+    {
+        advanceToken(); // consume '}'
+        BlockNode *emptyBlock = new BlockNode();
+        emptyBlock->setRangeStart(blockStart.getRange().getStart());
+        emptyBlock->setRangeEnd(token.getRange().getEnd());
+        accept(emptyBlock); // Empty block
+    }
+
+    auto stmtsResult = parseStmts();
+    if (!stmtsResult.success)
+    {
+        reject();
+    }
+
+    token = peekToken();
+    if (token != '}')
+    {
+        expected("}", token);
+        reject();
+    }
+    advanceToken(); // consume '}'
+
+    BlockNode *blockNode = new BlockNode(stmtsResult.node);
+    blockNode->setRangeStart(blockStart.getRange().getStart());
+    blockNode->setRangeEnd(token.getRange().getEnd());
+
+    accept(blockNode);
+}
+
 // letStmt -> LET IDENT = expr ;
 Result<VarDeclNode> Parser::parseLetStmt()
 {

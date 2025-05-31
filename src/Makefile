@@ -25,13 +25,14 @@ MAIN_OBJS = main.o \
  Visitor.o \
  StatementsNode.o \
  BinaryExpressionNode.o \
+ OpNode.o \
  VarExprNode.o \
  VarDeclNode.o \
  PrintStatementNode.o \
  ArgListNode.o \
  NumberNode.o \
  CallNode.o \
- OpNode.o \
+ BlockNode.o \
  XmlVisitor.o
 
 # Phony Targets:
@@ -59,11 +60,12 @@ FileCache.o: FileCache.cpp FileCache.h
 Location.o: Location.cpp Location.h FileCache.h
 Visitor.o: Visitor.cpp Visitor.h Nodes.h Node.h Range.h Location.h \
  FileCache.h StatementNode.h StatementsNode.h ExpressionNode.h \
- BinaryExpressionNode.h Token.h ReturnStatementNode.h VarExprNode.h \
- VarDeclNode.h PrintStatementNode.h ArgListNode.h NumberNode.h CallNode.h \
- OpNode.h XmlVisitor.h
+ BinaryExpressionNode.h OpNode.h Token.h ReturnStatementNode.h \
+ VarExprNode.h VarDeclNode.h PrintStatementNode.h ArgListNode.h \
+ NumberNode.h CallNode.h BlockNode.h XmlVisitor.h
 ArgListNode.o: ArgListNode.cpp ArgListNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h FileCache.h Visitor.h
+InterpretingVisitor.o: InterpretingVisitor.cpp
 Tokenizer.o: Tokenizer.cpp Tokenizer.h Token.h Range.h Location.h \
  FileCache.h
 NumberNode.o: NumberNode.cpp NumberNode.h ExpressionNode.h \
@@ -72,9 +74,9 @@ Range.o: Range.cpp Range.h Location.h FileCache.h
 Node.o: Node.cpp Node.h Range.h Location.h FileCache.h Visitor.h
 main.o: main.cpp Parser.h Tokenizer.h Token.h Range.h Location.h \
  FileCache.h Nodes.h Node.h Visitor.h StatementNode.h StatementsNode.h \
- ExpressionNode.h BinaryExpressionNode.h ReturnStatementNode.h \
+ ExpressionNode.h BinaryExpressionNode.h OpNode.h ReturnStatementNode.h \
  VarExprNode.h VarDeclNode.h PrintStatementNode.h ArgListNode.h \
- NumberNode.h CallNode.h OpNode.h XmlVisitor.h
+ NumberNode.h CallNode.h BlockNode.h XmlVisitor.h
 StatementsNode.o: StatementsNode.cpp StatementsNode.h Node.h Range.h \
  Location.h FileCache.h Visitor.h StatementNode.h
 OpNode.o: OpNode.cpp OpNode.h Node.h Range.h Location.h FileCache.h \
@@ -86,20 +88,22 @@ PrintStatementNode.o: PrintStatementNode.cpp PrintStatementNode.h \
  ExpressionNode.h
 XmlVisitor.o: XmlVisitor.cpp XmlVisitor.h Visitor.h Nodes.h Node.h \
  Range.h Location.h FileCache.h StatementNode.h StatementsNode.h \
- ExpressionNode.h BinaryExpressionNode.h Token.h ReturnStatementNode.h \
- VarExprNode.h VarDeclNode.h PrintStatementNode.h ArgListNode.h \
- NumberNode.h CallNode.h OpNode.h
+ ExpressionNode.h BinaryExpressionNode.h OpNode.h Token.h \
+ ReturnStatementNode.h VarExprNode.h VarDeclNode.h PrintStatementNode.h \
+ ArgListNode.h NumberNode.h CallNode.h BlockNode.h
 BinaryExpressionNode.o: BinaryExpressionNode.cpp BinaryExpressionNode.h \
  ExpressionNode.h StatementNode.h Node.h Range.h Location.h FileCache.h \
- Visitor.h Token.h
+ Visitor.h OpNode.h Token.h
+BlockNode.o: BlockNode.cpp BlockNode.h StatementNode.h Node.h Range.h \
+ Location.h FileCache.h Visitor.h StatementsNode.h
 Error.o: Error.cpp Error.h Range.h Location.h FileCache.h
 VarExprNode.o: VarExprNode.cpp VarExprNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h FileCache.h Visitor.h Token.h
 Parser.o: Parser.cpp Parser.h Tokenizer.h Token.h Range.h Location.h \
  FileCache.h Nodes.h Node.h Visitor.h StatementNode.h StatementsNode.h \
- ExpressionNode.h BinaryExpressionNode.h ReturnStatementNode.h \
+ ExpressionNode.h BinaryExpressionNode.h OpNode.h ReturnStatementNode.h \
  VarExprNode.h VarDeclNode.h PrintStatementNode.h ArgListNode.h \
- NumberNode.h CallNode.h OpNode.h
+ NumberNode.h CallNode.h BlockNode.h
 VarDeclNode.o: VarDeclNode.cpp VarDeclNode.h StatementNode.h Node.h \
  Range.h Location.h FileCache.h Visitor.h Token.h ExpressionNode.h
 Token.o: Token.cpp Token.h Range.h Location.h FileCache.h Node.h \
