@@ -1,0 +1,69 @@
+#include "Visitor.h"
+
+#include "Nodes.h"
+#include "XmlVisitor.h"
+
+void Visitor::visit(Node *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(StatementNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(StatementsNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(ExpressionNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(ReturnStatementNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(VarExprNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(VarDeclNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(PrintStatementNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(NumberNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(CallNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(BinaryExpressionNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(ArgListNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(OpNode *node)
+{
+    node->visitAllChildren(this);
+}

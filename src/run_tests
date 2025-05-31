@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e
+
+green='\033[0;32m'
+reset='\033[0m'
+
+make
+
+# fine any executable that starts with "test_"
+for test in $(find . -type f -executable -name "test_*"); do
+    ./$test
+done

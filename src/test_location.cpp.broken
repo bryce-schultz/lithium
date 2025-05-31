@@ -1,0 +1,133 @@
+#define CTEST
+
+#include <string>
+
+#include "ctest.h"
+#include "Location.h"
+
+Test test_location_default_constructor()
+{
+    Location loc;
+    assertEqual(loc.getLine(), 0);
+    assertEqual(loc.getColumn(), 0);
+    assertStringEqual(loc.getFilename().c_str(), "");
+}
+
+Test test_location_parameterized_constructor()
+{
+    Location loc(10, 20);
+    assertEqual(loc.getLine(), 10);
+    assertEqual(loc.getColumn(), 20);
+    assertStringEqual(loc.getFilename().c_str(), "test.txt");
+}
+
+Test test_location_copy_constructor()
+{
+    Location loc1(5, 15);
+    Location loc2(loc1);
+    assertEqual(loc2.getLine(), 5);
+    assertEqual(loc2.getColumn(), 15);
+    assertStringEqual(loc2.getFilename().c_str(), "example.txt");
+}
+
+Test test_location_assignment_operator()
+{
+    Location loc1(3, 7, 10);
+    Location loc2;
+    loc2 = loc1;
+    assertEqual(loc2.getLine(), 3);
+    assertEqual(loc2.getColumn(), 7);
+    assertEqual(loc2.getFileId(), 10);
+}
+
+Test test_location_move_constructor()
+{
+    Location loc1(8, 12, 100);
+    Location loc2(std::move(loc1));
+    assertEqual(loc2.getLine(), 8);
+    assertEqual(loc2.getColumn(), 12);
+    assertEqual(loc2.getFileId(), 100);
+}
+
+Test test_location_move_assignment_operator()
+{
+    Location loc1(6, 9, 10);
+    Location loc2;
+    loc2 = std::move(loc1);
+    assertEqual(loc2.getLine(), 6);
+    assertEqual(loc2.getColumn(), 9);
+    assertEqual(loc2.getFileId(), 10);
+}
+
+Test test_location_equality_operator()
+{
+    Location loc1(1, 2, 5);
+    Location loc2(1, 2, 5);
+    assertTrue(loc1 == loc2);
+}
+
+Test test_location_inequality_operator()
+{
+    Location loc1(1, 2, 1);
+    Location loc2(3, 4, 2);
+    assertTrue(loc1 != loc2);
+}
+
+Test test_location_less_than_operator()
+{
+    Location loc1(1, 2, 1);
+    Location loc2(3, 4, 2);
+    assertTrue(loc1 < loc2);
+}
+
+Test test_location_less_than_or_equal_operator()
+{
+    Location loc1(1, 2, 2);
+    Location loc2(1, 2, 2);
+    assertTrue(loc1 <= loc2);
+}
+
+Test test_location_greater_than_operator()
+{
+    Location loc1(3, 4, 2);
+    Location loc2(1, 2, 1);
+    assertTrue(loc1 > loc2);
+}
+
+Test test_location_greater_than_or_equal_operator()
+{
+    Location loc1(1, 2, 1);
+    Location loc2(1, 2, 1);
+    assertTrue(loc1 >= loc2);
+}
+
+Test test_location_to_string_without_filename()
+{
+    Location loc(5, 10);
+    assertStringEqual(loc.toString().c_str(), "5:10");
+}
+
+int main()
+{
+    START_TEST;
+    START_GROUP(Constructor Tests);
+    TEST(test_location_default_constructor);
+    TEST(test_location_parameterized_constructor);
+    TEST(test_location_copy_constructor);
+    TEST(test_location_assignment_operator);
+    TEST(test_location_move_constructor);
+    TEST(test_location_move_assignment_operator);
+    END_GROUP;
+    START_GROUP(Operator Tests);
+    TEST(test_location_equality_operator);
+    TEST(test_location_inequality_operator);
+    TEST(test_location_less_than_operator);
+    TEST(test_location_less_than_or_equal_operator);
+    TEST(test_location_greater_than_operator);
+    TEST(test_location_greater_than_or_equal_operator);
+    END_GROUP;
+    START_GROUP(String Representation Tests);
+    TEST(test_location_to_string_without_filename);
+    END_GROUP;
+    END_TEST;
+}
