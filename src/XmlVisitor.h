@@ -34,7 +34,7 @@ public:
     void visit(PrintStatementNode *node) override;
     void visit(NumberNode *node) override;
     void visit(CallNode *node) override;
-    void visit(BinaryExpressionNode *node) override;
+    void visit(BinaryExprNode *node) override;
     void visit(ArgListNode *node) override;
     void visit(OpNode *node) override;
     void visit(BlockNode *node) override;

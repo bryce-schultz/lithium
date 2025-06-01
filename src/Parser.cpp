@@ -647,7 +647,7 @@ Result<ExpressionNode> Parser::parseExprP(ExpressionNode *lhs)
         reject();
     }
 
-    auto exprP = parseExprP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
+    auto exprP = parseExprP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
     if (!exprP.success)
     {
         reject();
@@ -735,7 +735,7 @@ Result<ExpressionNode> Parser::parseOrP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseOrP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseOrP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -779,7 +779,7 @@ Result<ExpressionNode> Parser::parseAndP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseAndP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseAndP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -824,7 +824,7 @@ Result<ExpressionNode> Parser::parseEqualityP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseEqualityP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseEqualityP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -871,7 +871,7 @@ Result<ExpressionNode> Parser::parseRelationP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseRelationP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseRelationP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -916,7 +916,7 @@ Result<ExpressionNode> Parser::parseAdditP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseAdditP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseAdditP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -962,7 +962,7 @@ Result<ExpressionNode> Parser::parseMultP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseMultP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseMultP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -995,7 +995,7 @@ Result<ExpressionNode> Parser::parseUnary()
         reject();
     }
 
-    accept(new BinaryExpressionNode(nullptr, new OpNode(token), result.node));
+    accept(new BinaryExprNode(nullptr, new OpNode(token), result.node));
 }
 
 //***************************************************
@@ -1095,7 +1095,7 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         }
         advanceToken(); // consume ']'
 
-        accept(new BinaryExpressionNode(lhs, new OpNode(token), exprResult.node));
+        accept(new BinaryExprNode(lhs, new OpNode(token), exprResult.node));
     }
     else if (token == '(')
     {
@@ -1141,7 +1141,7 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
     else if (token == Token::INC || token == Token::DEC)
     {
         advanceToken(); // consume 'inc' or 'dec'
-        accept(new BinaryExpressionNode(lhs, new OpNode(token), nullptr));
+        accept(new BinaryExprNode(lhs, new OpNode(token), nullptr));
     }
 
     reject();

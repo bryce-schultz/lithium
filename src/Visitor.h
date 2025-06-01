@@ -19,7 +19,7 @@ class VarDeclNode;
 class PrintStatementNode;
 class NumberNode;
 class CallNode;
-class BinaryExpressionNode;
+class BinaryExprNode;
 class ArgListNode;
 class OpNode;
 class BlockNode;
@@ -48,7 +48,7 @@ public:
     virtual void visit(PrintStatementNode *node);
     virtual void visit(NumberNode *node);
     virtual void visit(CallNode *node);
-    virtual void visit(BinaryExpressionNode *node);
+    virtual void visit(BinaryExprNode *node);
     virtual void visit(ArgListNode *node);
     virtual void visit(OpNode *node);
     virtual void visit(BlockNode *node);

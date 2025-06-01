@@ -62,7 +62,7 @@ void Visitor::visit(CallNode *node)
     node->visitAllChildren(this);
 }
 
-void Visitor::visit(BinaryExpressionNode *node)
+void Visitor::visit(BinaryExprNode *node)
 {
     node->visitAllChildren(this);
 }

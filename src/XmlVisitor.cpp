@@ -112,7 +112,7 @@ void XmlVisitor::visit(CallNode *node)
     closeTag("Call");
 }
 
-void XmlVisitor::visit(BinaryExpressionNode *node)
+void XmlVisitor::visit(BinaryExprNode *node)
 {
     openTag("BinaryExpression");
     node->visitAllChildren(this);

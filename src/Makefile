@@ -28,7 +28,7 @@ TEST_TOKENIZER_OBJS = test_tokenizer.o \
  StringNode.o \
  VarExprNode.o \
  OpNode.o \
- BinaryExpressionNode.o \
+ BinaryExprNode.o \
  AssignNode.o \
  CallNode.o \
  ArgListNode.o \
@@ -56,7 +56,7 @@ MAIN_OBJS = main.o \
  StringNode.o \
  VarExprNode.o \
  OpNode.o \
- BinaryExpressionNode.o \
+ BinaryExprNode.o \
  AssignNode.o \
  CallNode.o \
  ArgListNode.o \
@@ -101,9 +101,6 @@ clean:
 
 # Dependencies:
 Node.o: Node.cpp Node.h Range.h Location.h Visitor.h
-BinaryExpressionNode.o: BinaryExpressionNode.cpp BinaryExpressionNode.h \
- ExpressionNode.h StatementNode.h Node.h Range.h Location.h Visitor.h \
- OpNode.h Token.h
 MemberAccessNode.o: MemberAccessNode.cpp MemberAccessNode.h \
  ExpressionNode.h StatementNode.h Node.h Range.h Location.h Visitor.h \
  Token.h
@@ -111,7 +108,7 @@ NumberNode.o: NumberNode.cpp NumberNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h Token.h
 XmlVisitor.o: XmlVisitor.cpp XmlVisitor.h Visitor.h Nodes.h Node.h \
  Range.h Location.h ExpressionNode.h StatementNode.h NumberNode.h Token.h \
- StringNode.h VarExprNode.h OpNode.h BinaryExpressionNode.h AssignNode.h \
+ StringNode.h VarExprNode.h OpNode.h BinaryExprNode.h AssignNode.h \
  CallNode.h ArgListNode.h ParamListNode.h VarDeclNode.h DeclNode.h \
  MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
  BlockNode.h StatementsNode.h IfStatementNode.h FuncDeclNode.h
@@ -128,10 +125,12 @@ Error.o: Error.cpp Error.h Range.h Location.h Token.h Color.h
 Interpreter.o: Interpreter.cpp Interpreter.h Visitor.h Environment.h \
  Nodes.h Node.h Range.h Location.h ExpressionNode.h StatementNode.h \
  NumberNode.h Token.h StringNode.h VarExprNode.h OpNode.h \
- BinaryExpressionNode.h AssignNode.h CallNode.h ArgListNode.h \
- ParamListNode.h VarDeclNode.h DeclNode.h MemberAccessNode.h \
- ReturnStatementNode.h PrintStatementNode.h BlockNode.h StatementsNode.h \
- IfStatementNode.h FuncDeclNode.h Value.h Error.h Color.h
+ BinaryExprNode.h AssignNode.h CallNode.h ArgListNode.h ParamListNode.h \
+ VarDeclNode.h DeclNode.h MemberAccessNode.h ReturnStatementNode.h \
+ PrintStatementNode.h BlockNode.h StatementsNode.h IfStatementNode.h \
+ FuncDeclNode.h Value.h Error.h Color.h
+BinaryExprNode.o: BinaryExprNode.cpp BinaryExprNode.h ExpressionNode.h \
+ StatementNode.h Node.h Range.h Location.h Visitor.h OpNode.h Token.h
 CallNode.o: CallNode.cpp CallNode.h ArgListNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h
 StatementsNode.o: StatementsNode.cpp StatementsNode.h Node.h Range.h \
@@ -146,7 +145,7 @@ test_tokenizer.o: test_tokenizer.cpp ctest.h Tokenizer.h Token.h Range.h \
 Tokenizer.o: Tokenizer.cpp Tokenizer.h Token.h Range.h Location.h
 Visitor.o: Visitor.cpp Visitor.h Nodes.h Node.h Range.h Location.h \
  ExpressionNode.h StatementNode.h NumberNode.h Token.h StringNode.h \
- VarExprNode.h OpNode.h BinaryExpressionNode.h AssignNode.h CallNode.h \
+ VarExprNode.h OpNode.h BinaryExprNode.h AssignNode.h CallNode.h \
  ArgListNode.h ParamListNode.h VarDeclNode.h DeclNode.h \
  MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
  BlockNode.h StatementsNode.h IfStatementNode.h FuncDeclNode.h \
@@ -163,14 +162,14 @@ BlockNode.o: BlockNode.cpp BlockNode.h StatementNode.h Node.h Range.h \
  Location.h Visitor.h StatementsNode.h
 main.o: main.cpp Utils.h Parser.h Tokenizer.h Token.h Range.h Location.h \
  Nodes.h Node.h Visitor.h ExpressionNode.h StatementNode.h NumberNode.h \
- StringNode.h VarExprNode.h OpNode.h BinaryExpressionNode.h AssignNode.h \
+ StringNode.h VarExprNode.h OpNode.h BinaryExprNode.h AssignNode.h \
  CallNode.h ArgListNode.h ParamListNode.h VarDeclNode.h DeclNode.h \
  MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
  BlockNode.h StatementsNode.h IfStatementNode.h FuncDeclNode.h \
  XmlVisitor.h Interpreter.h Environment.h Value.h
 Parser.o: Parser.cpp Parser.h Tokenizer.h Token.h Range.h Location.h \
  Nodes.h Node.h Visitor.h ExpressionNode.h StatementNode.h NumberNode.h \
- StringNode.h VarExprNode.h OpNode.h BinaryExpressionNode.h AssignNode.h \
+ StringNode.h VarExprNode.h OpNode.h BinaryExprNode.h AssignNode.h \
  CallNode.h ArgListNode.h ParamListNode.h VarDeclNode.h DeclNode.h \
  MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
  BlockNode.h StatementsNode.h IfStatementNode.h FuncDeclNode.h Error.h \

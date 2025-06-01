@@ -80,7 +80,7 @@ void Interpreter::visit(StringNode *node)
     returnValue = std::make_shared<StringValue>(node->getValue());
 }
 
-void Interpreter::visit(BinaryExpressionNode *node)
+void Interpreter::visit(BinaryExprNode *node)
 {
     if (node->isUnary())
     {

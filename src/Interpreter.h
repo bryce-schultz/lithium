@@ -25,7 +25,7 @@ public:
     virtual void visit(PrintStatementNode *node) override;
     virtual void visit(NumberNode *node) override;
     virtual void visit(StringNode *node) override;
-    virtual void visit(BinaryExpressionNode *node) override;
+    virtual void visit(BinaryExprNode *node) override;
     virtual void visit(CallNode *node) override;
     virtual void visit(VarDeclNode *node) override;
     virtual void visit(VarExprNode *node) override;

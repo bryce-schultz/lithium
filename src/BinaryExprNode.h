@@ -14,10 +14,10 @@
 #include "Visitor.h"
 #include "Token.h"
 
-class BinaryExpressionNode : public ExpressionNode
+class BinaryExprNode : public ExpressionNode
 {
 public:
-    BinaryExpressionNode(ExpressionNode *left, OpNode *op, ExpressionNode *right);
+    BinaryExprNode(ExpressionNode *left, OpNode *op, ExpressionNode *right);
 
     OpNode *getOperator() const;
 

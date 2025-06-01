@@ -15,7 +15,7 @@
 #include "StringNode.h"
 #include "VarExprNode.h"
 #include "OpNode.h"
-#include "BinaryExpressionNode.h"
+#include "BinaryExprNode.h"
 #include "AssignNode.h"
 #include "CallNode.h"
 #include "ArgListNode.h"
