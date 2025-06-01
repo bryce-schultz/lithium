@@ -26,4 +26,6 @@ namespace Utils
     string getInputLine();
 
     string join(const vector<string> &lines, const string &delimiter = "\n");
+
+    string truncate(const string &str, size_t maxLength, const string &suffix = "...");
 }

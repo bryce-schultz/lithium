@@ -27,6 +27,7 @@ class MemberAccessNode;
 class StringNode;
 class AssignNode;
 class IfStatementNode;
+class WhileNode;
 class FuncDeclNode;
 
 class Visitor
@@ -56,5 +57,6 @@ public:
     virtual void visit(StringNode *node);
     virtual void visit(AssignNode *node);
     virtual void visit(IfStatementNode *node);
+    virtual void visit(WhileNode *node);
     virtual void visit(FuncDeclNode *node);
 };

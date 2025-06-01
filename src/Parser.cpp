@@ -154,7 +154,7 @@ Result<StatementNode> Parser::parseStmt()
     }
     else if (isInFirstSet(token, whileStmtFirsts))
     {
-        //acceptNode(parseWhileStmt());
+        acceptNode(parseWhileStmt());
     }
     else if (isInFirstSet(token, ifStmtFirsts))
     {
@@ -227,6 +227,49 @@ Result<StatementNode> Parser::parseExprStmt()
     reject();
 }
 
+// whileStmt -> WHILE ( expr ) stmt
+Result<WhileNode> Parser::parseWhileStmt()
+{
+    Token token = peekToken();
+    if (token != Token::WHILE)
+    {
+        expected("while");
+    }
+    Token whileToken = token;
+    advanceToken(); // consume 'while'
+
+    token = peekToken();
+    if (token != '(')
+    {
+        expected("(");
+    }
+    advanceToken(); // consume '('
+
+    auto exprResult = parseExpr();
+    if (!exprResult.success)
+    {
+        reject();
+    }
+
+    token = peekToken();
+    if (token != ')')
+    {
+        expected(")");
+    }
+    advanceToken(); // consume ')'
+
+    auto bodyResult = parseStmt();
+    if (!bodyResult.success)
+    {
+        reject();
+    }
+
+    WhileNode *whileNode = new WhileNode(exprResult.node, bodyResult.node);
+    whileNode->setRangeStart(whileToken.getRange().getStart());
+
+    accept(whileNode);
+}
+
 // ifStmt -> IF ( expr ) stmt
 //         | IF ( expr ) stmt ELSE stmt
 Result<IfStatementNode> Parser::parseIfStmt()
@@ -284,6 +327,8 @@ Result<IfStatementNode> Parser::parseIfStmt()
     accept(ifStmt);
 }
 
+// block -> { stmts }
+//        | { }
 Result<BlockNode> Parser::parseBlock()
 {
     Token token = peekToken();
@@ -410,6 +455,8 @@ Result<ParamListNode> Parser::parseParamList()
     accept(result.node);
 }
 
+// paramList' -> , IDENT paramList'
+//             | ε
 Result<ParamListNode> Parser::parseParamListP(VarDeclNode *lhs)
 {
     Token token = peekToken();
@@ -445,6 +492,8 @@ Result<ParamListNode> Parser::parseParamListP(VarDeclNode *lhs)
     accept(params);
 }
 
+// returnStmt -> RETURN expr ;
+//             | RETURN ;
 Result<ReturnStatementNode> Parser::parseReturnStmt()
 {
     Token token = peekToken();
@@ -521,6 +570,7 @@ Result<VarDeclNode> Parser::parseLetStmt()
     accept(varDecl);
 }
 
+// constStmt -> CONST IDENT = expr ;
 Result<VarDeclNode> Parser::parseConstStmt()
 {
     Token token = peekToken();
@@ -566,6 +616,7 @@ Result<VarDeclNode> Parser::parseConstStmt()
     accept(varDecl);
 }
 
+// printStmt -> PRINT ( expr ) ;
 Result<PrintStatementNode> Parser::parsePrintStmt()
 {
     Token token = peekToken();

@@ -136,6 +136,19 @@ Test test_tokenize_junk_tokens()
     assertTrue(token == Token::END);
 }
 
+Test test_empty_newline()
+{
+    Tokenizer tokenizer("\n");
+    Token token;
+
+    // Test empty newlines
+    token = tokenizer.lex();
+    assertTrue(token == Token::END); // should reach end of input immediately
+
+    token = tokenizer.lex();
+    assertTrue(token == Token::END); // should reach end of input immediately
+}
+
 int main()
 {
     START_TESTS
@@ -145,6 +158,7 @@ int main()
     TEST(test_two_character_tokens);
     TEST(test_keyword_tokens);
     TEST(test_tokenize_junk_tokens);
+    TEST(test_empty_newline);
     END_GROUP;
 
     END_TESTS;

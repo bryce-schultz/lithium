@@ -33,6 +33,7 @@ public:
     virtual void visit(BlockNode *node) override;
     virtual void visit(IfStatementNode *node) override;
     virtual void visit(FuncDeclNode *node) override;
+    virtual void visit(WhileNode *node) override;
 private:
     std::shared_ptr<Value> evalBinaryExpression(ExpressionNode *left, OpNode *opNode, ExpressionNode *right);
     std::shared_ptr<Value> evalNumericBinaryExpression(std::shared_ptr<NumberValue> left, OpNode *opNode, std::shared_ptr<NumberValue> right);

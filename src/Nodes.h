@@ -30,4 +30,5 @@
 #include "BlockNode.h"
 #include "StatementsNode.h"
 #include "IfStatementNode.h"
+#include "WhileNode.h"
 #include "FuncDeclNode.h"

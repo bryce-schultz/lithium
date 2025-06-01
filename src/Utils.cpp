@@ -85,3 +85,19 @@ string Utils::join(const vector<string> &lines, const string &delimiter)
     }
     return result;
 }
+
+string Utils::truncate(const string &str, size_t maxLength, const string &suffix)
+{
+    if (str.length() <= maxLength)
+    {
+        return str;
+    }
+
+    size_t suffixLength = suffix.length();
+    if (maxLength <= suffixLength)
+    {
+        return suffix.substr(0, maxLength);
+    }
+
+    return str.substr(0, maxLength - suffixLength) + suffix;
+}

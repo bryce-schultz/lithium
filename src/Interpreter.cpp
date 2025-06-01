@@ -2,6 +2,9 @@
 #include "Nodes.h"
 #include "Value.h"
 #include "Error.h"
+#include "Utils.h"
+
+#define MAX_PEEK 25
 
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
@@ -12,9 +15,9 @@
 #define errorAtToken(msg, token, range) \
     tokenRangeError(msg, token, range, __FILE__, __LINE__)
 
-#define variableDefined(node) errorAtToken("variable " + node->getName() + " is already defined", node->getToken(), node->getRange())
+#define variableDefined(node) errorAtToken("variable '" + Utils::truncate(node->getName(), MAX_PEEK) + "' is already defined", node->getToken(), node->getRange())
 
-#define variableNotDefined(node) errorAtToken("variable " + node->getName() + " is not defined", node->getToken(), node->getRange())
+#define variableNotDefined(node) errorAtToken("variable '" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
 
 Interpreter::Interpreter(Environment *env)
 {
@@ -471,4 +474,33 @@ void Interpreter::visit(FuncDeclNode *node)
     node->dropBody();
     node->dropParams();
     returnValue = env->declare(node->getName(), function, node->isConst());
+}
+
+void Interpreter::visit(WhileNode *node)
+{
+    while (true)
+    {
+        node->getCondition()->visit(this);
+        if (!returnValue)
+        {
+            error("condition evaluation failed", node->getCondition()->getRange());
+            returnValue = nullptr;
+            break;
+        }
+
+        if (returnValue->getType() != Value::Type::boolean &&
+            returnValue->getType() != Value::Type::number)
+        {
+            error("condition must be a boolean expression", node->getCondition()->getRange());
+            returnValue = nullptr;
+            break;
+        }
+
+        bool condition = returnValue->toBoolean();
+        if (!condition) break;
+
+        node->visitAllChildren(this);
+    }
+
+    returnValue = nullptr; // reset return value after the loop
 }

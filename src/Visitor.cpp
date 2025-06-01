@@ -102,6 +102,11 @@ void Visitor::visit(IfStatementNode *node)
     node->visitAllChildren(this);
 }
 
+void Visitor::visit(WhileNode *node)
+{
+    node->visitAllChildren(this);
+}
+
 void Visitor::visit(FuncDeclNode *node)
 {
     node->visitAllChildren(this);

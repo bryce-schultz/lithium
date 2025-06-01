@@ -63,7 +63,7 @@ private:
     //Result<ForStatementNode> parseForStmt();
 
     // whileStmt -> WHILE ( expr ) stmt
-    //Result<WhileStatementNode> parseWhileStmt();
+    Result<WhileNode> parseWhileStmt();
 
     // ifStmt -> IF ( expr ) stmt
     //         | IF ( expr ) stmt ELSE stmt

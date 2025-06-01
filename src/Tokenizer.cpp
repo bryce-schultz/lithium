@@ -4,7 +4,7 @@
 // Author: Bryce Schultz
 //
 // Purpose: Implements the Tokenizer class, which
-// tokenizes input source code into tokens for 
+// tokenizes input source code into tokens for
 // parsing.
 //**************************************************
 
@@ -40,7 +40,7 @@ Token Tokenizer::lex()
     }
 
     start = location; // update start to the current location after skipping whitespace
-    
+
     //-----------------------------------------------------------
     // one character tokens
     if (c == '*' ||
@@ -54,7 +54,7 @@ Token Tokenizer::lex()
         c == '}' ||
         c == '[' ||
         c == ']' ||
-        c == '.') 
+        c == '.')
     {
         advance();
         return Token(static_cast<int>(c), Range(start, location), c);
@@ -65,7 +65,7 @@ Token Tokenizer::lex()
     if (c == '=')
     {
         advance();
-        if (peek() == '=') 
+        if (peek() == '=')
         {
             advance();
             return Token(Token::EQ, Range(start, location), "==");
@@ -76,29 +76,29 @@ Token Tokenizer::lex()
     if (c == '!')
     {
         advance();
-        if (peek() == '=') 
+        if (peek() == '=')
         {
             advance();
             return Token(Token::NE, Range(start, location), "!=");
         }
         return Token(static_cast<int>(c), Range(start, location), c);
     }
-    
+
     if (c == '<')
     {
         advance();
-        if (peek() == '=') 
+        if (peek() == '=')
         {
             advance();
             return Token(Token::LE, Range(start, location), "<=");
         }
         return Token(static_cast<int>(c), Range(start, location), c);
     }
-    
+
     if (c == '>')
     {
         advance();
-        if (peek() == '=') 
+        if (peek() == '=')
         {
             advance();
             return Token(Token::GE, Range(start, location), ">=");
@@ -109,7 +109,7 @@ Token Tokenizer::lex()
     if (c == '&')
     {
         advance();
-        if (peek() == '&') 
+        if (peek() == '&')
         {
             advance();
             return Token(Token::AND, Range(start, location), "&&");
@@ -120,7 +120,7 @@ Token Tokenizer::lex()
     if (c == '|')
     {
         advance();
-        if (peek() == '|') 
+        if (peek() == '|')
         {
             advance();
             return Token(Token::OR, Range(start, location), "||");
@@ -131,7 +131,7 @@ Token Tokenizer::lex()
     if (c == '+')
     {
         advance();
-        if (peek() == '+') 
+        if (peek() == '+')
         {
             advance();
             return Token(Token::INC, Range(start, location), "++");
@@ -142,7 +142,7 @@ Token Tokenizer::lex()
     if (c == '-')
     {
         advance();
-        if (peek() == '-') 
+        if (peek() == '-')
         {
             advance();
             return Token(Token::DEC, Range(start, location), "--");
@@ -154,7 +154,7 @@ Token Tokenizer::lex()
             string number = "-"; // start with minus sign
             while (isdigit(c) || (c == '.' && !isFloat))
             {
-                if (c == '.') 
+                if (c == '.')
                 {
                     isFloat = true; // mark as float
                 }
@@ -169,13 +169,13 @@ Token Tokenizer::lex()
 
     //-----------------------------------------------------------
     // numbers
-    if (isdigit(c)) 
+    if (isdigit(c))
     {
         bool isFloat = false;
         string number;
         while (isdigit(c) || (c == '.' && !isFloat))
         {
-            if (c == '.') 
+            if (c == '.')
             {
                 isFloat = true; // mark as float
             }
@@ -188,21 +188,21 @@ Token Tokenizer::lex()
 
     //-----------------------------------------------------------
     // strings
-    if (c == '"') 
+    if (c == '"')
     {
         advance();
         string str;
-        while (peek() != '"' && peek() != '\0') 
+        while (peek() != '"' && peek() != '\0')
         {
             str += peek();
             advance();
         }
-        if (peek() == '"') 
+        if (peek() == '"')
         {
             advance(); // consume closing quote
             return Token(Token::STRING, Range(start, location), str);
-        } 
-        else 
+        }
+        else
         {
             // unterminated string
             return Token(Token::JUNK, Range(start, location), str);
@@ -211,10 +211,10 @@ Token Tokenizer::lex()
 
     //-----------------------------------------------------------
     // identifiers and keywords
-    if (isalpha(c) || c == '_') 
+    if (isalpha(c) || c == '_')
     {
         string identifier;
-        while (isalnum(c) || c == '_') 
+        while (isalnum(c) || c == '_')
         {
             identifier += c;
             advance();
@@ -245,7 +245,7 @@ Token Tokenizer::lex()
 void Tokenizer::skipWhitespace()
 {
     char c = peek();
-    while (c != '\0' && isspace(c)) 
+    while (c != '\0' && isspace(c))
     {
         advance();
         c = peek();
@@ -259,7 +259,7 @@ char Tokenizer::peek() const
         return '\0'; // no input, return null character
     }
 
-    if (location.getPos() >= input->size()) 
+    if (location.getPos() >= input->size())
     {
         return '\0'; // out of bounds, return null character
     }
@@ -268,17 +268,17 @@ char Tokenizer::peek() const
 }
 
 void Tokenizer::advance()
-{   
+{
     if (!input)
     {
         return; // no input, do nothing
     }
 
-    if (location.getPos() < input->size() - 1) 
+    if (location.getPos() < input->size())
     {
         location.move(1); // move to the next character
-    } 
-    else 
+    }
+    else
     {
         if (!endOfFile)
         {
