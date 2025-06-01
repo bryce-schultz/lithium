@@ -7,7 +7,7 @@
 class CallNode : public ExpressionNode
 {
 public:
-    CallNode(ExpressionNode *callee, ArgListNode *args);
+    CallNode(ExpressionNode *callee, ArgListNode *args = nullptr);
 
     ExpressionNode *getCallee() const;
     ArgListNode *getArgs() const;

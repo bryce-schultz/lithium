@@ -16,7 +16,7 @@
 #define reset "\033[0m"
 
 #define error(msg) \
-    tokenError(msg, currentToken); \
+    tokenError(msg, currentToken, __FILE__, __LINE__); \
     hadError = true; \
     reject()
 
@@ -106,7 +106,7 @@ Result<Node> Parser::parse(const string &input, const string &filename)
     accept(result.node);
 }
 
-// stmts -> stmts stmt 
+// stmts -> stmts stmt
 //        | stmt
 Result<StatementsNode> Parser::parseStmts()
 {
@@ -310,6 +310,7 @@ Result<VarDeclNode> Parser::parseLetStmt()
     {
         expected("identifier");
     }
+    Token identifier = token;
     advanceToken(); // consume identifier
 
     token = peekToken();
@@ -333,7 +334,7 @@ Result<VarDeclNode> Parser::parseLetStmt()
     advanceToken(); // consume ';'
 
     // Create a variable declaration node with the identifier and the expression
-    VarDeclNode *varDecl = new VarDeclNode(token, exprResult.node);
+    VarDeclNode *varDecl = new VarDeclNode(identifier, exprResult.node);
     varDecl->setRangeStart(let.getRange().getStart());
 
     accept(varDecl);
@@ -354,6 +355,7 @@ Result<VarDeclNode> Parser::parseConstStmt()
     {
         expected("identifier");
     }
+    Token identifier = token;
     advanceToken(); // consume identifier
 
     token = peekToken();
@@ -377,7 +379,7 @@ Result<VarDeclNode> Parser::parseConstStmt()
     advanceToken(); // consume ';'
 
     // Create a variable declaration node with the identifier and the expression
-    VarDeclNode *varDecl = new VarDeclNode(token, exprResult.node);
+    VarDeclNode *varDecl = new VarDeclNode(identifier, exprResult.node, true);
     varDecl->setRangeStart(constToken.getRange().getStart());
 
     accept(varDecl);
@@ -444,7 +446,7 @@ Result<ExpressionNode> Parser::parseExpr()
     {
         reject();
     }
-    
+
     accept(result.node);
 }
 // expr' -> , assign expr'
@@ -463,7 +465,7 @@ Result<ExpressionNode> Parser::parseExprP(ExpressionNode *lhs)
     {
         reject();
     }
-    
+
     auto exprP = parseExprP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
     if (!exprP.success)
     {
@@ -508,7 +510,7 @@ Result<ExpressionNode> Parser::parseAssignP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseAssignP(new BinaryExpressionNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseAssignP(new AssignNode(lhs, rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -792,7 +794,7 @@ Result<ExpressionNode> Parser::parseMultP(ExpressionNode *lhs)
 // unary -> INC unary
 //        | DEC unary
 //        | + mult
-//        | - mult  
+//        | - mult
 //        | ! mult
 //        | post
 Result<ExpressionNode> Parser::parseUnary()
@@ -919,6 +921,14 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         Token openToken = token;
         advanceToken(); // consume '('
 
+        token = peekToken();
+
+        if (token == ')')
+        {
+            advanceToken(); // consume ')'
+            accept(new CallNode(lhs));
+        }
+
         auto argListResult = parseArgList();
         if (!argListResult.success)
         {
@@ -947,7 +957,7 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
 
         accept(new MemberAccessNode(lhs, token));
     }
-    
+
     else if (token.getType() == Token::IDENT)
     {
         advanceToken(); // consume identifier
@@ -958,7 +968,7 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         advanceToken(); // consume 'inc' or 'dec'
         accept(new BinaryExpressionNode(lhs, new OpNode(token), nullptr));
     }
-    
+
     reject();
 }
 // post'' -> post' post''
@@ -982,7 +992,7 @@ Result<ExpressionNode> Parser::parsePostPP(ExpressionNode *lhs)
     {
         reject();
     }
-    
+
     accept(result.node);
 }
 
@@ -1046,8 +1056,8 @@ Result<ExpressionNode> Parser::parsePrimary()
     }
     else if (token.getType() == Token::STRING)
     {
-        //advanceToken(); // consume string
-        //accept(new StringNode(token));
+        advanceToken(); // consume string
+        accept(new StringNode(token));
     }
 
     expected("primary expression");

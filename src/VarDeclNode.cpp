@@ -1,8 +1,9 @@
 #include "VarDeclNode.h"
 
-VarDeclNode::VarDeclNode(const Token &token, ExpressionNode *expr):
+VarDeclNode::VarDeclNode(const Token &token, ExpressionNode *expr, bool isConst):
     token(token)
 {
+    constFlag = isConst;
     setRange(token.getRange());
     if (expr)
     {
@@ -14,6 +15,16 @@ VarDeclNode::VarDeclNode(const Token &token, ExpressionNode *expr):
 const Token &VarDeclNode::getToken() const
 {
     return token;
+}
+
+string VarDeclNode::getName() const
+{
+    return token.getValue();
+}
+
+bool VarDeclNode::isConst() const
+{
+    return constFlag;
 }
 
 ExpressionNode *VarDeclNode::getExpr() const

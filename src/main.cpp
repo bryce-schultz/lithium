@@ -10,6 +10,8 @@
 #include "Utils.h"
 #include "Parser.h"
 #include "XmlVisitor.h"
+#include "Interpreter.h"
+#include "Environment.h"
 
 int runInteractiveMode();
 int runFileMode(const std::string &filename);
@@ -30,6 +32,7 @@ int main(int argc, char **argv)
 int runInteractiveMode()
 {
     Parser parser;
+    Environment env;
     //InterpreterVisitor interpreter;
     string line;
     while ((line = Utils::getInputLine()) != "exit")
@@ -37,10 +40,8 @@ int runInteractiveMode()
         Result<Node> result = parser.parse(line, "cin");
         if (result.success)
         {
-            XmlVisitor xmlVisitor;
-            xmlVisitor.visitAllChildren(result.node);
-
-            std::cout << xmlVisitor.getOutput();
+            Interpreter interpreter(&env);
+            interpreter.visitAllChildren(result.node);
             delete result.node; // Clean up the parsed node
         }
         line.clear();
@@ -69,10 +70,8 @@ int runFileMode(const string &filename)
         return 1;
     }
 
-    XmlVisitor xmlVisitor;
-    xmlVisitor.visitAllChildren(result.node);
-
-    std::cout << xmlVisitor.getOutput();
+    Interpreter interpreter;
+    interpreter.visitAllChildren(result.node);
     delete result.node; // clean up the parsed tree
 
     return 0;

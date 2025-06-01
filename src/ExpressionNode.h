@@ -6,8 +6,7 @@
 class ExpressionNode : public StatementNode
 {
 public:
-    virtual void visit(Visitor *visitor) override
-    {
-        visitor->visit(this);
-    }
+    virtual bool isVariable() const;
+
+    virtual void visit(Visitor *visitor) override;
 };

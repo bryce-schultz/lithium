@@ -144,3 +144,15 @@ void XmlVisitor::visit(MemberAccessNode *node)
     node->visitAllChildren(this);
     closeTag("MemberAccess");
 }
+
+void XmlVisitor::visit(AssignNode *node)
+{
+    openTag("Assign");
+    node->visitAllChildren(this);
+    closeTag("Assign");
+}
+
+void XmlVisitor::visit(StringNode *node)
+{
+    openTag("String", {"value=\"" + node->getValue() + "\""}, true);
+}

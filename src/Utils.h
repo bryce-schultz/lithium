@@ -14,12 +14,16 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace Utils
 {
     using std::string;
+    using std::vector;
 
     string readWholeFile(const string &filename);
 
     string getInputLine();
+
+    string join(const vector<string> &lines, const string &delimiter = "\n");
 }

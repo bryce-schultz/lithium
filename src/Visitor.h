@@ -24,6 +24,8 @@ class ArgListNode;
 class OpNode;
 class BlockNode;
 class MemberAccessNode;
+class StringNode;
+class AssignNode;
 
 class Visitor
 {
@@ -49,4 +51,6 @@ public:
     virtual void visit(OpNode *node);
     virtual void visit(BlockNode *node);
     virtual void visit(MemberAccessNode *node);
+    virtual void visit(StringNode *node);
+    virtual void visit(AssignNode *node);
 };

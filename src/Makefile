@@ -23,17 +23,21 @@ TEST_TOKENIZER_OBJS = test_tokenizer.o \
  Location.o \
  Node.o \
  Visitor.o \
- StatementsNode.o \
- BinaryExpressionNode.o \
- OpNode.o \
- VarExprNode.o \
- VarDeclNode.o \
- PrintStatementNode.o \
- ArgListNode.o \
+ ExpressionNode.o \
  NumberNode.o \
+ StringNode.o \
+ VarExprNode.o \
+ OpNode.o \
+ BinaryExpressionNode.o \
+ AssignNode.o \
  CallNode.o \
- BlockNode.o \
+ ArgListNode.o \
  MemberAccessNode.o \
+ PrintStatementNode.o \
+ VarDeclNode.o \
+ DeclNode.o \
+ BlockNode.o \
+ StatementsNode.o \
  XmlVisitor.o
 MAIN_OBJS = main.o \
  Utils.o \
@@ -44,19 +48,26 @@ MAIN_OBJS = main.o \
  Location.o \
  Node.o \
  Visitor.o \
- StatementsNode.o \
- BinaryExpressionNode.o \
- OpNode.o \
- VarExprNode.o \
- VarDeclNode.o \
- PrintStatementNode.o \
- ArgListNode.o \
+ ExpressionNode.o \
  NumberNode.o \
+ StringNode.o \
+ VarExprNode.o \
+ OpNode.o \
+ BinaryExpressionNode.o \
+ AssignNode.o \
  CallNode.o \
- BlockNode.o \
+ ArgListNode.o \
  MemberAccessNode.o \
+ PrintStatementNode.o \
+ VarDeclNode.o \
+ DeclNode.o \
+ BlockNode.o \
+ StatementsNode.o \
  XmlVisitor.o \
- Error.o
+ Error.o \
+ Interpreter.o \
+ Environment.o \
+ Value.o
 
 # Phony Targets:
 .PHONY: all clean
@@ -93,44 +104,66 @@ MemberAccessNode.o: MemberAccessNode.cpp MemberAccessNode.h \
 NumberNode.o: NumberNode.cpp NumberNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h Token.h
 XmlVisitor.o: XmlVisitor.cpp XmlVisitor.h Visitor.h Nodes.h Node.h \
- Range.h Location.h StatementNode.h StatementsNode.h ExpressionNode.h \
- BinaryExpressionNode.h OpNode.h Token.h ReturnStatementNode.h \
- VarExprNode.h VarDeclNode.h PrintStatementNode.h ArgListNode.h \
- NumberNode.h CallNode.h BlockNode.h MemberAccessNode.h
+ Range.h Location.h ExpressionNode.h StatementNode.h NumberNode.h Token.h \
+ StringNode.h VarExprNode.h OpNode.h BinaryExpressionNode.h AssignNode.h \
+ CallNode.h ArgListNode.h MemberAccessNode.h ReturnStatementNode.h \
+ PrintStatementNode.h VarDeclNode.h DeclNode.h BlockNode.h \
+ StatementsNode.h
 Range.o: Range.cpp Range.h Location.h
+AssignNode.o: AssignNode.cpp AssignNode.h ExpressionNode.h \
+ StatementNode.h Node.h Range.h Location.h Visitor.h Token.h
 ArgListNode.o: ArgListNode.cpp ArgListNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h
 Token.o: Token.cpp Token.h Range.h Location.h Node.h Visitor.h
+Value.o: Value.cpp Value.h StatementsNode.h Node.h Range.h Location.h \
+ Visitor.h StatementNode.h Environment.h Utils.h ExpressionNode.h
 Error.o: Error.cpp Error.h Range.h Location.h Token.h Color.h
+Interpreter.o: Interpreter.cpp Interpreter.h Visitor.h Environment.h \
+ Nodes.h Node.h Range.h Location.h ExpressionNode.h StatementNode.h \
+ NumberNode.h Token.h StringNode.h VarExprNode.h OpNode.h \
+ BinaryExpressionNode.h AssignNode.h CallNode.h ArgListNode.h \
+ MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
+ VarDeclNode.h DeclNode.h BlockNode.h StatementsNode.h Value.h Error.h \
+ Color.h
 CallNode.o: CallNode.cpp CallNode.h ArgListNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h
 StatementsNode.o: StatementsNode.cpp StatementsNode.h Node.h Range.h \
  Location.h Visitor.h StatementNode.h
+StringNode.o: StringNode.cpp StringNode.h ExpressionNode.h \
+ StatementNode.h Node.h Range.h Location.h Visitor.h Token.h
 test_tokenizer.o: test_tokenizer.cpp ctest.h Tokenizer.h Token.h Range.h \
  Location.h
 Tokenizer.o: Tokenizer.cpp Tokenizer.h Token.h Range.h Location.h
 Visitor.o: Visitor.cpp Visitor.h Nodes.h Node.h Range.h Location.h \
- StatementNode.h StatementsNode.h ExpressionNode.h BinaryExpressionNode.h \
- OpNode.h Token.h ReturnStatementNode.h VarExprNode.h VarDeclNode.h \
- PrintStatementNode.h ArgListNode.h NumberNode.h CallNode.h BlockNode.h \
- MemberAccessNode.h XmlVisitor.h
+ ExpressionNode.h StatementNode.h NumberNode.h Token.h StringNode.h \
+ VarExprNode.h OpNode.h BinaryExpressionNode.h AssignNode.h CallNode.h \
+ ArgListNode.h MemberAccessNode.h ReturnStatementNode.h \
+ PrintStatementNode.h VarDeclNode.h DeclNode.h BlockNode.h \
+ StatementsNode.h XmlVisitor.h
+ExpressionNode.o: ExpressionNode.cpp ExpressionNode.h StatementNode.h \
+ Node.h Range.h Location.h Visitor.h
+Environment.o: Environment.cpp Environment.h
 Location.o: Location.cpp Location.h
 Utils.o: Utils.cpp Utils.h
 OpNode.o: OpNode.cpp OpNode.h Node.h Range.h Location.h Visitor.h Token.h
 BlockNode.o: BlockNode.cpp BlockNode.h StatementNode.h Node.h Range.h \
  Location.h Visitor.h StatementsNode.h
 main.o: main.cpp Utils.h Parser.h Tokenizer.h Token.h Range.h Location.h \
- Nodes.h Node.h Visitor.h StatementNode.h StatementsNode.h \
- ExpressionNode.h BinaryExpressionNode.h OpNode.h ReturnStatementNode.h \
- VarExprNode.h VarDeclNode.h PrintStatementNode.h ArgListNode.h \
- NumberNode.h CallNode.h BlockNode.h MemberAccessNode.h XmlVisitor.h
+ Nodes.h Node.h Visitor.h ExpressionNode.h StatementNode.h NumberNode.h \
+ StringNode.h VarExprNode.h OpNode.h BinaryExpressionNode.h AssignNode.h \
+ CallNode.h ArgListNode.h MemberAccessNode.h ReturnStatementNode.h \
+ PrintStatementNode.h VarDeclNode.h DeclNode.h BlockNode.h \
+ StatementsNode.h XmlVisitor.h Interpreter.h Environment.h Value.h
 Parser.o: Parser.cpp Parser.h Tokenizer.h Token.h Range.h Location.h \
- Nodes.h Node.h Visitor.h StatementNode.h StatementsNode.h \
- ExpressionNode.h BinaryExpressionNode.h OpNode.h ReturnStatementNode.h \
- VarExprNode.h VarDeclNode.h PrintStatementNode.h ArgListNode.h \
- NumberNode.h CallNode.h BlockNode.h MemberAccessNode.h Error.h Color.h
-VarDeclNode.o: VarDeclNode.cpp VarDeclNode.h StatementNode.h Node.h \
- Range.h Location.h Visitor.h Token.h ExpressionNode.h
+ Nodes.h Node.h Visitor.h ExpressionNode.h StatementNode.h NumberNode.h \
+ StringNode.h VarExprNode.h OpNode.h BinaryExpressionNode.h AssignNode.h \
+ CallNode.h ArgListNode.h MemberAccessNode.h ReturnStatementNode.h \
+ PrintStatementNode.h VarDeclNode.h DeclNode.h BlockNode.h \
+ StatementsNode.h Error.h Color.h
+DeclNode.o: DeclNode.cpp DeclNode.h StatementNode.h Node.h Range.h \
+ Location.h Visitor.h
+VarDeclNode.o: VarDeclNode.cpp VarDeclNode.h DeclNode.h StatementNode.h \
+ Node.h Range.h Location.h Visitor.h Token.h ExpressionNode.h
 InterpretingVisitor.o: InterpretingVisitor.cpp
 PrintStatementNode.o: PrintStatementNode.cpp PrintStatementNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h ExpressionNode.h

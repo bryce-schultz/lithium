@@ -86,3 +86,13 @@ void Visitor::visit(MemberAccessNode *node)
 {
     node->visitAllChildren(this);
 }
+
+void Visitor::visit(StringNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(AssignNode *node)
+{
+    node->visitAllChildren(this);
+}

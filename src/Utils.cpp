@@ -70,3 +70,18 @@ string Utils::getInputLine()
     }
     return line;
 }
+
+string Utils::join(const vector<string> &lines, const string &delimiter)
+{
+    if (lines.empty())
+        return "";
+
+    string result;
+    for (const auto &line : lines)
+    {
+        if (!result.empty())
+            result += delimiter;
+        result += line;
+    }
+    return result;
+}
