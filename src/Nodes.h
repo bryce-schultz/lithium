@@ -19,6 +19,7 @@
 #include "AssignNode.h"
 #include "CallNode.h"
 #include "ArgListNode.h"
+#include "ParamListNode.h"
 #include "MemberAccessNode.h"
 
 #include "StatementNode.h"
@@ -28,3 +29,5 @@
 #include "DeclNode.h"
 #include "BlockNode.h"
 #include "StatementsNode.h"
+#include "IfStatementNode.h"
+#include "FuncDeclNode.h"

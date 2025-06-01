@@ -47,6 +47,7 @@ private:
     //       | whileStmt    - firsts: WHILE
     //       | ifStmt       - firsts: IF
     //       | block        - firsts: {
+    //       | funcDecl     - firsts: FN
     //       | returnStmt   - firsts: RETURN
     Result<StatementNode> parseStmt();
 
@@ -66,11 +67,22 @@ private:
 
     // ifStmt -> IF ( expr ) stmt
     //         | IF ( expr ) stmt ELSE stmt
-    //Result<IfStatementNode> parseIfStmt();
+    Result<IfStatementNode> parseIfStmt();
 
     // block -> { stmts }
     //        | { }
     Result<BlockNode> parseBlock();
+
+    // funcDecl -> FN IDENT ( paramList ) stmt;
+    //           | FN IDENT ( ) stmt;
+    Result<FuncDeclNode> parseFuncDecl();
+
+    // paramList -> IDENT paramList'
+    //            | ε
+    Result<ParamListNode> parseParamList();
+    // paramList' -> , IDENT paramList'
+    //             | ε
+    Result<ParamListNode> parseParamListP(VarDeclNode *lhs);
 
     // returnStmt -> RETURN expr ;
     //             | RETURN ;
@@ -154,7 +166,7 @@ private:
     // unary -> INC unary
     //        | DEC unary
     //        | + mult
-    //        | - mult  
+    //        | - mult
     //        | ! mult
     //        | post
     Result<ExpressionNode> parseUnary();
@@ -197,6 +209,7 @@ private:
     set<int> whileStmtFirsts;
     set<int> ifStmtFirsts;
     set<int> blockFirsts;
+    set<int> funcDeclFirsts;
     set<int> returnStmtFirsts;
     set<int> letStmtFirsts;
     set<int> constStmtFirsts;

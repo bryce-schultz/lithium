@@ -96,3 +96,13 @@ void Visitor::visit(AssignNode *node)
 {
     node->visitAllChildren(this);
 }
+
+void Visitor::visit(IfStatementNode *node)
+{
+    node->visitAllChildren(this);
+}
+
+void Visitor::visit(FuncDeclNode *node)
+{
+    node->visitAllChildren(this);
+}

@@ -4,6 +4,7 @@
 
 #include "StatementsNode.h"
 #include "Environment.h"
+#include "ParamListNode.h"
 
 using std::string;
 
@@ -25,8 +26,17 @@ public:
     Type getType() const;
 
     virtual string toString() const = 0; // makes this class abstract
+    virtual bool toBoolean() const; // Default implementation for converting to boolean
 protected:
     Type type;
+};
+
+class NullValue : public Value
+{
+public:
+    NullValue();
+
+    string toString() const override;
 };
 
 class NumberValue : public Value
@@ -37,7 +47,10 @@ public:
     double getValue() const;
     void setValue(double value);
 
-    string toString() const override;
+    bool isInteger() const; // Check if the number is an integer
+
+    virtual string toString() const override;
+    virtual bool toBoolean() const override;
 private:
     double value;
 };
@@ -51,6 +64,7 @@ public:
     void setValue(const string &value);
 
     string toString() const override;
+    bool toBoolean() const override; // Override toBoolean for string values
 private:
     string value;
 };
@@ -64,6 +78,7 @@ public:
     void setValue(bool value);
 
     string toString() const override;
+    bool toBoolean() const override; // Override toBoolean for boolean values
 private:
     bool value;
 };
@@ -71,27 +86,30 @@ private:
 class FunctionValue : public Value
 {
 public:
-    FunctionValue(const string &name, const vector<string> &parameters, Environment *environment, StatementsNode *body);
+    FunctionValue(const string &name, ParamListNode *parameters, StatementNode *body, Environment *environment);
+    FunctionValue(const FunctionValue &other) = delete; // Disable copy constructor
+    FunctionValue &operator=(const FunctionValue &other) = delete; // Disable copy assignment operator
+    FunctionValue(FunctionValue &&other) = default; // Enable move constructor
+    FunctionValue &operator=(FunctionValue &&other) = default; // Enable move assignment operator
 
     const string &getName() const;
     void setName(const string &name);
 
-    const vector<string> &getParameters() const;
-    void setParameters(const vector<string> &parameters);
-    void addParameter(const string &parameter);
+    ParamListNode *getParameters() const;
+    void setParameters(ParamListNode *parameters);
 
     Environment *getEnvironment() const;
     void setEnvironment(Environment *environment);
 
-    StatementsNode *getBody() const;
-    void setBody(StatementsNode *body);
+    StatementNode *getBody() const;
+    void setBody(StatementNode *body);
 
     string toString() const override;
 private:
     string name;
-    vector<string> parameters;
+    ParamListNode *parameters; // List of parameter names
+    StatementNode *body; // The function body as a list of statements
     Environment *environment; // The environment where the function is declared
-    StatementsNode *body; // The function body as a list of statements
 };
 
 class ObjectValue : public Value

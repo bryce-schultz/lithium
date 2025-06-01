@@ -30,11 +30,18 @@ public:
     virtual void visit(VarDeclNode *node) override;
     virtual void visit(VarExprNode *node) override;
     virtual void visit(AssignNode *node) override;
+    virtual void visit(BlockNode *node) override;
+    virtual void visit(IfStatementNode *node) override;
+    virtual void visit(FuncDeclNode *node) override;
 private:
+    std::shared_ptr<Value> evalBinaryExpression(ExpressionNode *left, OpNode *opNode, ExpressionNode *right);
     std::shared_ptr<Value> evalNumericBinaryExpression(std::shared_ptr<NumberValue> left, OpNode *opNode, std::shared_ptr<NumberValue> right);
     std::shared_ptr<Value> evalStringBinaryExpression(std::shared_ptr<Value> left, OpNode *opNode, std::shared_ptr<Value> right);
     std::shared_ptr<Value> evalBooleanBinaryExpression(std::shared_ptr<Value> left, OpNode *opNode, std::shared_ptr<Value> right);
+
+    std::shared_ptr<Value> evalUnaryExpression(ExpressionNode *expression, OpNode *opNode, bool prefix = false);
     std::shared_ptr<Value> evalNumericUnaryExpression(std::shared_ptr<NumberValue> value, OpNode *opNode, bool prefix = false);
+    std::shared_ptr<Value> evalVariableUnaryExpression(VarExprNode *expression, OpNode *opNode, bool prefix = false);
 private:
     Environment *env;
     std::shared_ptr<Value> returnValue;

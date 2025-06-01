@@ -40,7 +40,10 @@ int runInteractiveMode()
         Result<Node> result = parser.parse(line, "cin");
         if (result.success)
         {
+            //XmlVisitor xmlVisitor;
             Interpreter interpreter(&env);
+            //xmlVisitor.visitAllChildren(result.node);
+            //std::cout << xmlVisitor.getOutput() << std::endl; // Output XML representation
             interpreter.visitAllChildren(result.node);
             delete result.node; // Clean up the parsed node
         }

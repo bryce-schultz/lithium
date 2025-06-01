@@ -20,6 +20,8 @@ public:
 
     int getType() const;
 
+    const Token &getToken() const;
+
     void visit(Visitor *visitor) override;
 private:
     Token op;

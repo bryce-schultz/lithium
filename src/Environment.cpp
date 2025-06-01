@@ -72,6 +72,11 @@ Environment *Environment::resolve(const string &name) const
     return parent->resolve(name);
 }
 
+Environment *Environment::getParent() const
+{
+    return parent;
+}
+
 void Environment::dump() const
 {
     cout << "Environment dump:\n";

@@ -38,8 +38,9 @@ private:
 };
 
 string getErrorLineSquiggles(const Range &range);
-string getErrorLineTokenSquiggles(const Token &token, const Range &range);
+string getErrorLineLocationSquiggles(const Location &location, const Range &range);
 
 void tokenError(const string &msg, const Token &token, const string &cppFile = "", int cppLine = 0);
 void rangeError(const string &msg, const Range &range, const string &cppFile = "", int cppLine = 0);
 void tokenRangeError(const string &msg, const Token &token, const Range &range, const string &cppFile = "", int cppLine = 0);
+void locationRangeError(const string &msg, const Location &location, const Range &range, const string &cppFile = "", int cppLine = 0);

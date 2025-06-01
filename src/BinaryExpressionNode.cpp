@@ -1,9 +1,9 @@
 //**************************************************
-// File: BinaryExpressionNode.cpp
+// file: BinaryExpressionNode.cpp
 //
-// Author: Bryce Schultz
+// author: Bryce Schultz
 //
-// Purpose: Implements the BinaryExpressionNode class,
+// purpose: implements the BinaryExpressionNode class,
 // representing binary expressions in the AST.
 //**************************************************
 
@@ -18,7 +18,7 @@ BinaryExpressionNode::BinaryExpressionNode(ExpressionNode *left, OpNode *op, Exp
         setRangeStart(left->getRange().getStart());
 
     addChild(op);
-    
+
     addChild(right);
     if (right)
         setRangeEnd(right->getRange().getEnd());
@@ -35,7 +35,7 @@ ExpressionNode *BinaryExpressionNode::getLeft() const
 
 OpNode *BinaryExpressionNode::getOperator() const
 {
-    if (getChildCount() > 0)
+    if (getChildCount() > 1)
     {
         return dynamic_cast<OpNode*>(getChild(1));
     }
@@ -44,7 +44,7 @@ OpNode *BinaryExpressionNode::getOperator() const
 
 ExpressionNode *BinaryExpressionNode::getRight() const
 {
-    if (getChildCount() > 1)
+    if (getChildCount() > 2)
     {
         return dynamic_cast<ExpressionNode*>(getChild(2));
     }
@@ -53,12 +53,12 @@ ExpressionNode *BinaryExpressionNode::getRight() const
 
 bool BinaryExpressionNode::isUnary() const
 {
-    return getChildCount() == 1;
+    return getLeft() == nullptr || getRight() == nullptr;
 }
 
 bool BinaryExpressionNode::isPrefix() const
 {
-    return isUnary() && getLeft() == nullptr;
+    return getRight() != nullptr && getLeft() == nullptr;
 }
 
 void BinaryExpressionNode::visit(Visitor *visitor)

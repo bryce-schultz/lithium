@@ -3,6 +3,7 @@
 VarExprNode::VarExprNode(const Token &token):
     token(token)
 {
+    setRange(token.getRange());
 }
 
 const Token &VarExprNode::getToken() const

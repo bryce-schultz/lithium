@@ -156,3 +156,17 @@ void XmlVisitor::visit(StringNode *node)
 {
     openTag("String", {"value=\"" + node->getValue() + "\""}, true);
 }
+
+void XmlVisitor::visit(IfStatementNode *node)
+{
+    openTag("IfStatement");
+    node->visitAllChildren(this);
+    closeTag("IfStatement");
+}
+
+void XmlVisitor::visit(FuncDeclNode *node)
+{
+    openTag("FuncDecl", {"name=\"" + node->getName() + "\""}, false);
+    node->visitAllChildren(this);
+    closeTag("FuncDecl");
+}

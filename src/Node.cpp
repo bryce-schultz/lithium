@@ -16,11 +16,6 @@ Node::~Node()
 
 void Node::addChild(Node *child)
 {
-    if (!child) 
-    {
-        return;
-    }
-
     children.push_back(child);
 }
 
@@ -31,7 +26,7 @@ const vector<Node *> &Node::getChildren() const
 
 Node *Node::getChild(int index) const
 {
-    if (index < 0 || index >= static_cast<int>(children.size())) 
+    if (index < 0 || index >= static_cast<int>(children.size()))
     {
         return nullptr;
     }
@@ -41,7 +36,7 @@ Node *Node::getChild(int index) const
 
 void Node::setChild(int index, Node *child)
 {
-    if (index < 0 || index >= static_cast<int>(children.size()) || !child) 
+    if (index < 0 || index >= static_cast<int>(children.size()) || !child)
     {
         return;
     }
@@ -51,7 +46,7 @@ void Node::setChild(int index, Node *child)
 
 void Node::removeChild(int index)
 {
-    if (index < 0 || index >= static_cast<int>(children.size())) 
+    if (index < 0 || index >= static_cast<int>(children.size()))
     {
         return;
     }
@@ -61,7 +56,7 @@ void Node::removeChild(int index)
 
 void Node::clearChildren()
 {
-    for (Node *child : children) 
+    for (Node *child : children)
     {
         delete child; // parents have ownership of children
     }

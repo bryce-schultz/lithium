@@ -7,6 +7,11 @@ Value::Type Value::getType() const
     return type;
 }
 
+bool Value::toBoolean() const
+{
+    return type != Type::null;
+}
+
 NumberValue::NumberValue(double value):
     value(value)
 {
@@ -23,9 +28,23 @@ void NumberValue::setValue(double value)
     this->value = value;
 }
 
+bool NumberValue::isInteger() const
+{
+    return value == static_cast<int>(value);
+}
+
 string NumberValue::toString() const
 {
-    return std::to_string(value);
+    if (isInteger())
+    {
+        return std::to_string(static_cast<int>(value)); // Return as integer if it is an integer
+    }
+    return std::to_string(value); // Otherwise return as float
+}
+
+bool NumberValue::toBoolean() const
+{
+    return value != 0.0; // Non-zero numbers are true, zero is false
 }
 
 StringValue::StringValue(const string &value):
@@ -46,7 +65,12 @@ void StringValue::setValue(const string &value)
 
 string StringValue::toString() const
 {
-    return "\"" + value + "\"";
+    return value;
+}
+
+bool StringValue::toBoolean() const
+{
+    return !value.empty(); // Non-empty strings are true, empty strings are false
 }
 
 BooleanValue::BooleanValue(bool value):
@@ -70,14 +94,16 @@ string BooleanValue::toString() const
     return value ? "true" : "false";
 }
 
-FunctionValue::FunctionValue(const string &name,
-    const vector<string> &parameters,
-    Environment *environment,
-    StatementsNode *body):
+bool BooleanValue::toBoolean() const
+{
+    return value; // true is true, false is false
+}
+
+FunctionValue::FunctionValue(const string &name, ParamListNode *parameters, StatementNode *body, Environment *environment):
     name(name),
     parameters(parameters),
-    environment(environment),
-    body(body)
+    body(std::move(body)), // Transfer ownership of body
+    environment(environment)
 {
     type = Type::function;
 }
@@ -92,19 +118,14 @@ void FunctionValue::setName(const string &name)
     this->name = name;
 }
 
-const vector<string> &FunctionValue::getParameters() const
+ParamListNode *FunctionValue::getParameters() const
 {
     return parameters;
 }
 
-void FunctionValue::setParameters(const vector<string> &parameters)
+void FunctionValue::setParameters(ParamListNode *parameters)
 {
     this->parameters = parameters;
-}
-
-void FunctionValue::addParameter(const string &parameter)
-{
-    parameters.push_back(parameter);
 }
 
 Environment *FunctionValue::getEnvironment() const
@@ -117,20 +138,19 @@ void FunctionValue::setEnvironment(Environment *environment)
     this->environment = environment;
 }
 
-StatementsNode *FunctionValue::getBody() const
+StatementNode *FunctionValue::getBody() const
 {
     return body;
 }
 
-void FunctionValue::setBody(StatementsNode *body)
+void FunctionValue::setBody(StatementNode *body)
 {
     this->body = body;
 }
 
 string FunctionValue::toString() const
 {
-    string params = Utils::join(parameters, ", ");
-    return "function " + name + "(" + params + ")";
+    return "function " + name;
 }
 
 ObjectValue::ObjectValue()
@@ -171,4 +191,14 @@ string ObjectValue::toString() const
     }
     result += "}";
     return result;
+}
+
+NullValue::NullValue()
+{
+    type = Type::null;
+}
+
+string NullValue::toString() const
+{
+    return "null";
 }

@@ -19,6 +19,11 @@ int OpNode::getType() const
     return op.getType();
 }
 
+const Token &OpNode::getToken() const
+{
+    return op;
+}
+
 void OpNode::visit(Visitor *visitor)
 {
     visitor->visit(this);

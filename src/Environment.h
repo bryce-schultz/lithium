@@ -20,6 +20,7 @@ public:
     std::shared_ptr<Value> assign(const string &name, std::shared_ptr<Value> value);
     std::shared_ptr<Value> lookup(const string &name) const;
     Environment *resolve(const string &name) const;
+    Environment *getParent() const;
 
     void dump() const; // For debugging purposes, prints all variables and constants
 private:

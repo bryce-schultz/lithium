@@ -58,12 +58,12 @@ string getErrorLineSquiggles(const Range &range)
     return result;
 }
 
-string getErrorLineTokenSquiggles(const Token &token, const Range &range)
+string getErrorLineLocationSquiggles(const Location &location, const Range &range)
 {
     string line = range.getStart().getSourceLine();
     size_t start = range.getStart().getColumn() - 1; // Convert to 0-based index
     size_t end = range.getEnd().getColumn() - 1; // Convert to 0-based index
-    size_t tokenStart = token.getRange().getStart().getColumn() - 1; // Convert to 0-based index
+    size_t tokenStart = location.getColumn() - 1; // Convert to 0-based index
 
     if (start > line.length()) start = line.length() - 1;
     if (end > line.length()) end = line.length() - 1;
@@ -114,7 +114,21 @@ void tokenRangeError(const string &msg, const Token &token, const Range &range, 
 {
     stringstream ss;
     ss << red << "error" << reset << ": " << range.getStart().toString() << ": " << msg << "\n"
-    << getErrorLineTokenSquiggles(token, range);
+    << getErrorLineLocationSquiggles(token.getRange().getStart(), range);
+
+    if (!cppFile.empty() && cppLine > 0)
+    {
+        ss << "\n-> " << cppFile << ":" << cppLine;
+    }
+
+    cerr << ss.str() << endl;
+}
+
+void locationRangeError(const string &msg, const Location &location, const Range &range, const string &cppFile, int cppLine)
+{
+    stringstream ss;
+    ss << red << "error" << reset << ": " << location.toString() << ": " << msg << "\n"
+    << getErrorLineLocationSquiggles(location, range);
 
     if (!cppFile.empty() && cppLine > 0)
     {

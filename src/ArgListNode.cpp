@@ -11,8 +11,11 @@
 
 ArgListNode::ArgListNode(ExpressionNode *arg)
 {
-    setRangeStart(arg->getRange().getStart());
     addArg(arg);
+    if (arg)
+    {
+        setRangeStart(arg->getRange().getStart());
+    }
 }
 
 void ArgListNode::addArg(ExpressionNode *arg)
