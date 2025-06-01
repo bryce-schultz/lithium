@@ -13,7 +13,7 @@ Environment::Environment(Environment *parent):
 {
 }
 
-Value *Environment::declare(const string &name, Value *value, bool constant)
+std::shared_ptr<Value> Environment::declare(const string &name, std::shared_ptr<Value> value, bool constant)
 {
     if (hasVariable(name))
     {
@@ -31,7 +31,7 @@ Value *Environment::declare(const string &name, Value *value, bool constant)
     return value;
 }
 
-Value *Environment::assign(const string &name, Value *value)
+std::shared_ptr<Value> Environment::assign(const string &name, std::shared_ptr<Value> value)
 {
     Environment *env = resolve(name);
     if (!env)
@@ -50,7 +50,7 @@ Value *Environment::assign(const string &name, Value *value)
     return value; // Return the assigned value
 }
 
-Value *Environment::lookup(const string &name) const
+std::shared_ptr<Value> Environment::lookup(const string &name) const
 {
     const Environment *env = resolve(name);
     return env ? env->variables.at(name) : nullptr;

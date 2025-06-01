@@ -9,7 +9,7 @@
 #define errorAt(msg, token, range) \
     tokenRangeError(msg, token, range, __FILE__, __LINE__); \
 
-#define variableDefined(node) errorAt("variable " + node->getName() + " is not defined", node->getToken(), node->getRange())
+#define variableDefined(node) errorAt("variable " + node->getName() + " is already defined", node->getToken(), node->getRange())
 
 Interpreter::Interpreter(Environment *env)
 {
@@ -197,6 +197,10 @@ std::shared_ptr<Value> Interpreter::evalBooleanBinaryExpression(std::shared_ptr<
 
 std::shared_ptr<Value> Interpreter::evalNumericUnaryExpression(std::shared_ptr<NumberValue> value, OpNode *opNode, bool prefix)
 {
+    if (prefix)
+    {
+        // do nothing
+    }
     if (opNode->getType() == '-')
     {
         return std::make_shared<NumberValue>(-value->getValue());
@@ -207,7 +211,7 @@ std::shared_ptr<Value> Interpreter::evalNumericUnaryExpression(std::shared_ptr<N
 
 void Interpreter::visit(CallNode *node)
 {
-    vector<Value*> args;
+    vector<shared_ptr<Value>> args;
     if (node->getArgs())
     {
         for (Node *arg : node->getArgs()->getChildren())
@@ -222,47 +226,28 @@ void Interpreter::visit(CallNode *node)
 
     ExpressionNode *calleeNode = node->getCallee();
     calleeNode->visit(this);
-    Value *callee = returnValue;
+    shared_ptr<Value>callee = returnValue;
     if (!callee)
     {
-        for (Value *arg : args)
-        {
-            delete arg; // Clean up arguments
-        }
-        returnValue = nullptr; // or throw an error
+        returnValue = nullptr;
         return;
     }
 
     if (callee->getType() != Value::Type::function)
     {
-        delete callee;
-        for (Value *arg : args)
-        {
-            delete arg;
-        }
         returnValue = nullptr; // or throw an error
         return;
     }
 
-    FunctionValue *function = dynamic_cast<FunctionValue*>(callee);
+    FunctionValue *function = dynamic_cast<FunctionValue*>(callee.get());
     if (!function)
     {
-        delete callee;
-        for (Value *arg : args)
-        {
-            delete arg;
-        }
         returnValue = nullptr; // or throw an error
         return;
     }
 
     if (args.size() != function->getParameters().size())
     {
-        delete callee;
-        for (Value *arg : args)
-        {
-            delete arg;
-        }
         returnValue = nullptr; // or throw an error
         return;
     }
@@ -310,7 +295,7 @@ void Interpreter::visit(VarExprNode *node)
 void Interpreter::visit(AssignNode *node)
 {
     node->getExpr()->visit(this);
-    Value *value = returnValue;
+    shared_ptr<Value> value = returnValue;
 
     if (!node->getAsignee()->isVariable())
     {
