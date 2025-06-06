@@ -1,50 +1,62 @@
+//***********************************************
+// File: ParamListNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the ParamListNode class, which represents
+// a list of parameters in function declarations.
+//***********************************************
+
+#include <memory>
+#include <vector>
+#include <string>
+
 #include "ParamListNode.h"
 
-ParamListNode::ParamListNode(VarDeclNode *param)
+ParamListNode::ParamListNode(std::shared_ptr<VarDeclNode> param)
 {
     if (param)
     {
         addParam(param);
-        setRangeStart(param->getRange().getStart());
     }
 }
 
-void ParamListNode::addParam(VarDeclNode *param)
+void ParamListNode::addParam(shared_ptr<VarDeclNode> param)
 {
     if (param)
     {
-        addChild(param);
+        parameters.push_back(param);
+        if (parameters.size() == 1)
+        {
+            setRangeStart(param->getRange().getStart());
+        }
         setRangeEnd(param->getRange().getEnd());
     }
 }
 
-void ParamListNode::addAllParams(ParamListNode *params)
+void ParamListNode::addAllParams(shared_ptr<ParamListNode> params)
 {
-    if (!params) return;
-
-    for (int i = 0; i < params->getParamCount(); ++i)
+    if (params)
     {
-        VarDeclNode *param = params->getParam(i);
-        if (param)
+        for (const auto &param : params->parameters)
         {
             addParam(param);
-            setRangeEnd(param->getRange().getEnd());
         }
     }
 }
 
-VarDeclNode *ParamListNode::getParam(int index) const
+shared_ptr<VarDeclNode> ParamListNode::getParam(int index) const
 {
-    if (index < 0 || index >= getChildCount())
+    if (index < 0 || index >= static_cast<int>(parameters.size()))
     {
         return nullptr;
     }
-    return dynamic_cast<VarDeclNode*>(getChild(index));
+    return parameters[index];
 }
 
 int ParamListNode::getParamCount() const
 {
-    return getChildCount();
+    return static_cast<int>(parameters.size());
 }
 
 void ParamListNode::visit(Visitor *visitor)

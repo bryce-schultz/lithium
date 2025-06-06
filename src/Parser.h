@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <istream>
 #include <set>
@@ -19,12 +20,14 @@
 using std::string;
 using std::istream;
 using std::set;
+using std::shared_ptr;
+using std::make_shared;
 
 template<typename T>
 struct Result
 {
     bool success;
-    T *node;
+    shared_ptr<T> node;
 };
 
 class Parser
@@ -82,7 +85,7 @@ private:
     Result<ParamListNode> parseParamList();
     // paramList' -> , IDENT paramList'
     //             | ε
-    Result<ParamListNode> parseParamListP(VarDeclNode *lhs);
+    Result<ParamListNode> parseParamListP(shared_ptr<VarDeclNode> lhs);
 
     // returnStmt -> RETURN expr ;
     //             | RETURN ;
@@ -104,28 +107,28 @@ private:
     Result<ExpressionNode> parseExpr();
     // expr' -> , assign expr'
     //        | nothing
-    Result<ExpressionNode> parseExprP(ExpressionNode *lhs);
+    Result<ExpressionNode> parseExprP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // assign -> or assign'
     Result<ExpressionNode> parseAssign();
     // assign' -> = or assign'
     //          | nothing
-    Result<ExpressionNode> parseAssignP(ExpressionNode *lhs);
+    Result<ExpressionNode> parseAssignP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // or -> and or'
     Result<ExpressionNode> parseOr();
     // or' -> OR and or'
     //      | nothing
-    Result<ExpressionNode> parseOrP(ExpressionNode *lhs);
+    Result<ExpressionNode> parseOrP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // and -> equality and'
     Result<ExpressionNode> parseAnd();
     // and' -> AND equality and'
     //       | nothing
-    Result<ExpressionNode> parseAndP(ExpressionNode *lhs);
+    Result<ExpressionNode> parseAndP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // equality -> relation equality'
@@ -133,7 +136,7 @@ private:
     // equality' -> EQ relation equality'
     //            | NE relation equality'
     //            | nothing
-    Result<ExpressionNode> parseEqualityP(ExpressionNode *lhs);
+    Result<ExpressionNode> parseEqualityP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // relation -> addit relation'
@@ -143,7 +146,7 @@ private:
     //            | GE addit relation'
     //            | LE addit relation'
     //            | nothing
-    Result<ExpressionNode> parseRelationP(ExpressionNode *lhs);
+    Result<ExpressionNode> parseRelationP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // addit -> mult addit'
@@ -151,7 +154,7 @@ private:
     // addit' -> + mult addit'
     //         | - mult addit'
     //         | nothing
-    Result<ExpressionNode> parseAdditP(ExpressionNode *lhs);
+    Result<ExpressionNode> parseAdditP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // mult -> unary mult'
@@ -160,7 +163,7 @@ private:
     //        | / uanry mult'
     //        | % unary mult'
     //        | nothing
-    Result<ExpressionNode> parseMultP(ExpressionNode *lhs);
+    Result<ExpressionNode> parseMultP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // unary -> INC unary
@@ -178,7 +181,7 @@ private:
     //****************************************************
     // argList' -> , assign argList'
     //           | nothing
-    Result<ArgListNode> parseArgListP(ExpressionNode *lhs);
+    Result<ArgListNode> parseArgListP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // post -> primary post''
@@ -188,10 +191,10 @@ private:
     //        | . IDENT
     //        | INC
     //        | DEC
-    Result<ExpressionNode> parsePostP(ExpressionNode *lhs);
+    Result<ExpressionNode> parsePostP(shared_ptr<ExpressionNode> lhs);
     // post'' -> post' post''
     //         | ϵ
-    Result<ExpressionNode> parsePostPP(ExpressionNode *lhs);
+    Result<ExpressionNode> parsePostPP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // primary -> ( expr )

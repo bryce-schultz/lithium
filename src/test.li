@@ -1,25 +1,20 @@
-let a = 10;
+fn make_counter(init)
+{
+    let i = init;
 
-for (let i = 0; i < 10; i++) {
-    a += i;
+    fn count()
+    {
+        return i++;
+    }
+
+    return count;
 }
 
-let b = 20;
-
-
-for (let i = 0; i < 10; i++) {
-    b += i;
-}
-
-while (a < 100) {
-    a += 1;
-}
-
-while (b < 100) {
-    b += 1;
-}
-
-print(a);
-
-print(b);
-
+let counter = make_counter(0);
+let counter2 = make_counter(10);
+print(counter());
+print(counter2());
+print(counter());
+print(counter2());
+print(counter());
+print(counter2());

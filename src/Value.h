@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "StatementsNode.h"
 #include "Environment.h"
@@ -86,30 +87,20 @@ private:
 class FunctionValue : public Value
 {
 public:
-    FunctionValue(const string &name, ParamListNode *parameters, StatementNode *body, Environment *environment);
-    FunctionValue(const FunctionValue &other) = delete; // Disable copy constructor
-    FunctionValue &operator=(const FunctionValue &other) = delete; // Disable copy assignment operator
-    FunctionValue(FunctionValue &&other) = default; // Enable move constructor
-    FunctionValue &operator=(FunctionValue &&other) = default; // Enable move assignment operator
-
-    const string &getName() const;
-    void setName(const string &name);
-
-    ParamListNode *getParameters() const;
-    void setParameters(ParamListNode *parameters);
-
-    Environment *getEnvironment() const;
-    void setEnvironment(Environment *environment);
-
-    StatementNode *getBody() const;
-    void setBody(StatementNode *body);
-
-    string toString() const override;
+    FunctionValue(const std::string &name,
+                  std::shared_ptr<ParamListNode> params,
+                  std::shared_ptr<StatementNode> body,
+                  std::shared_ptr<Environment> closureEnv);
+    const std::string &getName() const;
+    std::shared_ptr<ParamListNode> getParameters() const;
+    std::shared_ptr<StatementNode> getBody() const;
+    std::shared_ptr<Environment> getEnvironment() const;
+    std::string toString() const override;
 private:
-    string name;
-    ParamListNode *parameters; // List of parameter names
-    StatementNode *body; // The function body as a list of statements
-    Environment *environment; // The environment where the function is declared
+    std::string name;
+    std::shared_ptr<ParamListNode> params;
+    std::shared_ptr<StatementNode> body;
+    std::shared_ptr<Environment> closureEnv;
 };
 
 class ObjectValue : public Value

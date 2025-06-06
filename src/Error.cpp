@@ -9,32 +9,6 @@
 
 #include "Error.h"
 
-Error::Error():
-    message(),
-    range()
-{ }
-
-Error::Error(const string &message, const Range &range):
-    message(message),
-    range(range)
-{
-}
-
-string Error::getMessage() const
-{
-    return message;
-}
-
-Range Error::getRange() const
-{
-    return range;
-}
-
-string Error::toString() const
-{
-    return "error: " + range.getStart().toString() + ": " + message;
-}
-
 string getErrorLineSquiggles(const Range &range)
 {
     string line = range.getStart().getSourceLine();
@@ -49,13 +23,14 @@ string getErrorLineSquiggles(const Range &range)
         end = start + 1; // ensure at least one character is highlighted, for expected end tokens like ';'
     }
 
-    string result = line + "\n";
-    result += string(start, ' ');
-    result += red + string(end - start, '~') + reset; // Add squiggles from start to end position
-    result += "\n";
-    result += string(start, ' ') + blodLightRed + "^" + reset; // Add caret at the start position
+    stringstream result;
+    result << "│  " << line << "\n│  ";
+    result << string(start, ' ');
+    result << red << string(end - start, '~') << reset; // Add squiggles from start to end position
+    result << "\n│  ";
+    result << string(start, ' ') << boldRed << "^" << reset; // Add caret at the start position
 
-    return result;
+    return result.str();
 }
 
 string getErrorLineLocationSquiggles(const Location &location, const Range &range)
@@ -73,13 +48,14 @@ string getErrorLineLocationSquiggles(const Location &location, const Range &rang
         end = start + 1; // ensure at least one character is highlighted, for expected end tokens like ';'
     }
 
-    string result = line + "\n";
-    result += string(start, ' ');
-    result += red + string(end - start, '~') + reset; // Add squiggles from start to end position
-    result += "\n";
-    result += string(tokenStart, ' ') + blodLightRed + "^" + reset; // Add caret at the start position
+    stringstream result;
+    result << "│  " << line << "\n│  ";
+    result << string(start, ' ');
+    result << red << string(end - start, '~') << reset; // Add squiggles from start to end position
+    result << "\n│  ";
+    result << string(tokenStart, ' ') << boldRed << "^" << reset; // Add caret at the start position
 
-    return result;
+    return result.str();
 }
 
 void tokenError(const string &msg, const Token &token, const string &cppFile, int cppLine)
@@ -90,7 +66,7 @@ void tokenError(const string &msg, const Token &token, const string &cppFile, in
 
     if (!cppFile.empty() && cppLine > 0)
     {
-        ss << "\n-> " << cppFile << ":" << cppLine;
+        ss <<  "\n╰─ @ " << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;
@@ -104,7 +80,7 @@ void rangeError(const string &msg, const Range &range, const string &cppFile, in
 
     if (!cppFile.empty() && cppLine > 0)
     {
-        ss << "\n-> " << cppFile << ":" << cppLine;
+        ss << "\n╰─ @ " << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;
@@ -118,7 +94,7 @@ void tokenRangeError(const string &msg, const Token &token, const Range &range, 
 
     if (!cppFile.empty() && cppLine > 0)
     {
-        ss << "\n-> " << cppFile << ":" << cppLine;
+        ss << "\n╰─ @ " << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;
@@ -132,7 +108,7 @@ void locationRangeError(const string &msg, const Location &location, const Range
 
     if (!cppFile.empty() && cppLine > 0)
     {
-        ss << "\n-> " << cppFile << ":" << cppLine;
+        ss << "\n╰─ @ " << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;

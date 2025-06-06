@@ -1,8 +1,20 @@
+//***********************************************
+// NumberNode.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the NumberNode class, which represents
+// a numeric literal in the abstract syntax tree (AST).
+//***********************************************
+
 #pragma once
 
+#include <memory>
 #include "ExpressionNode.h"
 #include "Visitor.h"
 #include "Token.h"
+
+using NumberNodePtr = std::shared_ptr<NumberNode>;
 
 class NumberNode : public ExpressionNode
 {

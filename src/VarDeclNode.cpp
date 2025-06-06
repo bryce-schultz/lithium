@@ -1,14 +1,16 @@
 #include "VarDeclNode.h"
 
-VarDeclNode::VarDeclNode(const Token &token, ExpressionNode *expr, bool isConst):
-    token(token)
+VarDeclNode::VarDeclNode(const Token &token,
+    std::shared_ptr<ExpressionNode> expr,
+    bool isConst):
+    token(token),
+    constFlag(isConst),
+    expr(std::move(expr))
 {
-    constFlag = isConst;
     setRange(token.getRange());
-    if (expr)
+    if (this->expr)
     {
-        addChild(expr);
-        setRangeEnd(expr->getRange().getEnd());
+        setRangeEnd(this->expr->getRange().getEnd());
     }
 }
 
@@ -17,23 +19,19 @@ const Token &VarDeclNode::getToken() const
     return token;
 }
 
-string VarDeclNode::getName() const
+const string &VarDeclNode::getName() const
 {
     return token.getValue();
+}
+
+std::shared_ptr<ExpressionNode> VarDeclNode::getExpr() const
+{
+    return expr;
 }
 
 bool VarDeclNode::isConst() const
 {
     return constFlag;
-}
-
-ExpressionNode *VarDeclNode::getExpr() const
-{
-    if (getChildCount() > 0)
-    {
-        return dynamic_cast<ExpressionNode*>(getChild(0));
-    }
-    return nullptr;
 }
 
 void VarDeclNode::visit(Visitor *visitor)

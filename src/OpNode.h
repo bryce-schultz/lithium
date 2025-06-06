@@ -9,12 +9,18 @@
 
 #pragma once
 
+#include <memory>
+
 #include "Node.h"
 #include "Token.h"
 #include "Visitor.h"
 
+using std::shared_ptr;
+
 class OpNode : public Node
 {
+public:
+    using Ptr = shared_ptr<OpNode>;
 public:
     OpNode(Token op);
 
@@ -26,3 +32,5 @@ public:
 private:
     Token op;
 };
+
+using OpNodePtr = shared_ptr<OpNode>;

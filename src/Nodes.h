@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "Node.h"
 #include "ExpressionNode.h"
 #include "NumberNode.h"
@@ -32,3 +34,5 @@
 #include "IfStatementNode.h"
 #include "WhileNode.h"
 #include "FuncDeclNode.h"
+
+// All AST node classes will now use std::shared_ptr for children and relationships.

@@ -12,6 +12,7 @@
 OpNode::OpNode(Token op):
     op(op)
 {
+    setRange(op.getRange());
 }
 
 int OpNode::getType() const

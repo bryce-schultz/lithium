@@ -9,64 +9,9 @@
 
 #include "Node.h"
 
-Node::~Node()
-{
-    clearChildren(); // Ensure all children are deleted
-}
-
-void Node::addChild(Node *child)
-{
-    children.push_back(child);
-}
-
-const vector<Node *> &Node::getChildren() const
-{
-    return children;
-}
-
-Node *Node::getChild(int index) const
-{
-    if (index < 0 || index >= static_cast<int>(children.size()))
-    {
-        return nullptr;
-    }
-
-    return children[index];
-}
-
-void Node::setChild(int index, Node *child)
-{
-    if (index < 0 || index >= static_cast<int>(children.size()) || !child)
-    {
-        return;
-    }
-
-    children[index] = child;
-}
-
-void Node::removeChild(int index)
-{
-    if (index < 0 || index >= static_cast<int>(children.size()))
-    {
-        return;
-    }
-
-    children.erase(children.begin() + index);
-}
-
-void Node::clearChildren()
-{
-    for (Node *child : children)
-    {
-        delete child; // parents have ownership of children
-    }
-    children.clear();
-}
-
-int Node::getChildCount() const
-{
-    return static_cast<int>(children.size());
-}
+Node::Node():
+    range()
+{ }
 
 Range Node::getRange() const
 {
@@ -92,15 +37,4 @@ void Node::setRangeStart(const Location &start)
 void Node::setRangeEnd(const Location &end)
 {
     range.setEnd(end);
-}
-
-void Node::visitAllChildren(Visitor *visitor)
-{
-    for (Node *child : children) 
-    {
-        if (child) 
-        {
-            child->visit(visitor);
-        }
-    }
 }

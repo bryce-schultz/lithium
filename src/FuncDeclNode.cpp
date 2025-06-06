@@ -1,17 +1,31 @@
+//***********************************************
+// File: FuncDeclNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the FuncDeclNode class, which represents
+// a function declaration in the abstract syntax tree (AST).
+//**************************************************
+
+#include <memory>
+#include <string>
+
 #include "FuncDeclNode.h"
 
-FuncDeclNode::FuncDeclNode(const Token &token, ParamListNode *params, StatementNode *body):
-    token(token)
+FuncDeclNode::FuncDeclNode(const Token &token,
+    std::shared_ptr<ParamListNode> params,
+    std::shared_ptr<StatementNode> body):
+    token(token),
+    params(params),
+    body(body)
 {
     setRange(token.getRange());
 
-    addChild(params);
     if (params)
     {
         setRangeStart(params->getRange().getStart());
     }
 
-    addChild(body);
     if (body)
     {
         setRangeEnd(body->getRange().getEnd());
@@ -23,48 +37,33 @@ const Token &FuncDeclNode::getToken() const
     return token;
 }
 
-string FuncDeclNode::getName() const
+const string &FuncDeclNode::getName() const
 {
     return token.getValue();
 }
 
-ParamListNode *FuncDeclNode::getParams() const
+std::shared_ptr<ParamListNode> FuncDeclNode::getParams() const
 {
-    if (getChildCount() > 0)
-    {
-        return dynamic_cast<ParamListNode*>(getChild(0));
-    }
-    return nullptr;
+    return params;
 }
 
-StatementNode *FuncDeclNode::getBody() const
+std::shared_ptr<StatementNode> FuncDeclNode::getBody() const
 {
-    if (getChildCount() > 1)
-    {
-        return dynamic_cast<StatementNode*>(getChild(1));
-    }
-    return nullptr;
+    return body;
 }
 
-void FuncDeclNode::dropBody()
+void FuncDeclNode::setParams(std::shared_ptr<ParamListNode> p)
 {
-    if (getChildCount() > 1)
-    {
-        removeChild(1); // Remove the body node
-    }
+    params = p;
 }
 
-void FuncDeclNode::dropParams()
+void FuncDeclNode::setBody(std::shared_ptr<StatementNode> b)
 {
-    if (getChildCount() > 0)
-    {
-        removeChild(0); // Remove the parameters node
-    }
+    body = b;
 }
 
 bool FuncDeclNode::isConst() const
 {
-    // Function declarations are not const by default
     return false;
 }
 

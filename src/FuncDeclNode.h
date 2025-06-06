@@ -1,29 +1,46 @@
+//***********************************************
+// File: FuncDeclNode.h
+//
+// Author: Bryce Schultz
+//
+// Purpose: Declares the FuncDeclNode class, which represents
+// a function declaration in the abstract syntax tree (AST).
+//**************************************************
+
 #pragma once
+
+#include <memory>
 
 #include "DeclNode.h"
 #include "Token.h"
 #include "ParamListNode.h"
 #include "BlockNode.h"
 
+using std::shared_ptr;
+using std::string;
+
 class FuncDeclNode : public DeclNode
 {
 public:
-    FuncDeclNode(const Token &token, ParamListNode *params, StatementNode *body);
+    FuncDeclNode(const Token &token, shared_ptr<ParamListNode> params, shared_ptr<StatementNode> body);
 
     const Token &getToken() const;
 
-    virtual string getName() const override;
+    virtual const string &getName() const override;
 
-    ParamListNode *getParams() const;
+    shared_ptr<ParamListNode> getParams() const;
 
-    StatementNode *getBody() const;
+    shared_ptr<StatementNode> getBody() const;
 
-    void dropBody(); // drop so they don't get deleted
-    void dropParams(); // drop so they don't get deleted
+    void setParams(shared_ptr<ParamListNode> params);
+
+    void setBody(shared_ptr<StatementNode> body);
 
     virtual bool isConst() const override;
 
     virtual void visit(Visitor *visitor) override;
 private:
     Token token;
+    shared_ptr<ParamListNode> params;
+    shared_ptr<StatementNode> body;
 };

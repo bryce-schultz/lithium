@@ -9,52 +9,56 @@
 
 #include "ArgListNode.h"
 
-ArgListNode::ArgListNode(ExpressionNode *arg)
+ArgListNode::ArgListNode(shared_ptr<ExpressionNode> arg):
+    args()
 {
-    addArg(arg);
     if (arg)
     {
-        setRangeStart(arg->getRange().getStart());
+        addArg(arg);
     }
 }
 
-void ArgListNode::addArg(ExpressionNode *arg)
+void ArgListNode::addArg(shared_ptr<ExpressionNode> arg)
 {
     if (arg)
     {
-        addChild(arg);
+        args.push_back(arg);
+        if (args.size() == 1)
+        {
+            setRangeStart(arg->getRange().getStart());
+        }
         setRangeEnd(arg->getRange().getEnd());
     }
 }
 
-void ArgListNode::addAllArgs(ArgListNode *args)
+void ArgListNode::addAllArgs(shared_ptr<ArgListNode> other)
 {
-    if (args)
+    if (other)
     {
-        for (int i = 0; i < args->getArgCount(); ++i)
+        for (const auto &arg : other->args)
         {
-            ExpressionNode *arg = args->getArg(i);
-            if (arg)
-            {
-                addArg(arg);
-                setRangeEnd(arg->getRange().getEnd());
-            }
+            addArg(arg);
         }
     }
 }
 
-ExpressionNode *ArgListNode::getArg(int index) const
+shared_ptr<ExpressionNode> ArgListNode::getArg(int index) const
 {
-    if (index < 0 || index >= getChildCount())
+    if (index < 0 || index >= static_cast<int>(args.size()))
     {
         return nullptr;
     }
-    return dynamic_cast<ExpressionNode*>(getChild(index));
+    return args[index];
 }
 
 int ArgListNode::getArgCount() const
 {
-    return getChildCount();
+    return static_cast<int>(args.size());
+}
+
+const vector<shared_ptr<ExpressionNode>> &ArgListNode::getArgs() const
+{
+    return args;
 }
 
 void ArgListNode::visit(Visitor *visitor)

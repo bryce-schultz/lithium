@@ -12,6 +12,7 @@
 #include "XmlVisitor.h"
 #include "Interpreter.h"
 #include "Environment.h"
+#include "SemanticErrorVisitor.h"
 
 int runInteractiveMode();
 int runFileMode(const std::string &filename);
@@ -33,20 +34,27 @@ int runInteractiveMode()
 {
     Parser parser;
     Environment env;
-    //InterpreterVisitor interpreter;
     string line;
     while ((line = Utils::getInputLine()) != "exit")
     {
         Result<Node> result = parser.parse(line, "cin");
-        if (result.success)
+        if (!result.success)
         {
-            //XmlVisitor xmlVisitor;
-            Interpreter interpreter(&env);
-            //xmlVisitor.visitAllChildren(result.node);
-            //std::cout << xmlVisitor.getOutput() << std::endl; // Output XML representation
-            interpreter.visitAllChildren(result.node);
-            delete result.node; // Clean up the parsed node
+            continue;
         }
+
+        SemanticErrorVisitor semanticVisitor;
+        semanticVisitor.visitAllChildren(result.node.get());
+        if (semanticVisitor.hasErrors())
+        {
+            continue;
+        }
+
+        //XmlVisitor xmlVisitor;
+        Interpreter interpreter(std::make_shared<Environment>(env)); // Use the shared environment
+        //xmlVisitor.visitAllChildren(result.node);
+        //std::cout << xmlVisitor.getOutput() << std::endl; // Output XML representation
+        interpreter.visitAllChildren(result.node.get());
         line.clear();
     }
 
@@ -73,9 +81,15 @@ int runFileMode(const string &filename)
         return 1;
     }
 
+    SemanticErrorVisitor semanticVisitor;
+    semanticVisitor.visitAllChildren(result.node.get());
+    if (semanticVisitor.hasErrors())
+    {
+        return 1;
+    }
+
     Interpreter interpreter;
-    interpreter.visitAllChildren(result.node);
-    delete result.node; // clean up the parsed tree
+    interpreter.visitAllChildren(result.node.get());
 
     return 0;
 }

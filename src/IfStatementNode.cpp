@@ -1,45 +1,48 @@
+//***********************************************
+// File: IfStatementNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the IfStatementNode class,
+// which represents if statements in the abstract syntax tree (AST).
+//**************************************************
+
+#include <memory>
+
 #include "IfStatementNode.h"
 
-IfStatementNode::IfStatementNode(ExpressionNode *condition, StatementNode *thenBranch, StatementNode *elseBranch)
+IfStatementNode::IfStatementNode(shared_ptr<ExpressionNode> condition, shared_ptr<StatementNode> thenBranch, shared_ptr<StatementNode> elseBranch):
+    condition(condition),
+    thenBranch(thenBranch),
+    elseBranch(elseBranch)
 {
-    setRangeStart(condition->getRange().getStart());
-    addChild(condition);
-
-    setRangeEnd(thenBranch->getRange().getEnd());
-    addChild(thenBranch);
-
+    if (condition)
+    {
+        setRangeStart(condition->getRange().getStart());
+    }
+    if (thenBranch)
+    {
+        setRangeEnd(thenBranch->getRange().getEnd());
+    }
     if (elseBranch)
     {
-        addChild(elseBranch);
         setRangeEnd(elseBranch->getRange().getEnd());
     }
 }
 
-ExpressionNode *IfStatementNode::getCondition() const
+shared_ptr<ExpressionNode> IfStatementNode::getCondition() const
 {
-    if (getChildCount() > 0)
-    {
-        return dynamic_cast<ExpressionNode*>(getChild(0));
-    }
-    return nullptr;
+    return condition;
 }
 
-StatementNode *IfStatementNode::getThenBranch() const
+shared_ptr<StatementNode> IfStatementNode::getThenBranch() const
 {
-    if (getChildCount() > 1)
-    {
-        return dynamic_cast<StatementNode*>(getChild(1));
-    }
-    return nullptr;
+    return thenBranch;
 }
 
-StatementNode *IfStatementNode::getElseBranch() const
+shared_ptr<StatementNode> IfStatementNode::getElseBranch() const
 {
-    if (getChildCount() > 2)
-    {
-        return dynamic_cast<StatementNode*>(getChild(2));
-    }
-    return nullptr;
+    return elseBranch;
 }
 
 void IfStatementNode::visit(Visitor *visitor)

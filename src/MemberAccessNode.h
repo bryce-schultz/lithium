@@ -8,19 +8,29 @@
 //**************************************************
 #pragma once
 
+#include <memory>
+
 #include "ExpressionNode.h"
 #include "Token.h"
+
+using std::shared_ptr;
+using std::string;
 
 class MemberAccessNode : public ExpressionNode
 {
 public:
-    MemberAccessNode(ExpressionNode *expression, const Token &identifier);
+    using Ptr = shared_ptr<MemberAccessNode>;
+public:
+    MemberAccessNode(shared_ptr<ExpressionNode> expression, const Token &identifier);
 
-    ExpressionNode *getExpression() const;
+    shared_ptr<ExpressionNode> getExpression() const;
 
     const Token &getIdentifier() const;
 
     void visit(Visitor *visitor) override;
 private:
+    shared_ptr<ExpressionNode> expression;
     Token identifier;
 };
+
+using MemberAccessNodePtr = shared_ptr<MemberAccessNode>;

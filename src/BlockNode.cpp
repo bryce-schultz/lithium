@@ -9,13 +9,18 @@
 
 #include "BlockNode.h"
 
-BlockNode::BlockNode(StatementsNode *statements)
+BlockNode::BlockNode(shared_ptr<StatementsNode> statements):
+    statements(statements)
 {
     if (statements)
     {
-        addChild(statements);
         setRange(statements->getRange());
     }
+}
+
+shared_ptr<StatementsNode> BlockNode::getStatements() const
+{
+    return statements;
 }
 
 void BlockNode::visit(Visitor *visitor)

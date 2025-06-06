@@ -7,28 +7,29 @@
 // represents member access expressions in the AST.
 //**************************************************
 
+#include <memory>
+#include <string>
+
 #include "MemberAccessNode.h"
 
-MemberAccessNode::MemberAccessNode(ExpressionNode *expression, const Token &identifier):
-    identifier(identifier)
+MemberAccessNode::MemberAccessNode(shared_ptr<ExpressionNode> expression, const Token &identifier): 
+    expression(expression), identifier(identifier)
 {
-    addChild(expression);
-    setRangeStart(expression->getRange().getStart());
+    if (this->expression)
+    {
+        setRangeStart(this->expression->getRange().getStart());
+    }
     setRangeEnd(identifier.getRange().getEnd());
+}
+
+shared_ptr<ExpressionNode> MemberAccessNode::getExpression() const
+{
+    return expression;
 }
 
 const Token &MemberAccessNode::getIdentifier() const
 {
     return identifier;
-}
-
-ExpressionNode *MemberAccessNode::getExpression() const
-{
-    if (getChildCount() > 0)
-    {
-        return static_cast<ExpressionNode *>(getChild(0));
-    }
-    return nullptr;
 }
 
 void MemberAccessNode::visit(Visitor *visitor)

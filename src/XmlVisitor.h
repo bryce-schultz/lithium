@@ -25,9 +25,7 @@ public:
     virtual void visitAllChildren(Node *node) override;
     std::string getOutput() const;
 public:
-    void visit(StatementNode *node) override;
     void visit(StatementsNode *node) override;
-    void visit(ExpressionNode *node) override;
     void visit(ReturnStatementNode *node) override;
     void visit(VarExprNode *node) override;
     void visit(VarDeclNode *node) override;

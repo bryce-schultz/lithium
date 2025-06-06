@@ -9,14 +9,25 @@
 
 #pragma once
 
+#include <memory>
+
 #include "StatementNode.h"
 #include "StatementsNode.h"
+
+using std::shared_ptr;
 
 class BlockNode : public StatementNode
 {
 public:
-    BlockNode(StatementsNode *statements = nullptr);
+    using Ptr = shared_ptr<BlockNode>;
+public:
+    BlockNode(shared_ptr<StatementsNode> statements = nullptr);
 
-    // Visit method for the visitor pattern
+    shared_ptr<StatementsNode> getStatements() const;
+
     virtual void visit(Visitor *visitor) override;
+private:
+    shared_ptr<StatementsNode> statements;
 };
+
+using BlockNodePtr = shared_ptr<BlockNode>;

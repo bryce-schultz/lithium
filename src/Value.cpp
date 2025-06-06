@@ -99,11 +99,11 @@ bool BooleanValue::toBoolean() const
     return value; // true is true, false is false
 }
 
-FunctionValue::FunctionValue(const string &name, ParamListNode *parameters, StatementNode *body, Environment *environment):
-    name(name),
-    parameters(parameters),
-    body(std::move(body)), // Transfer ownership of body
-    environment(environment)
+FunctionValue::FunctionValue(const std::string &name,
+                             std::shared_ptr<ParamListNode> params,
+                             std::shared_ptr<StatementNode> body,
+                             std::shared_ptr<Environment> closureEnv)
+    : name(name), params(params), body(body), closureEnv(closureEnv)
 {
     type = Type::function;
 }
@@ -113,44 +113,13 @@ const string &FunctionValue::getName() const
     return name;
 }
 
-void FunctionValue::setName(const string &name)
-{
-    this->name = name;
-}
-
-ParamListNode *FunctionValue::getParameters() const
-{
-    return parameters;
-}
-
-void FunctionValue::setParameters(ParamListNode *parameters)
-{
-    this->parameters = parameters;
-}
-
-Environment *FunctionValue::getEnvironment() const
-{
-    return environment;
-}
-
-void FunctionValue::setEnvironment(Environment *environment)
-{
-    this->environment = environment;
-}
-
-StatementNode *FunctionValue::getBody() const
-{
-    return body;
-}
-
-void FunctionValue::setBody(StatementNode *body)
-{
-    this->body = body;
-}
+std::shared_ptr<ParamListNode> FunctionValue::getParameters() const { return params; }
+std::shared_ptr<StatementNode> FunctionValue::getBody() const { return body; }
+std::shared_ptr<Environment> FunctionValue::getEnvironment() const { return closureEnv; }
 
 string FunctionValue::toString() const
 {
-    return "function " + name;
+    return "<function " + name + ">";
 }
 
 ObjectValue::ObjectValue()

@@ -3,6 +3,7 @@
 #include "Value.h"
 #include "Error.h"
 #include "Utils.h"
+#include <exception>
 
 #define MAX_PEEK 25
 
@@ -19,11 +20,26 @@
 
 #define variableNotDefined(node) errorAtToken("variable '" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
 
-Interpreter::Interpreter(Environment *env)
+// Exception to handle function returns
+struct ReturnException : public std::exception
+{
+    std::shared_ptr<Value> value;
+    Range range;
+    ReturnException(std::shared_ptr<Value> val, Range range = {}): value(val), range(range) {}
+};
+
+// Exception to handle exit calls
+struct ExitException : public std::exception
+{
+    int exitCode;
+    ExitException(int code = 0): exitCode(code) {}
+};
+
+Interpreter::Interpreter(std::shared_ptr<Environment> env)
 {
     if (!env)
     {
-        this->env = new Environment(); // Create a new environment if none is provided
+        this->env = std::make_shared<Environment>(); // Create a new environment if none is provided
     }
     else
     {
@@ -36,28 +52,14 @@ void Interpreter::visitAllChildren(Node *node)
     node->visit(this);
 }
 
-void Interpreter::visit(StatementNode *node)
-{
-    node->visitAllChildren(this);
-}
-
 void Interpreter::visit(StatementsNode *node)
 {
-    for (int i = 0; i < node->getChildCount(); ++i)
+    for (auto &statement : node->getStatements())
     {
-        Node *child = node->getChild(i);
-        if (child)
+        if (statement)
         {
             returnValue = nullptr;
-            child->visit(this);
-            if (!returnValue) continue;
-
-            // if a statement returns a value we will assume it is to be printed
-            if (returnValue->getType() != Value::Type::null)
-            {
-                cout << returnValue->toString() << "\n";
-            }
-            // No need to delete returnValue, shared_ptr handles it
+            statement->visit(this);
         }
     }
 }
@@ -102,7 +104,7 @@ void Interpreter::visit(BinaryExprNode *node)
     }
 }
 
-std::shared_ptr<Value> Interpreter::evalBinaryExpression(ExpressionNode *left, OpNode *opNode, ExpressionNode *right)
+std::shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right)
 {
     left->visit(this);
     auto leftValue = returnValue;
@@ -129,17 +131,23 @@ std::shared_ptr<Value> Interpreter::evalBinaryExpression(ExpressionNode *left, O
     }
     else if (leftValue->getType() == Value::Type::string && rightValue->getType() == Value::Type::string)
     {
-        return evalStringBinaryExpression(leftValue, opNode, rightValue);
+        return evalStringBinaryExpression(
+            std::dynamic_pointer_cast<StringValue>(leftValue),
+            opNode,
+            std::dynamic_pointer_cast<StringValue>(rightValue));
     }
     else if (leftValue->getType() == Value::Type::boolean && rightValue->getType() == Value::Type::boolean)
     {
-        return evalBooleanBinaryExpression(leftValue, opNode, rightValue);
+        return evalBooleanBinaryExpression(
+            std::dynamic_pointer_cast<BooleanValue>(leftValue),
+            opNode,
+            std::dynamic_pointer_cast<BooleanValue>(rightValue));
     }
     // Add more type checks as needed
     return nullptr; // Unsupported operation
 }
 
-std::shared_ptr<Value> Interpreter::evalNumericBinaryExpression(std::shared_ptr<NumberValue> left, OpNode *opNode, std::shared_ptr<NumberValue> right)
+std::shared_ptr<Value> Interpreter::evalNumericBinaryExpression(shared_ptr<NumberValue> left, shared_ptr<OpNode> opNode, shared_ptr<NumberValue> right)
 {
     if (opNode->getType() == '+')
     {
@@ -170,20 +178,18 @@ std::shared_ptr<Value> Interpreter::evalNumericBinaryExpression(std::shared_ptr<
     return nullptr; // Unsupported operation
 }
 
-std::shared_ptr<Value> Interpreter::evalStringBinaryExpression(std::shared_ptr<Value> left, OpNode *opNode, std::shared_ptr<Value> right)
+std::shared_ptr<Value> Interpreter::evalStringBinaryExpression(shared_ptr<StringValue> left, shared_ptr<OpNode> opNode, shared_ptr<StringValue> right)
 {
     if (opNode->getType() == '+')
     {
         // Concatenate strings
-        return std::make_shared<StringValue>(
-            std::dynamic_pointer_cast<StringValue>(left)->getValue() +
-            std::dynamic_pointer_cast<StringValue>(right)->getValue());
+        return std::make_shared<StringValue>(left->getValue() + right->getValue());
     }
     // Add more string operations as needed
     return nullptr; // Unsupported operation
 }
 
-std::shared_ptr<Value> Interpreter::evalBooleanBinaryExpression(std::shared_ptr<Value> left, OpNode *opNode, std::shared_ptr<Value> right)
+std::shared_ptr<Value> Interpreter::evalBooleanBinaryExpression(shared_ptr<BooleanValue> left, shared_ptr<OpNode> opNode, shared_ptr<BooleanValue> right)
 {
     if (opNode->getType() == Token::AND)
     {
@@ -201,11 +207,11 @@ std::shared_ptr<Value> Interpreter::evalBooleanBinaryExpression(std::shared_ptr<
     return nullptr; // Unsupported operation
 }
 
-std::shared_ptr<Value> Interpreter::evalUnaryExpression(ExpressionNode *expression, OpNode *opNode, bool prefix)
+std::shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix)
 {
-    if (expression->isVariable())
+    if (expression->isLval())
     {
-        auto varExpr = dynamic_cast<VarExprNode*>(expression);
+        shared_ptr<VarExprNode> varExpr = std::dynamic_pointer_cast<VarExprNode>(expression);
         if (!varExpr)
         {
             error("expected variable expression", expression->getRange());
@@ -231,7 +237,7 @@ std::shared_ptr<Value> Interpreter::evalUnaryExpression(ExpressionNode *expressi
     return nullptr; // Unsupported operation
 }
 
-std::shared_ptr<Value> Interpreter::evalNumericUnaryExpression(std::shared_ptr<NumberValue> value, OpNode *opNode, bool prefix)
+std::shared_ptr<Value> Interpreter::evalNumericUnaryExpression(shared_ptr<NumberValue> value, shared_ptr<OpNode> opNode, bool prefix)
 {
     if (opNode->getType() == '-' && prefix)
     {
@@ -241,7 +247,7 @@ std::shared_ptr<Value> Interpreter::evalNumericUnaryExpression(std::shared_ptr<N
     return nullptr; // Unsupported operation
 }
 
-std::shared_ptr<Value> Interpreter::evalVariableUnaryExpression(VarExprNode *expression, OpNode *opNode, bool prefix)
+std::shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix)
 {
     if (opNode->getType() == Token::INC)
     {
@@ -300,7 +306,7 @@ void Interpreter::visit(CallNode *node)
     vector<shared_ptr<Value>> args;
     if (node->getArgs())
     {
-        for (Node *arg : node->getArgs()->getChildren())
+        for (auto &arg : node->getArgs()->getArgs())
         {
             arg->visit(this);
             if (returnValue)
@@ -310,9 +316,9 @@ void Interpreter::visit(CallNode *node)
         }
     }
 
-    ExpressionNode *calleeNode = node->getCallee();
+    auto calleeNode = node->getCallee();
     calleeNode->visit(this);
-    shared_ptr<Value>callee = returnValue;
+    shared_ptr<Value> callee = returnValue;
     if (!callee)
     {
         returnValue = nullptr;
@@ -325,7 +331,7 @@ void Interpreter::visit(CallNode *node)
         return;
     }
 
-    FunctionValue *function = dynamic_cast<FunctionValue*>(callee.get());
+    shared_ptr<FunctionValue> function = std::dynamic_pointer_cast<FunctionValue>(callee);
     if (!function)
     {
         returnValue = nullptr; // or throw an error
@@ -338,20 +344,39 @@ void Interpreter::visit(CallNode *node)
         return;
     }
 
-    Environment *scope = new Environment(function->getEnvironment());
+    std::shared_ptr<Environment> scope = std::make_shared<Environment>(function->getEnvironment());
 
     for (size_t i = 0; i < args.size(); ++i)
     {
         scope->declare(function->getParameters()->getParam(i)->getName(), args[i]);
     }
 
+    auto previousEnv = env;
     env = scope; // Set the current environment to the function's environment
     // Execute the function body
-    function->getBody()->visit(this);
-    env = scope->getParent(); // Restore the previous environment after executing the function
-    if (!returnValue)
+    try
     {
-        returnValue = nullptr;
+        function->getBody()->visit(this);
+        returnValue = std::make_shared<NullValue>(); // If no return encountered
+    }
+    catch (const ReturnException& e)
+    {
+        returnValue = e.value;
+    }
+    env = previousEnv; // Restore the previous environment after executing the function
+}
+
+void Interpreter::visit(ReturnStatementNode *node)
+{
+    auto expr = node->getExpression();
+    if (expr)
+    {
+        expr->visit(this);
+        throw ReturnException(returnValue, node->getRange());
+    }
+    else
+    {
+        throw ReturnException(std::make_shared<NullValue>(), node->getRange());
     }
 }
 
@@ -397,14 +422,14 @@ void Interpreter::visit(AssignNode *node)
     node->getExpr()->visit(this);
     shared_ptr<Value> value = returnValue;
 
-    if (!node->getAsignee()->isVariable())
+    if (!node->getAsignee()->isLval())
     {
         error("cannot assign to a non-variable expression", node->getRange());
         returnValue = nullptr;
         return;
     }
 
-    VarExprNode *asignee = dynamic_cast<VarExprNode*>(node->getAsignee());
+    auto asignee = std::dynamic_pointer_cast<VarExprNode>(node->getAsignee());
     if (!asignee)
     {
         error("invalid assignment target", node->getRange());
@@ -422,10 +447,11 @@ void Interpreter::visit(AssignNode *node)
 
 void Interpreter::visit(BlockNode *node)
 {
-    Environment *blockEnv = new Environment(env);
+    std::shared_ptr<Environment> blockEnv = std::make_shared<Environment>(env);
+    auto previousEnv = env;
     env = blockEnv;
-    node->visitAllChildren(this);
-    env = blockEnv->getParent();
+    node->getStatements()->visit(this);
+    env = previousEnv;
 }
 
 void Interpreter::visit(IfStatementNode *node)
@@ -452,11 +478,11 @@ void Interpreter::visit(IfStatementNode *node)
 
     if (condition)
     {
-        node->getThenBranch()->visitAllChildren(this);
+        node->getThenBranch()->visit(this);
     }
     else if (node->getElseBranch())
     {
-        node->getElseBranch()->visitAllChildren(this);
+        node->getElseBranch()->visit(this);
     }
 
     returnValue = nullptr; // reset return value after visiting branches
@@ -469,10 +495,7 @@ void Interpreter::visit(FuncDeclNode *node)
         variableDefined(node);
         return;
     }
-
     auto function = std::make_shared<FunctionValue>(node->getName(), node->getParams(), node->getBody(), env);
-    node->dropBody();
-    node->dropParams();
     returnValue = env->declare(node->getName(), function, node->isConst());
 }
 
@@ -499,7 +522,7 @@ void Interpreter::visit(WhileNode *node)
         bool condition = returnValue->toBoolean();
         if (!condition) break;
 
-        node->visitAllChildren(this);
+        node->getBody()->visit(this);
     }
 
     returnValue = nullptr; // reset return value after the loop

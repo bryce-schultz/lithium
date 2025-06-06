@@ -98,10 +98,6 @@ Result<Node> Parser::parse(const string &input, const string &filename)
     auto result = parseStmts();
     if (!result.success || hadError)
     {
-        if (result.node)
-        {
-            delete result.node; // Clean up the node if it was created
-        }
         reject();
     }
     accept(result.node);
@@ -111,7 +107,7 @@ Result<Node> Parser::parse(const string &input, const string &filename)
 //        | stmt
 Result<StatementsNode> Parser::parseStmts()
 {
-    StatementsNode *statements = new StatementsNode();
+    auto statements = make_shared<StatementsNode>();
     Token token = peekToken();
     while (token != Token::END)
     {
@@ -264,7 +260,7 @@ Result<WhileNode> Parser::parseWhileStmt()
         reject();
     }
 
-    WhileNode *whileNode = new WhileNode(exprResult.node, bodyResult.node);
+    auto whileNode = make_shared<WhileNode>(exprResult.node, bodyResult.node);
     whileNode->setRangeStart(whileToken.getRange().getStart());
 
     accept(whileNode);
@@ -308,7 +304,7 @@ Result<IfStatementNode> Parser::parseIfStmt()
         reject();
     }
 
-    StatementNode *elseBranch = nullptr;
+    std::shared_ptr<StatementNode> elseBranch = nullptr;
     token = peekToken();
     if (token == Token::ELSE)
     {
@@ -321,7 +317,7 @@ Result<IfStatementNode> Parser::parseIfStmt()
         elseBranch = elseStmtResult.node;
     }
 
-    IfStatementNode *ifStmt = new IfStatementNode(exprResult.node, thenStmtResult.node, elseBranch);
+    auto ifStmt = make_shared<IfStatementNode>(exprResult.node, thenStmtResult.node, elseBranch);
     ifStmt->setRangeStart(ifToken.getRange().getStart());
 
     accept(ifStmt);
@@ -345,7 +341,7 @@ Result<BlockNode> Parser::parseBlock()
     {
         advanceToken(); // consume '}'
         depth--;
-        BlockNode *emptyBlock = new BlockNode();
+        auto emptyBlock = make_shared<BlockNode>();
         emptyBlock->setRangeStart(blockStart.getRange().getStart());
         emptyBlock->setRangeEnd(token.getRange().getEnd());
         accept(emptyBlock); // Empty block
@@ -365,7 +361,7 @@ Result<BlockNode> Parser::parseBlock()
     advanceToken(); // consume '}'
     depth--;
 
-    BlockNode *blockNode = new BlockNode(stmtsResult.node);
+    auto blockNode = make_shared<BlockNode>(stmtsResult.node);
     blockNode->setRangeStart(blockStart.getRange().getStart());
     blockNode->setRangeEnd(token.getRange().getEnd());
 
@@ -401,7 +397,7 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
 
     token = peekToken();
 
-    ParamListNode *params = new ParamListNode();
+    auto params = make_shared<ParamListNode>();
     if (token != ')')
     {
         auto result = parseParamList();
@@ -425,7 +421,7 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
         reject();
     }
 
-    FuncDeclNode *funcDecl = new FuncDeclNode(identifier, params, bodyResult.node);
+    auto funcDecl = make_shared<FuncDeclNode>(identifier, params, bodyResult.node);
     funcDecl->setRangeStart(fnToken.getRange().getStart());
 
     accept(funcDecl);
@@ -443,7 +439,7 @@ Result<ParamListNode> Parser::parseParamList()
     Token identifier = token;
     advanceToken(); // consume identifier
 
-    VarDeclNode *param = new VarDeclNode(identifier);
+    auto param = make_shared<VarDeclNode>(identifier);
     param->setRangeStart(identifier.getRange().getStart());
 
     auto result = parseParamListP(param);
@@ -457,12 +453,12 @@ Result<ParamListNode> Parser::parseParamList()
 
 // paramList' -> , IDENT paramList'
 //             | ε
-Result<ParamListNode> Parser::parseParamListP(VarDeclNode *lhs)
+Result<ParamListNode> Parser::parseParamListP(shared_ptr<VarDeclNode> lhs)
 {
     Token token = peekToken();
     if (token != ',')
     {
-        ParamListNode *params = new ParamListNode(lhs);
+        auto params = make_shared<ParamListNode>(lhs);
         params->setRangeEnd(lhs->getRange().getEnd());
         accept(params);
     }
@@ -476,7 +472,7 @@ Result<ParamListNode> Parser::parseParamListP(VarDeclNode *lhs)
     Token identifier = token;
     advanceToken(); // consume identifier
 
-    VarDeclNode *param = new VarDeclNode(identifier);
+    auto param = make_shared<VarDeclNode>(identifier);
     param->setRangeStart(identifier.getRange().getStart());
 
     auto result = parseParamListP(param);
@@ -485,7 +481,7 @@ Result<ParamListNode> Parser::parseParamListP(VarDeclNode *lhs)
         reject();
     }
 
-    ParamListNode *params = new ParamListNode(lhs);
+    auto params = make_shared<ParamListNode>(lhs);
     params->addParam(param);
     params->setRangeEnd(param->getRange().getEnd());
 
@@ -517,7 +513,7 @@ Result<ReturnStatementNode> Parser::parseReturnStmt()
     }
     advanceToken(); // consume ';'
 
-    ReturnStatementNode *returnStmt = new ReturnStatementNode(exprResult.node);
+    auto returnStmt = make_shared<ReturnStatementNode>(exprResult.node);
     returnStmt->setRangeStart(returnToken.getRange().getStart());
     returnStmt->setRangeEnd(token.getRange().getEnd());
 
@@ -564,7 +560,7 @@ Result<VarDeclNode> Parser::parseLetStmt()
     advanceToken(); // consume ';'
 
     // Create a variable declaration node with the identifier and the expression
-    VarDeclNode *varDecl = new VarDeclNode(identifier, exprResult.node);
+    auto varDecl = make_shared<VarDeclNode>(identifier, exprResult.node);
     varDecl->setRangeStart(let.getRange().getStart());
 
     accept(varDecl);
@@ -610,7 +606,7 @@ Result<VarDeclNode> Parser::parseConstStmt()
     advanceToken(); // consume ';'
 
     // Create a variable declaration node with the identifier and the expression
-    VarDeclNode *varDecl = new VarDeclNode(identifier, exprResult.node, true);
+    auto varDecl = make_shared<VarDeclNode>(identifier, exprResult.node, true);
     varDecl->setRangeStart(constToken.getRange().getStart());
 
     accept(varDecl);
@@ -655,7 +651,7 @@ Result<PrintStatementNode> Parser::parsePrintStmt()
     Token semicolonToken = token;
     advanceToken(); // consume ';'
 
-    PrintStatementNode *printStmt = new PrintStatementNode(exprResult.node);
+    auto printStmt = make_shared<PrintStatementNode>(exprResult.node);
     printStmt->setRangeStart(printToken.getRange().getStart());
     printStmt->setRangeEnd(semicolonToken.getRange().getEnd());
     accept(printStmt);
@@ -683,7 +679,7 @@ Result<ExpressionNode> Parser::parseExpr()
 }
 // expr' -> , assign expr'
 //        | nothing
-Result<ExpressionNode> Parser::parseExprP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parseExprP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != ',')
@@ -698,7 +694,7 @@ Result<ExpressionNode> Parser::parseExprP(ExpressionNode *lhs)
         reject();
     }
 
-    auto exprP = parseExprP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
+    auto exprP = parseExprP(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), rhs.node));
     if (!exprP.success)
     {
         reject();
@@ -727,7 +723,7 @@ Result<ExpressionNode> Parser::parseAssign()
 }
 // assign' -> = or assign'
 //          | nothing
-Result<ExpressionNode> Parser::parseAssignP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parseAssignP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != '=')
@@ -742,7 +738,7 @@ Result<ExpressionNode> Parser::parseAssignP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseAssignP(new AssignNode(lhs, rhs.node));
+    rhs = parseAssignP(make_shared<AssignNode>(lhs, rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -771,7 +767,7 @@ Result<ExpressionNode> Parser::parseOr()
 }
 // or' -> OR and or'
 //      | nothing
-Result<ExpressionNode> Parser::parseOrP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parseOrP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != Token::OR)
@@ -786,7 +782,7 @@ Result<ExpressionNode> Parser::parseOrP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseOrP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseOrP(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -815,7 +811,7 @@ Result<ExpressionNode> Parser::parseAnd()
 }
 // and' -> AND equality and'
 //       | nothing
-Result<ExpressionNode> Parser::parseAndP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parseAndP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != Token::AND)
@@ -830,7 +826,7 @@ Result<ExpressionNode> Parser::parseAndP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseAndP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseAndP(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -860,7 +856,7 @@ Result<ExpressionNode> Parser::parseEquality()
 // equality' -> EQ relation equality'
 //            | NE relation equality'
 //            | nothing
-Result<ExpressionNode> Parser::parseEqualityP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parseEqualityP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != Token::EQ && token != Token::NE)
@@ -875,7 +871,7 @@ Result<ExpressionNode> Parser::parseEqualityP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseEqualityP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseEqualityP(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -907,7 +903,7 @@ Result<ExpressionNode> Parser::parseRelation()
 //            | GE addit relation'
 //            | LE addit relation'
 //            | nothing
-Result<ExpressionNode> Parser::parseRelationP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parseRelationP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != '>' && token != '<' && token != Token::GE && token != Token::LE)
@@ -922,7 +918,7 @@ Result<ExpressionNode> Parser::parseRelationP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseRelationP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseRelationP(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -952,7 +948,7 @@ Result<ExpressionNode> Parser::parseAddit()
 // addit' -> + mult addit'
 //         | - mult addit'
 //         | nothing
-Result<ExpressionNode> Parser::parseAdditP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parseAdditP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != '+' && token != '-')
@@ -967,7 +963,7 @@ Result<ExpressionNode> Parser::parseAdditP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseAdditP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseAdditP(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -998,7 +994,7 @@ Result<ExpressionNode> Parser::parseMult()
 //        | / uanry mult'
 //        | % unary mult'
 //        | nothing
-Result<ExpressionNode> Parser::parseMultP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parseMultP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != '*' && token != '/' && token != '%')
@@ -1013,7 +1009,7 @@ Result<ExpressionNode> Parser::parseMultP(ExpressionNode *lhs)
         reject();
     }
 
-    rhs = parseMultP(new BinaryExprNode(lhs, new OpNode(token), rhs.node));
+    rhs = parseMultP(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -1046,7 +1042,7 @@ Result<ExpressionNode> Parser::parseUnary()
         reject();
     }
 
-    accept(new BinaryExprNode(nullptr, new OpNode(token), result.node));
+    accept(make_shared<BinaryExprNode>(nullptr, make_shared<OpNode>(token), result.node));
 }
 
 //***************************************************
@@ -1065,7 +1061,7 @@ Result<ArgListNode> Parser::parseArgList()
         reject();
     }
 
-    ArgListNode *argList = new ArgListNode();
+    auto argList = make_shared<ArgListNode>();
     argList->addAllArgs(listResult.node);
 
     accept(argList);
@@ -1073,12 +1069,12 @@ Result<ArgListNode> Parser::parseArgList()
 
 // argList' -> , assign argListP
 //           | nothing
-Result<ArgListNode> Parser::parseArgListP(ExpressionNode *lhs)
+Result<ArgListNode> Parser::parseArgListP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (token != ',')
     {
-        accept(new ArgListNode(lhs));
+        accept(make_shared<ArgListNode>(lhs));
     }
     advanceToken(); // consume ','
 
@@ -1094,7 +1090,7 @@ Result<ArgListNode> Parser::parseArgListP(ExpressionNode *lhs)
         reject();
     }
 
-    ArgListNode *argList = new ArgListNode(lhs);
+    auto argList = make_shared<ArgListNode>(lhs);
     argList->addAllArgs(listResult.node);
 
     accept(argList);
@@ -1124,7 +1120,7 @@ Result<ExpressionNode> Parser::parsePost()
 //        | . IDENT
 //        | INC
 //        | DEC
-Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parsePostP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
 
@@ -1146,7 +1142,7 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         }
         advanceToken(); // consume ']'
 
-        accept(new BinaryExprNode(lhs, new OpNode(token), exprResult.node));
+        accept(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), exprResult.node));
     }
     else if (token == '(')
     {
@@ -1158,7 +1154,7 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         if (token == ')')
         {
             advanceToken(); // consume ')'
-            accept(new CallNode(lhs));
+            accept(make_shared<CallNode>(lhs));
         }
 
         auto argListResult = parseArgList();
@@ -1174,7 +1170,7 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         }
         advanceToken(); // consume ')'
 
-        accept(new CallNode(lhs, argListResult.node));
+        accept(make_shared<CallNode>(lhs, argListResult.node));
     }
     else if (token == '.')
     {
@@ -1187,19 +1183,19 @@ Result<ExpressionNode> Parser::parsePostP(ExpressionNode *lhs)
         }
         advanceToken(); // consume identifier
 
-        accept(new MemberAccessNode(lhs, token));
+        accept(make_shared<MemberAccessNode>(lhs, token));
     }
     else if (token == Token::INC || token == Token::DEC)
     {
         advanceToken(); // consume 'inc' or 'dec'
-        accept(new BinaryExprNode(lhs, new OpNode(token), nullptr));
+        accept(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), nullptr));
     }
 
     reject();
 }
 // post'' -> post' post''
 //         | ϵ
-Result<ExpressionNode> Parser::parsePostPP(ExpressionNode *lhs)
+Result<ExpressionNode> Parser::parsePostPP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
     if (!isInFirstSet(token, postPFirsts))
@@ -1273,17 +1269,17 @@ Result<ExpressionNode> Parser::parsePrimary()
     else if (token.getType() == Token::IDENT)
     {
         advanceToken(); // consume identifier
-        accept(new VarExprNode(token));
+        accept(make_shared<VarExprNode>(token));
     }
     else if (token.getType() == Token::NUMBER)
     {
         advanceToken(); // consume number
-        accept(new NumberNode(token));
+        accept(make_shared<NumberNode>(token));
     }
     else if (token.getType() == Token::STRING)
     {
         advanceToken(); // consume string
-        accept(new StringNode(token));
+        accept(make_shared<StringNode>(token));
     }
 
     expected("primary expression");

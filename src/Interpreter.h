@@ -12,15 +12,15 @@
 using std::string;
 using std::cout;
 using std::endl;
+using std::shared_ptr;
 
 class Interpreter : public Visitor
 {
 public:
-    Interpreter(Environment *env = nullptr);
+    Interpreter(std::shared_ptr<Environment> env = nullptr);
     virtual void visitAllChildren(Node *node) override;
 
     // Override visit methods for different node types
-    virtual void visit(StatementNode *node) override;
     virtual void visit(StatementsNode *node) override;
     virtual void visit(PrintStatementNode *node) override;
     virtual void visit(NumberNode *node) override;
@@ -34,16 +34,17 @@ public:
     virtual void visit(IfStatementNode *node) override;
     virtual void visit(FuncDeclNode *node) override;
     virtual void visit(WhileNode *node) override;
+    virtual void visit(ReturnStatementNode *node) override;
 private:
-    std::shared_ptr<Value> evalBinaryExpression(ExpressionNode *left, OpNode *opNode, ExpressionNode *right);
-    std::shared_ptr<Value> evalNumericBinaryExpression(std::shared_ptr<NumberValue> left, OpNode *opNode, std::shared_ptr<NumberValue> right);
-    std::shared_ptr<Value> evalStringBinaryExpression(std::shared_ptr<Value> left, OpNode *opNode, std::shared_ptr<Value> right);
-    std::shared_ptr<Value> evalBooleanBinaryExpression(std::shared_ptr<Value> left, OpNode *opNode, std::shared_ptr<Value> right);
+    std::shared_ptr<Value> evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right);
+    std::shared_ptr<Value> evalNumericBinaryExpression(shared_ptr<NumberValue> left, shared_ptr<OpNode> opNode, shared_ptr<NumberValue> right);
+    std::shared_ptr<Value> evalStringBinaryExpression(shared_ptr<StringValue> left, shared_ptr<OpNode> opNode, shared_ptr<StringValue> right);
+    std::shared_ptr<Value> evalBooleanBinaryExpression(shared_ptr<BooleanValue> left, shared_ptr<OpNode> opNode, shared_ptr<BooleanValue> right);
 
-    std::shared_ptr<Value> evalUnaryExpression(ExpressionNode *expression, OpNode *opNode, bool prefix = false);
-    std::shared_ptr<Value> evalNumericUnaryExpression(std::shared_ptr<NumberValue> value, OpNode *opNode, bool prefix = false);
-    std::shared_ptr<Value> evalVariableUnaryExpression(VarExprNode *expression, OpNode *opNode, bool prefix = false);
+    std::shared_ptr<Value> evalUnaryExpression(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
+    std::shared_ptr<Value> evalNumericUnaryExpression(shared_ptr<NumberValue> value, shared_ptr<OpNode> opNode, bool prefix = false);
+    std::shared_ptr<Value> evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
 private:
-    Environment *env;
+    std::shared_ptr<Environment> env;
     std::shared_ptr<Value> returnValue;
 };

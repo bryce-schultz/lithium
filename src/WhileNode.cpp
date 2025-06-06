@@ -1,19 +1,39 @@
+//***********************************************
+// File: WhileNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the WhileNode class, which represents
+// while loops in the abstract syntax tree (AST).
+//**************************************************
+
+#include <memory>
+
 #include "WhileNode.h"
+#include "Visitor.h"
 
-WhileNode::WhileNode(ExpressionNode *condition, StatementNode *body)
+WhileNode::WhileNode(shared_ptr<ExpressionNode> condition, shared_ptr<StatementNode> body):
+    condition(condition),
+    body(body)
 {
-    addChild(condition);
-    addChild(body);
+    if (condition)
+    {
+        setRangeStart(condition->getRange().getStart());
+    }
+    if (body)
+    {
+        setRangeEnd(body->getRange().getEnd());
+    }
 }
 
-ExpressionNode *WhileNode::getCondition() const
+shared_ptr<ExpressionNode> WhileNode::getCondition() const
 {
-    return static_cast<ExpressionNode *>(getChild(0));
+    return condition;
 }
 
-StatementNode *WhileNode::getBody() const
+shared_ptr<StatementNode> WhileNode::getBody() const
 {
-    return static_cast<StatementNode *>(getChild(1));
+    return body;
 }
 
 void WhileNode::visit(Visitor *visitor)

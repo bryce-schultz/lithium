@@ -9,32 +9,49 @@
 
 #include "StatementsNode.h"
 
-StatementsNode::StatementsNode(StatementNode *statement)
+StatementsNode::StatementsNode(shared_ptr<StatementNode> statement):
+    statements()
 {
-    if (statement) 
+    if (statement)
     {
-        addChild(statement);
-        // set the range to the statement's range if it exists
+        statements.push_back(statement);
         setRange(statement->getRange());
     }
 }
 
-void StatementsNode::addStatement(StatementNode *statement)
+void StatementsNode::addStatement(shared_ptr<StatementNode> statement)
 {
-    if (!statement) return; 
-    
-    addChild(statement);
-    
-    if (getChildCount() == 1)
+    if (statement)
     {
-        // if this is the first statement, set the range to its range
-        setRange(statement->getRange());
-    } 
-    else 
-    {
-        // update the range to include the new statement
-        setRangeEnd(statement->getRange().getEnd());
+        statements.push_back(statement);
+        if (statements.size() == 1)
+        {
+            setRange(statement->getRange());
+        }
+        else
+        {
+            setRangeEnd(statement->getRange().getEnd());
+        }
     }
+}
+
+shared_ptr<StatementNode> StatementsNode::getStatement(int index) const
+{
+    if (index < 0 || index >= static_cast<int>(statements.size()))
+    {
+        return nullptr;
+    }
+    return statements[index];
+}
+
+int StatementsNode::getStatementCount() const
+{
+    return static_cast<int>(statements.size());
+}
+
+const vector<shared_ptr<StatementNode>> &StatementsNode::getStatements() const
+{
+    return statements;
 }
 
 void StatementsNode::visit(Visitor *visitor)

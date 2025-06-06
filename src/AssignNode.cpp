@@ -1,40 +1,46 @@
-#include "AssignNode.h"
+//***********************************************
+// File: AssignNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the AssignNode class, which represents
+// an assignment operation in the abstract syntax tree (AST).
+//***********************************************
 
-AssignNode::AssignNode(ExpressionNode *asignee, ExpressionNode *expr)
+#include <memory>
+#include <string>
+
+#include "AssignNode.h"
+#include "Visitor.h"
+
+AssignNode::AssignNode(shared_ptr<ExpressionNode> asignee, shared_ptr<ExpressionNode> expr):
+    asignee(asignee),
+    expr(expr)
 {
     if (asignee)
     {
-        setRangeStart(asignee->getRange().getStart());
-        addChild(asignee);
+        setRange(asignee->getRange());
     }
     if (expr)
     {
-        addChild(expr);
         setRangeEnd(expr->getRange().getEnd());
     }
 }
 
-bool AssignNode::isVariable() const
+bool AssignNode::isLval() const
 {
-    return true; // This node represents a variable assignment
+    // an assignment node is an lvalue if its asignee is an lvalue
+    return asignee && asignee->isLval();
 }
 
-ExpressionNode *AssignNode::getAsignee() const
+shared_ptr<ExpressionNode> AssignNode::getAsignee() const
 {
-    if (getChildCount() > 0)
-    {
-        return dynamic_cast<ExpressionNode*>(getChild(0));
-    }
-    return nullptr;
+    return asignee;
 }
 
-ExpressionNode *AssignNode::getExpr() const
+shared_ptr<ExpressionNode> AssignNode::getExpr() const
 {
-    if (getChildCount() > 1)
-    {
-        return dynamic_cast<ExpressionNode*>(getChild(1));
-    }
-    return nullptr;
+    return expr;
 }
 
 void AssignNode::visit(Visitor *visitor)

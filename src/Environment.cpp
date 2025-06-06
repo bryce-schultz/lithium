@@ -6,7 +6,7 @@
 
 using std::cout;
 
-Environment::Environment(Environment *parent):
+Environment::Environment(std::shared_ptr<Environment> parent):
     parent(parent),
     variables(),
     constants()
@@ -33,7 +33,7 @@ std::shared_ptr<Value> Environment::declare(const string &name, std::shared_ptr<
 
 std::shared_ptr<Value> Environment::assign(const string &name, std::shared_ptr<Value> value)
 {
-    Environment *env = resolve(name);
+    std::shared_ptr<Environment> env = resolve(name);
     if (!env)
     {
         return nullptr; // Variable not found in any environment
@@ -52,15 +52,15 @@ std::shared_ptr<Value> Environment::assign(const string &name, std::shared_ptr<V
 
 std::shared_ptr<Value> Environment::lookup(const string &name) const
 {
-    const Environment *env = resolve(name);
+    std::shared_ptr<Environment> env = resolve(name);
     return env ? env->variables.at(name) : nullptr;
 }
 
-Environment *Environment::resolve(const string &name) const
+std::shared_ptr<Environment> Environment::resolve(const string &name) const
 {
     if (hasVariable(name))
     {
-        return const_cast<Environment*>(this);
+        return std::const_pointer_cast<Environment>(shared_from_this());
     }
 
     if (!parent)
@@ -72,7 +72,7 @@ Environment *Environment::resolve(const string &name) const
     return parent->resolve(name);
 }
 
-Environment *Environment::getParent() const
+std::shared_ptr<Environment> Environment::getParent() const
 {
     return parent;
 }

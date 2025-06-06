@@ -1,33 +1,36 @@
+//***********************************************
+// File: CallNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the CallNode class, which represents
+// a function call in the abstract syntax tree (AST).
+//***********************************************
+
 #include "CallNode.h"
 
-CallNode::CallNode(ExpressionNode *callee, ArgListNode *args)
+CallNode::CallNode(shared_ptr<ExpressionNode> callee, shared_ptr<ArgListNode> args):
+    callee(callee),
+    args(args)
 {
-
-    addChild(callee);
     if (callee)
+    {
         setRangeStart(callee->getRange().getStart());
-
-    addChild(args);
+    }
     if (args)
+    {
         setRangeEnd(args->getRange().getEnd());
+    }
 }
 
-ExpressionNode *CallNode::getCallee() const
+shared_ptr<ExpressionNode> CallNode::getCallee() const
 {
-    if (getChildCount() > 0)
-    {
-        return dynamic_cast<ExpressionNode*>(getChild(0));
-    }
-    return nullptr;
+    return callee;
 }
 
-ArgListNode *CallNode::getArgs() const
+shared_ptr<ArgListNode> CallNode::getArgs() const
 {
-    if (getChildCount() > 1)
-    {
-        return dynamic_cast<ArgListNode*>(getChild(1));
-    }
-    return nullptr;
+    return args;
 }
 
 void CallNode::visit(Visitor *visitor)

@@ -10,104 +10,111 @@
 #include "Visitor.h"
 
 #include "Nodes.h"
-#include "XmlVisitor.h"
+
+#define UNUSED(x) (void)(x) // Macro to avoid unused parameter warnings
 
 void Visitor::visit(Node *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(StatementNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(StatementsNode *node)
 {
-    node->visitAllChildren(this);
+    for (const auto &statement : node->getStatements())
+    {
+        if (statement)
+        {
+            statement->visit(this);
+        }
+    }
 }
 
 void Visitor::visit(ExpressionNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(ReturnStatementNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(VarExprNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(VarDeclNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(PrintStatementNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(NumberNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(CallNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(BinaryExprNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(ArgListNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(OpNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(BlockNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(MemberAccessNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(StringNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(AssignNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(IfStatementNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(WhileNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }
 
 void Visitor::visit(FuncDeclNode *node)
 {
-    node->visitAllChildren(this);
+    UNUSED(node);
 }

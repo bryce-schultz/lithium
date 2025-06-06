@@ -1,21 +1,28 @@
+//***********************************************
+// File: PrintStatementNode.cpp
+//
+// Author: Bryce Schultz
+//
+// Purpose: Implements the PrintStatementNode class,
+// which represents print statements in the abstract syntax tree (AST).
+//***********************************************
+
+#include <memory>
+
 #include "PrintStatementNode.h"
 
-PrintStatementNode::PrintStatementNode(ExpressionNode *expr)
+PrintStatementNode::PrintStatementNode(shared_ptr<ExpressionNode> expr):
+    expr(expr)
 {
     if (expr)
     {
-        addChild(expr);
         setRange(expr->getRange());
     }
 }
 
-ExpressionNode *PrintStatementNode::getExpr() const
+shared_ptr<ExpressionNode> PrintStatementNode::getExpr() const
 {
-    if (getChildCount() > 0)
-    {
-        return dynamic_cast<ExpressionNode*>(getChild(0));
-    }
-    return nullptr;
+    return expr;
 }
 
 void PrintStatementNode::visit(Visitor *visitor)

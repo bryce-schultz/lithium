@@ -53,31 +53,26 @@ std::string XmlVisitor::indentString() const
     return std::string(indent * 2, ' ');
 }
 
-void XmlVisitor::visit(StatementNode *node)
-{
-    openTag("Statement");
-    node->visitAllChildren(this);
-    closeTag("Statement");
-}
-
 void XmlVisitor::visit(StatementsNode *node)
 {
     openTag("Statements");
-    node->visitAllChildren(this);
+    for (const auto &statement : node->getStatements())
+    {
+        if (statement)
+        {
+            statement->visit(this);
+        }
+    }
     closeTag("Statements");
-}
-
-void XmlVisitor::visit(ExpressionNode *node)
-{
-    openTag("Expression");
-    node->visitAllChildren(this);
-    closeTag("Expression");
 }
 
 void XmlVisitor::visit(ReturnStatementNode *node)
 {
     openTag("ReturnStatement");
-    node->visitAllChildren(this);
+    if (node->getExpression())
+    {
+        node->getExpression()->visit(this);
+    }
     closeTag("ReturnStatement");
 }
 
@@ -88,15 +83,24 @@ void XmlVisitor::visit(VarExprNode *node)
 
 void XmlVisitor::visit(VarDeclNode *node)
 {
-    openTag("VarDecl", {"name=\"" + node->getToken().getValue() + "\""}, false);
-    node->visitAllChildren(this);
+    openTag("VarDecl", {
+        "name=\"" + node->getToken().getValue() + "\"",
+        "is_const=\"" + std::string(node->isConst() ? "true" : "false") + "\""
+    }, false);
+    if (node->getExpr())
+    {
+        node->getExpr()->visit(this);
+    }
     closeTag("VarDecl");
 }
 
 void XmlVisitor::visit(PrintStatementNode *node)
 {
     openTag("PrintStatement");
-    node->visitAllChildren(this);
+    if (node->getExpr())
+    {
+        node->getExpr()->visit(this);
+    }
     closeTag("PrintStatement");
 }
 
@@ -108,21 +112,46 @@ void XmlVisitor::visit(NumberNode *node)
 void XmlVisitor::visit(CallNode *node)
 {
     openTag("Call");
-    node->visitAllChildren(this);
+    if (node->getCallee())
+    {
+        node->getCallee()->visit(this);
+    }
+    if (node->getArgs())
+    {
+        node->getArgs()->visit(this);
+    }
     closeTag("Call");
 }
 
 void XmlVisitor::visit(BinaryExprNode *node)
 {
-    openTag("BinaryExpression");
-    node->visitAllChildren(this);
-    closeTag("BinaryExpression");
+    if (node->isUnary())
+    {
+        openTag("UnaryExpression", {"prefix=\"" + std::string(node->isPrefix() ? "true" : "false") + "\""});
+        node->getRight()->visit(this);
+        node->getOperator()->visit(this);
+        closeTag("UnaryExpression");
+    }
+    else
+    {
+        openTag("BinaryExpression", {"left_is_lval=\"" + std::string(node->getLeft()->isLval() ? "true" : "false") + "\""});
+        node->getLeft()->visit(this);
+        node->getOperator()->visit(this);
+        node->getRight()->visit(this);
+        closeTag("BinaryExpression");
+    }
 }
 
 void XmlVisitor::visit(ArgListNode *node)
 {
     openTag("ArgList");
-    node->visitAllChildren(this);
+    for (const auto &arg : node->getArgs())
+    {
+        if (arg)
+        {
+            arg->visit(this);
+        }
+    }
     closeTag("ArgList");
 }
 
@@ -134,21 +163,34 @@ void XmlVisitor::visit(OpNode *node)
 void XmlVisitor::visit(BlockNode *node)
 {
     openTag("Block");
-    node->visitAllChildren(this);
+    if (node->getStatements())
+    {
+        node->getStatements()->visit(this);
+    }
     closeTag("Block");
 }
 
 void XmlVisitor::visit(MemberAccessNode *node)
 {
     openTag("MemberAccess", {"identifier=\"" + node->getIdentifier().getValue() + "\""}, false);
-    node->visitAllChildren(this);
+    if (node->getExpression())
+    {
+        node->getExpression()->visit(this);
+    }
     closeTag("MemberAccess");
 }
 
 void XmlVisitor::visit(AssignNode *node)
 {
     openTag("Assign");
-    node->visitAllChildren(this);
+    if (node->getAsignee())
+    {
+        node->getAsignee()->visit(this);
+    }
+    if (node->getExpr())
+    {
+        node->getExpr()->visit(this);
+    }
     closeTag("Assign");
 }
 
@@ -160,13 +202,35 @@ void XmlVisitor::visit(StringNode *node)
 void XmlVisitor::visit(IfStatementNode *node)
 {
     openTag("IfStatement");
-    node->visitAllChildren(this);
+    if (node->getCondition())
+    {
+        node->getCondition()->visit(this);
+    }
+    if (node->getThenBranch())
+    {
+        openTag("ThenBranch");
+        node->getThenBranch()->visit(this);
+        closeTag("ThenBranch");
+    }
+    if (node->getElseBranch())
+    {
+        openTag("ElseBranch");
+        node->getElseBranch()->visit(this);
+        closeTag("ElseBranch");
+    }
     closeTag("IfStatement");
 }
 
 void XmlVisitor::visit(FuncDeclNode *node)
 {
     openTag("FuncDecl", {"name=\"" + node->getName() + "\""}, false);
-    node->visitAllChildren(this);
+    if (node->getParams())
+    {
+        node->getParams()->visit(this);
+    }
+    if (node->getBody())
+    {
+        node->getBody()->visit(this);
+    }
     closeTag("FuncDecl");
 }
