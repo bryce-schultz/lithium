@@ -62,19 +62,18 @@ std::shared_ptr<Environment> Environment::resolve(const string &name) const
     {
         return std::const_pointer_cast<Environment>(shared_from_this());
     }
-
-    if (!parent)
+    auto parentPtr = parent.lock();
+    if (!parentPtr)
     {
         // TODO: Handle error for unresolved variable
         return nullptr; // No parent environment to resolve to
     }
-
-    return parent->resolve(name);
+    return parentPtr->resolve(name);
 }
 
 std::shared_ptr<Environment> Environment::getParent() const
 {
-    return parent;
+    return parent.lock();
 }
 
 void Environment::dump() const
@@ -90,10 +89,11 @@ void Environment::dump() const
     {
         cout << "  " << name << "\n";
     }
-    if (parent)
+    auto parentPtr = parent.lock();
+    if (parentPtr)
     {
         cout << "Parent Environment:\n";
-        parent->dump();
+        parentPtr->dump();
     }
     else
     {

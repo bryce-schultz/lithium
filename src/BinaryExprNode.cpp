@@ -12,11 +12,27 @@
 BinaryExprNode::BinaryExprNode(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> op, shared_ptr<ExpressionNode> right):
     left(left),
     op(op),
-    right(right),
-    unary(false),
-    prefix(false)
+    right(right)
 {
-    setRange(left->getRange().getStart(), right->getRange().getEnd());
+    if (left && right)
+    {
+        setRange(left->getRange().getStart(), right->getRange().getEnd());
+    }
+    else if (left)
+    {
+        setRangeStart(left->getRange().getStart());
+        setRangeEnd(op->getRange().getEnd());
+    }
+    else if (right)
+    {
+        setRangeStart(op->getRange().getStart());
+        setRangeEnd(right->getRange().getEnd());
+    }
+    else
+    {
+        setRangeStart(op->getRange().getStart());
+        setRangeEnd(op->getRange().getEnd());
+    }
 }
 
 shared_ptr<ExpressionNode> BinaryExprNode::getLeft() const

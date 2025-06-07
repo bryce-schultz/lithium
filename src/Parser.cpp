@@ -146,7 +146,7 @@ Result<StatementNode> Parser::parseStmt()
     }
     else if (isInFirstSet(token, forStmtFirsts))
     {
-        //acceptNode(parseForStmt());
+        acceptNode(parseForStmt());
     }
     else if (isInFirstSet(token, whileStmtFirsts))
     {
@@ -221,6 +221,61 @@ Result<StatementNode> Parser::parseExprStmt()
     }
 
     reject();
+}
+
+// forStmt -> FOR ( exprStmt exprStmt expr ) stmt
+Result<ForStatementNode> Parser::parseForStmt()
+{
+    Token token = peekToken();
+    if (token != Token::FOR)
+    {
+        expected("for");
+    }
+    Token forToken = token;
+    advanceToken(); // consume 'for'
+
+    token = peekToken();
+    if (token != '(')
+    {
+        expected("(");
+    }
+    advanceToken(); // consume '('
+
+    auto initResult = parseExprStmt();
+    if (!initResult.success)
+    {
+        reject();
+    }
+
+    auto conditionResult = parseExprStmt();
+    if (!conditionResult.success)
+    {
+        reject();
+    }
+
+    auto incrementResult = parseExpr();
+    if (!incrementResult.success)
+    {
+        reject();
+    }
+
+    token = peekToken();
+    if (token != ')')
+    {
+        expected(")");
+    }
+    advanceToken(); // consume ')'
+
+    auto bodyResult = parseStmt();
+    if (!bodyResult.success)
+    {
+        reject();
+    }
+
+    auto forNode = make_shared<ForStatementNode>(initResult.node, conditionResult.node, incrementResult.node, bodyResult.node);
+    forNode->setRangeStart(forToken.getRange().getStart());
+
+    accept(forNode);
 }
 
 // whileStmt -> WHILE ( expr ) stmt

@@ -100,10 +100,13 @@ bool BooleanValue::toBoolean() const
 }
 
 FunctionValue::FunctionValue(const std::string &name,
-                             std::shared_ptr<ParamListNode> params,
-                             std::shared_ptr<StatementNode> body,
-                             std::shared_ptr<Environment> closureEnv)
-    : name(name), params(params), body(body), closureEnv(closureEnv)
+    std::shared_ptr<ParamListNode> params,
+    std::shared_ptr<StatementNode> body,
+    std::shared_ptr<Environment> closureEnv):
+    name(name),
+    params(params),
+    body(body),
+    closureEnv(closureEnv)
 {
     type = Type::function;
 }
@@ -113,9 +116,20 @@ const string &FunctionValue::getName() const
     return name;
 }
 
-std::shared_ptr<ParamListNode> FunctionValue::getParameters() const { return params; }
-std::shared_ptr<StatementNode> FunctionValue::getBody() const { return body; }
-std::shared_ptr<Environment> FunctionValue::getEnvironment() const { return closureEnv; }
+std::shared_ptr<ParamListNode> FunctionValue::getParameters() const
+{
+    return params;
+}
+
+std::shared_ptr<StatementNode> FunctionValue::getBody() const
+{
+    return body;
+}
+
+std::shared_ptr<Environment> FunctionValue::getEnvironment() const
+{
+    return closureEnv;
+}
 
 string FunctionValue::toString() const
 {

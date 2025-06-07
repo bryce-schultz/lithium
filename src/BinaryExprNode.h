@@ -35,8 +35,6 @@ private:
     shared_ptr<ExpressionNode> left;
     shared_ptr<OpNode> op;
     shared_ptr<ExpressionNode> right;
-    bool unary;
-    bool prefix;
 };
 
 using BinaryExprNodePtr = shared_ptr<BinaryExprNode>;

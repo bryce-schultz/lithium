@@ -42,6 +42,7 @@ public:
         DEC,
         JUNK
     };
+
     static string tokenTypeToString(int type);
 public:
     Token();
@@ -52,10 +53,6 @@ public:
     const Range& getRange() const;
     const std::string& getValue() const;
 
-    void setType(int type);
-    void setRange(const Range& range);
-    void setValue(const std::string& value);
-
     bool operator==(const Token& other) const;
     bool operator!=(const Token& other) const;
 
@@ -65,7 +62,6 @@ public:
     std::string toString() const;
 private:
     int type;
-    TokenType typeAsType;
     Range range;
     string value;
 };

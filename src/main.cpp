@@ -33,7 +33,8 @@ int main(int argc, char **argv)
 int runInteractiveMode()
 {
     Parser parser;
-    Environment env;
+    shared_ptr<Environment> env = make_shared<Environment>();
+
     string line;
     while ((line = Utils::getInputLine()) != "exit")
     {
@@ -50,10 +51,7 @@ int runInteractiveMode()
             continue;
         }
 
-        //XmlVisitor xmlVisitor;
-        Interpreter interpreter(std::make_shared<Environment>(env)); // Use the shared environment
-        //xmlVisitor.visitAllChildren(result.node);
-        //std::cout << xmlVisitor.getOutput() << std::endl; // Output XML representation
+        Interpreter interpreter(env); // Use the shared environment
         interpreter.visitAllChildren(result.node.get());
         line.clear();
     }
@@ -64,6 +62,7 @@ int runInteractiveMode()
 int runFileMode(const string &filename)
 {
     string input;
+    shared_ptr<Environment> env = make_shared<Environment>();
     try
     {
         input = Utils::readWholeFile(filename);
@@ -88,7 +87,7 @@ int runFileMode(const string &filename)
         return 1;
     }
 
-    Interpreter interpreter;
+    Interpreter interpreter(env); // Create a new environment for file execution
     interpreter.visitAllChildren(result.node.get());
 
     return 0;

@@ -41,6 +41,7 @@ TEST_TOKENIZER_OBJS = test_tokenizer.o \
  StatementsNode.o \
  IfStatementNode.o \
  WhileNode.o \
+ ForStatementNode.o \
  FuncDeclNode.o
 MAIN_OBJS = main.o \
  Utils.o \
@@ -69,6 +70,7 @@ MAIN_OBJS = main.o \
  StatementsNode.o \
  IfStatementNode.o \
  WhileNode.o \
+ ForStatementNode.o \
  FuncDeclNode.o \
  Error.o \
  Color.o \
@@ -104,6 +106,7 @@ clean:
 
 # Dependencies:
 Node.o: Node.cpp Node.h Range.h Location.h Visitor.h
+BinaryExpressionNode.o: BinaryExpressionNode.cpp
 MemberAccessNode.o: MemberAccessNode.cpp MemberAccessNode.h \
  ExpressionNode.h StatementNode.h Node.h Range.h Location.h Visitor.h \
  Token.h
@@ -115,7 +118,7 @@ XmlVisitor.o: XmlVisitor.cpp XmlVisitor.h Visitor.h Nodes.h Node.h \
  CallNode.h ArgListNode.h ParamListNode.h VarDeclNode.h DeclNode.h \
  MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
  BlockNode.h StatementsNode.h IfStatementNode.h WhileNode.h \
- FuncDeclNode.h
+ ForStatementNode.h FuncDeclNode.h
 WhileNode.o: WhileNode.cpp WhileNode.h Node.h Range.h Location.h \
  Visitor.h ExpressionNode.h StatementNode.h
 Range.o: Range.cpp Range.h Location.h
@@ -134,7 +137,8 @@ Interpreter.o: Interpreter.cpp Interpreter.h Visitor.h Environment.h \
  BinaryExprNode.h AssignNode.h CallNode.h ArgListNode.h ParamListNode.h \
  VarDeclNode.h DeclNode.h MemberAccessNode.h ReturnStatementNode.h \
  PrintStatementNode.h BlockNode.h StatementsNode.h IfStatementNode.h \
- WhileNode.h FuncDeclNode.h Value.h Error.h Color.h Utils.h
+ WhileNode.h ForStatementNode.h FuncDeclNode.h Value.h Error.h Color.h \
+ Utils.h
 BinaryExprNode.o: BinaryExprNode.cpp BinaryExprNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h OpNode.h Token.h
 CallNode.o: CallNode.cpp CallNode.h ArgListNode.h ExpressionNode.h \
@@ -148,6 +152,8 @@ ParamListNode.o: ParamListNode.cpp ParamListNode.h VarDeclNode.h \
  ExpressionNode.h
 test_tokenizer.o: test_tokenizer.cpp ctest.h Tokenizer.h Token.h Range.h \
  Location.h
+ForStatementNode.o: ForStatementNode.cpp ForStatementNode.h \
+ StatementNode.h Node.h Range.h Location.h Visitor.h ExpressionNode.h
 Tokenizer.o: Tokenizer.cpp Tokenizer.h Token.h Range.h Location.h
 Visitor.o: Visitor.cpp Visitor.h Nodes.h Node.h Range.h Location.h \
  ExpressionNode.h StatementNode.h NumberNode.h Token.h StringNode.h \
@@ -155,7 +161,7 @@ Visitor.o: Visitor.cpp Visitor.h Nodes.h Node.h Range.h Location.h \
  ArgListNode.h ParamListNode.h VarDeclNode.h DeclNode.h \
  MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
  BlockNode.h StatementsNode.h IfStatementNode.h WhileNode.h \
- FuncDeclNode.h
+ ForStatementNode.h FuncDeclNode.h
 ExpressionNode.o: ExpressionNode.cpp ExpressionNode.h StatementNode.h \
  Node.h Range.h Location.h Visitor.h
 Environment.o: Environment.cpp Environment.h Value.h StatementsNode.h \
@@ -166,21 +172,22 @@ Utils.o: Utils.cpp Utils.h
 OpNode.o: OpNode.cpp OpNode.h Node.h Range.h Location.h Visitor.h Token.h
 BlockNode.o: BlockNode.cpp BlockNode.h StatementNode.h Node.h Range.h \
  Location.h Visitor.h StatementsNode.h
+FileCache.o: FileCache.cpp
 main.o: main.cpp Utils.h Parser.h Tokenizer.h Token.h Range.h Location.h \
  Nodes.h Node.h Visitor.h ExpressionNode.h StatementNode.h NumberNode.h \
  StringNode.h VarExprNode.h OpNode.h BinaryExprNode.h AssignNode.h \
  CallNode.h ArgListNode.h ParamListNode.h VarDeclNode.h DeclNode.h \
  MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
  BlockNode.h StatementsNode.h IfStatementNode.h WhileNode.h \
- FuncDeclNode.h XmlVisitor.h Interpreter.h Environment.h Value.h \
- SemanticErrorVisitor.h
+ ForStatementNode.h FuncDeclNode.h XmlVisitor.h Interpreter.h \
+ Environment.h Value.h SemanticErrorVisitor.h
 Parser.o: Parser.cpp Parser.h Tokenizer.h Token.h Range.h Location.h \
  Nodes.h Node.h Visitor.h ExpressionNode.h StatementNode.h NumberNode.h \
  StringNode.h VarExprNode.h OpNode.h BinaryExprNode.h AssignNode.h \
  CallNode.h ArgListNode.h ParamListNode.h VarDeclNode.h DeclNode.h \
  MemberAccessNode.h ReturnStatementNode.h PrintStatementNode.h \
  BlockNode.h StatementsNode.h IfStatementNode.h WhileNode.h \
- FuncDeclNode.h Error.h Color.h
+ ForStatementNode.h FuncDeclNode.h Error.h Color.h
 Color.o: Color.cpp Color.h
 IfStatementNode.o: IfStatementNode.cpp IfStatementNode.h StatementNode.h \
  Node.h Range.h Location.h Visitor.h ExpressionNode.h Token.h
@@ -202,7 +209,7 @@ SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  BinaryExprNode.h AssignNode.h CallNode.h ArgListNode.h ParamListNode.h \
  VarDeclNode.h DeclNode.h MemberAccessNode.h ReturnStatementNode.h \
  PrintStatementNode.h BlockNode.h StatementsNode.h IfStatementNode.h \
- WhileNode.h FuncDeclNode.h Error.h Color.h
+ WhileNode.h ForStatementNode.h FuncDeclNode.h Error.h Color.h
 
 # Options from .mk file:
 CXXFLAGS += -g -O0 -Wall -Wextra -Wpedantic

@@ -1,189 +1,103 @@
-// program -> stmts stmt
-// 
-// stmts -> stmts stmt
-//        | stmt
-// 
-// stmt -> exprStmt
-//       | forStmt
-//       | whileStmt
-//       | ifStmt
-//       | WHILE ( expr ) stmt
-//       | block
-//       | returnStmt
-// 
-// exprStmt -> expr ;
-//           | LET IDENTIFIER = expr ;
-//           | CONST IDENTIFIER = expr ;
-//           | PRINT ( exprList ) ;
-//           | ;
-// 
-// forStmt -> FOR ( exprStmt exprStmt expr ) stmt
-//          | FOR ( exprStmt exprStmt epxr ) stmt ELSE stmt
-// 
-// whileStmt -> WHILE ( expr ) stmt
-// 
-// ifStmt -> IF ( expr ) stmt
-//         | IF ( expr ) stmt ELSE stmt
-// 
-// returnStmt -> RETURN expression ;
-//             | RETURN ;
-// 
-// block -> { stmts }
-//        | { }
-// 
-// expr -> expr , assign
-//       | assign
-// 
-// assign -> assign = or
-//         | or
-// 
-// or -> or OR and
-//     | and
-// 
-// and -> and AND equality
-//      | equality
-// 
-// equality -> equality EQUAL relation
-//           | equality NOT_EQUAL relation
-//           | relation
-// 
-// relation -> relation > addit
-//           | relation < addit
-//           | relation GREATER_OR_EQUAL addit
-//           | relation LESS_OR_EQUAL addit
-//           | addit
-// 
-// addit -> addit + mult
-//        | addit - mult
-//        | mult
-// 
-// mult -> mult * unary
-//       | mult / unary
-//       | mult % unary
-//       | unary
-// 
-// unaryOp: +
-//         | -
-//         | !
-// 
-// unary -> INCREMENT unary
-//        | DECREMENT unary
-//        | unaryOp mult
-//        | post
-// 
-// argList -> argList ',' assign
-//          | assign
-// 
-post -> post [ expr ]
-    | post ( )
-    | post ( argList )
-    | post '.' IDENTIFIER
-    | post INCREMENT
-    | post DECREMENT
-    | primary
+program -> stmts
+
+stmts -> stmts stmt
+       | stmt
+
+stmt -> exprStmt
+      | forStmt
+      | whileStmt
+      | ifStmt
+      | block
+      | returnStmt
+
+exprStmt -> expr ;
+          | LET IDENTIFIER = expr ;
+          | CONST IDENTIFIER = expr ;
+          | PRINT ( exprList ) ;
+          | ;
+
+forStmt -> FOR ( exprStmt exprStmt expr ) stmt
+
+whileStmt -> WHILE ( expr ) stmt
+
+ifStmt -> IF ( expr ) stmt
+        | IF ( expr ) stmt ELSE stmt
+
+returnStmt -> RETURN expression ;
+            | RETURN ;
+
+block -> { stmts }
+       | { }
+
+expr -> assign expr'
+
+expr' -> , assign expr'
+       | nothing
+
+assign -> or assign'
+
+assign' -> OR or assign'
+         | nothing
+
+or -> and or'
+
+or' -> AND and or'
+     | nothing
+
+and -> equality and'
+
+and' -> EQ equality and'
+      | nothing
+
+equality -> relation equality'
+
+equality' -> EQ relation equality'
+           | NE relation equality'
+           | nothing
+
+relation -> addit relation'
+
+relation' -> > addit relation'
+           | < addit relation'
+           | GE addit relation'
+           | LE addit relation'
+           | nothing
+
+addit -> mult addit'
+
+addit' -> + mult addit'
+        | - mult addit'
+
+mult -> unary mult'
+
+mult' -> * uanry mult'
+       | / uanry mult'
+       | % unary mult'
+       | nothing
+
+unaryOp -> +
+         | -
+         | !
+
+unary -> INCREMENT unary
+       | DECREMENT unary
+       | unaryOp mult
+       | post
+
+argList -> argList ',' assign
+         | assign
+
+post -> primary post''
+post' -> [ expr ]
+       | ( argList )
+       | . IDENTIFIER
+       | INCREMENT
+
+post'' -> post' post''
+        | ϵ
 
 primary -> ( expr )
-        | [ expr ]
-        | IDENTIFIER
-        | NUMBER
-        | STRING
-// 
-// 
-// 
-// program -> stmts
-// 
-// stmts -> stmts stmt
-//        | stmt
-// 
-// stmt -> exprStmt
-//       | forStmt
-//       | whileStmt
-//       | ifStmt
-//       | WHILE ( expr ) stmt
-//       | block
-//       | returnStmt
-// 
-// exprStmt -> expr ;
-//           | LET IDENTIFIER = expr ;
-//           | CONST IDENTIFIER = expr ;
-//           | PRINT ( exprList ) ;
-//           | ;
-// 
-// forStmt -> FOR ( exprStmt exprStmt expr ) stmt
-//          | FOR ( exprStmt exprStmt epxr ) stmt ELSE stmt
-// 
-// whileStmt -> WHILE ( expr ) stmt
-// 
-// ifStmt -> IF ( expr ) stmt
-//         | IF ( expr ) stmt ELSE stmt
-// 
-// returnStmt -> RETURN expression ;
-//             | RETURN ;
-// 
-// block -> { stmts }
-//        | { }
-// 
-// expr -> assign expr'
-// expr' -> , assign expr'
-//        | nothing
-// 
-// assign -> or assign'
-// assign' -> OR or assign'
-//          | nothing
-// 
-// or -> and or'
-// or' -> AND and or'
-//      | nothing
-// 
-// and -> equality and'
-// and' -> EQ equality and'
-//       | nothing
-// 
-// equality -> relation equality'
-// equality' -> EQ relation equality'
-//            | NE relation equality'
-//            | nothing
-// 
-// relation -> addit relation'
-// relation' -> > addit relation'
-//            | < addit relation'
-//            | GE addit relation'
-//            | LE addit relation'
-//            | nothing
-// 
-// addit -> mult addit'
-// addit' -> + mult addit'
-//         | - mult addit'
-// 
-// mult -> unary mult'
-// mult' -> * uanry mult'
-//        | / uanry mult'
-//        | % unary mult'
-//        | nothing
-// 
-// unaryOp: +
-//         | -
-//         | !
-// 
-// unary -> INCREMENT unary
-//        | DECREMENT unary
-//        | unaryOp mult
-//        | post
-// 
-// argList -> argList ',' assign
-//          | assign
-// 
-// post -> primary post''
-// post' -> [ expr ]
-//        | ( argList )
-//        | . IDENTIFIER
-//        | INCREMENT
-// post'' -> post' post''
-//         | ϵ
-// 
-// primary -> ( expr )
-//          | [ expr ]
-//          | IDENTIFIER
-//          | NUMBER
-//          | STRING
-// 
+         | [ expr ]
+         | IDENTIFIER
+         | NUMBER
+         | STRING

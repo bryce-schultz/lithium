@@ -29,6 +29,7 @@ class AssignNode;
 class IfStatementNode;
 class WhileNode;
 class FuncDeclNode;
+class ForStatementNode;
 
 class Visitor
 {
@@ -59,4 +60,5 @@ public:
     virtual void visit(IfStatementNode *node);
     virtual void visit(WhileNode *node);
     virtual void visit(FuncDeclNode *node);
+    virtual void visit(ForStatementNode *node);
 };

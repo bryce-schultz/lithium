@@ -118,3 +118,8 @@ void Visitor::visit(FuncDeclNode *node)
 {
     UNUSED(node);
 }
+
+void Visitor::visit(ForStatementNode *node)
+{
+    UNUSED(node);
+}

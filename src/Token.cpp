@@ -12,66 +12,64 @@
 
 string Token::tokenTypeToString(int type)
 {
-    switch (type) {
-        case NONE: return "none";
-        case END: return "eof";
-        case IDENT: return "identifier";
-        case NUMBER: return "number";
-        case STRING: return "string";
-        case LET: return "let";
-        case CONST: return "const";
-        case IF: return "if";
-        case ELSE: return "else";
-        case FOR: return "for";
-        case WHILE: return "while";
-        case FN: return "fn";
-        case RETURN: return "return";
-        case CLASS: return "class";
-        case IMPORT: return "import";
-        case PRINT: return "print";
-        case EQ: return "==";
-        case NE: return "!=";
-        case LE: return "<=";
-        case GE: return ">=";
-        case OR: return "||";
-        case AND: return "&&";
-        case INC: return "++";
-        case DEC: return "--";
-        case JUNK: return "junk";
+    switch (type)
+    {
+        case NONE:      return "none";
+        case END:       return "eof";
+        case IDENT:     return "identifier";
+        case NUMBER:    return "number";
+        case STRING:    return "string";
+        case LET:       return "keyword (let)";
+        case CONST:     return "keyword (const)";
+        case IF:        return "keyword (if)";
+        case ELSE:      return "keyword (else)";
+        case FOR:       return "keyword (for)";
+        case WHILE:     return "keyword (while)";
+        case FN:        return "keyword (fn)";
+        case RETURN:    return "keyword (return)";
+        case CLASS:     return "keyword (class)";
+        case IMPORT:    return "keyword (import)";
+        case PRINT:     return "keyword (print)";
+        case EQ:        return "operator (==)";
+        case NE:        return "operator (!=)";
+        case LE:        return "operator (<=)";
+        case GE:        return "operator (>=)";
+        case OR:        return "operator (||)";
+        case AND:       return "operator (&&)";
+        case INC:       return "operator (++)";
+        case DEC:       return "operator (--)";
+        case JUNK:      return "junk";
         default:
         {
             if (0 < type && type < 256)
             {
                 return string(1, (char)type);
-            } else {
+            }
+            else
+            {
                 return "junk";
             }
         }
     }
 }
 
-Token::Token() : type(NONE),
-                 typeAsType((TokenType)type),
-                 range(),
-                 value("")
-{
-}
+Token::Token():
+    type(NONE),
+    range(),
+    value("")
+{ }
 
 Token::Token(int type, const Range &range, const std::string &value):
     type(type),
-    typeAsType((TokenType)type),
-    range(range), 
+    range(range),
     value(value)
-{
-}
+{ }
 
 Token::Token(int type, const Range &range, char value):
     type(type),
-    typeAsType((TokenType)type),
-    range(range), 
+    range(range),
     value(1, value) // converts char to string
-{
-}
+{ }
 
 int Token::getType() const
 {
@@ -86,21 +84,6 @@ const Range& Token::getRange() const
 const std::string& Token::getValue() const
 {
     return value;
-}
-
-void Token::setType(int type)
-{
-    this->type = type;
-}
-
-void Token::setRange(const Range &range)
-{
-    this->range = range;
-}
-
-void Token::setValue(const std::string &value)
-{
-    this->value = value;
 }
 
 bool Token::operator==(const Token &other) const
@@ -127,8 +110,8 @@ std::string Token::toString() const
 {
     string result = tokenTypeToString(type);
 
-    if (type == IDENT || 
-        type == NUMBER || 
+    if (type == IDENT ||
+        type == NUMBER ||
         type == STRING)
     {
        result += " (" + value + ")";

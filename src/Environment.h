@@ -27,7 +27,7 @@ private:
     bool hasVariable(const string &name) const;
     bool hasConstant(const string &name) const;
 private:
-    std::shared_ptr<Environment> parent;
+    std::weak_ptr<Environment> parent; // changed from shared_ptr to weak_ptr
     map<string, std::shared_ptr<Value>> variables; // runtime variables
     set<string> constants; // constants
 };

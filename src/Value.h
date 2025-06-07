@@ -88,9 +88,9 @@ class FunctionValue : public Value
 {
 public:
     FunctionValue(const std::string &name,
-                  std::shared_ptr<ParamListNode> params,
-                  std::shared_ptr<StatementNode> body,
-                  std::shared_ptr<Environment> closureEnv);
+        std::shared_ptr<ParamListNode> params,
+        std::shared_ptr<StatementNode> body,
+        std::shared_ptr<Environment> closureEnv);
     const std::string &getName() const;
     std::shared_ptr<ParamListNode> getParameters() const;
     std::shared_ptr<StatementNode> getBody() const;
@@ -100,7 +100,7 @@ private:
     std::string name;
     std::shared_ptr<ParamListNode> params;
     std::shared_ptr<StatementNode> body;
-    std::shared_ptr<Environment> closureEnv;
+    std::shared_ptr<Environment> closureEnv; // changed to weak_ptr
 };
 
 class ObjectValue : public Value
