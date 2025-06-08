@@ -402,6 +402,16 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
     {
         return evalNumericUnaryExpression(dynamic_pointer_cast<NumberValue>(value), opNode, prefix);
     }
+    else if (value->getType() == Value::Type::boolean)
+    {
+        // Handle boolean unary operations if needed
+        if (opNode->getType() == '!')
+        {
+            return make_shared<BooleanValue>(value->unaryNot()->toBoolean());
+        }
+        // Add more boolean unary operations as needed
+    }
+
     // Add more type checks for other unary operations as needed
     return nullptr; // Unsupported operation
 }
@@ -465,6 +475,22 @@ shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNod
         {
             return numberValue; // return the original value if postfix
         }
+    }
+    else if (opNode->getType() == '!')
+    {
+        auto value = env->lookup(expression->getName());
+        if (!value)
+        {
+            error("variable " + expression->getName() + " is not defined", expression->getRange());
+            return nullptr;
+        }
+
+        if (value->getType() != Value::Type::boolean)
+        {
+            error("variable " + expression->getName() + " is not a boolean", expression->getRange());
+            return nullptr;
+        }
+        return make_shared<BooleanValue>(value->unaryNot()->toBoolean());
     }
     // Add more unary operations as needed
     return nullptr; // Unsupported operation
@@ -548,14 +574,7 @@ void Interpreter::visit(CallNode *node)
             return;
         }
 
-        try
-        {
-            returnValue = builtin->call(args, env);
-        }
-        catch (const ExitException& e)
-        {
-            throw e; // rethrow exit exception
-        }
+        returnValue = builtin->call(args, env);
     }
     else
     {
@@ -775,7 +794,7 @@ void Interpreter::visit(ForStatementNode *node)
     }
 
     // Reset the environment after the loop
-    env = forEnv->getParent();
+    env = env->getParent();
     returnValue = nullptr; // reset return value after the loop
 }
 

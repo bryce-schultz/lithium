@@ -44,6 +44,11 @@ shared_ptr<Value> StringValue::add(const shared_ptr<BooleanValue> &other) const
     return make_shared<StringValue>(value + (other->getValue() ? "true" : "false"));
 }
 
+shared_ptr<Value> StringValue::add(const shared_ptr<NullValue> &other) const
+{
+    return make_shared<StringValue>(value + other->toString());
+}
+
 shared_ptr<Value> StringValue::eq(const shared_ptr<StringValue> &other) const
 {
     return make_shared<BooleanValue>(value == other->getValue());

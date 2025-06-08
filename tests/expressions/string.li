@@ -1,0 +1,25 @@
+print("test");
+
+print("test" + "test");
+
+print("Hello, " + "World!");
+
+print("The answer is: " + 42);
+
+print("The value of PI is approximately: " + PI);
+
+print("Concatenating " + "strings " + "is " + "fun!");
+
+print(10 + " + " + 20 + " = " + (10 + 20));
+
+print("The current line is: " + LINE);
+
+print("The current file is: " + FILE);
+
+print("This boolean value is: " + true);
+
+print("This boolean value is: " + false);
+
+print("Null value: " + null);
+
+print("This line has a newline character\nand this is the next line.");

@@ -245,10 +245,21 @@ Token Tokenizer::lex()
 void Tokenizer::skipWhitespace()
 {
     char c = peek();
-    while (c != '\0' && isspace(c))
+    while (c != '\0' && (isspace(c) || c == '#'))
     {
-        advance();
-        c = peek();
+        if (c == '#') // skip comments
+        {
+            while (c != '\n' && c != '\0')
+            {
+                advance();
+                c = peek();
+            }
+        }
+        else
+        {
+            advance(); // skip whitespace
+            c = peek();
+        }
     }
 }
 

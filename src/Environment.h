@@ -31,7 +31,7 @@ private:
     bool hasVariable(const string &name) const;
     bool hasConstant(const string &name) const;
 private:
-    weak_ptr<Environment> parent; // changed from shared_ptr to weak_ptr
+    shared_ptr<Environment> parent; // changed from shared_ptr to weak_ptr
     map<string, shared_ptr<Value>> variables; // runtime variables
     set<string> constants; // constants
 };

@@ -1,0 +1,20 @@
+fn test_return()
+{
+    return 42;
+}
+
+print(test_return());
+
+fn test_return_args(a)
+{
+    return a;
+}
+
+print(test_return_args(21));
+
+fn test_return_args2(a, b, c)
+{
+    return a + b + c;
+}
+
+print(test_return_args2(1, 2, 3));

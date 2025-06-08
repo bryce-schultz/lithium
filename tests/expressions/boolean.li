@@ -1,0 +1,16 @@
+print(true && true);
+print(true && false);
+print(false && true);
+print(false && false);
+print(true || true);
+print(true || false);
+print(false || true);
+print(false || false);
+print(!true);
+print(!false);
+print(true && true || false);
+print(true || false && false);
+print(true && false || true);
+print(false || true && false);
+print(true && (true || false));
+print((true || false) && true);

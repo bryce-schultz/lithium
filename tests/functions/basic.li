@@ -1,0 +1,15 @@
+fn test()
+{
+    print(10);
+}
+
+test();
+
+fn test_args(a, b, c)
+{
+    print(a);
+    print(b);
+    print(c);
+}
+
+test_args(1, 2, 3);

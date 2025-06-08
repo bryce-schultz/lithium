@@ -452,7 +452,7 @@ Result<ParamListNode> Parser::parseParamListP(shared_ptr<VarDeclNode> lhs)
     }
 
     auto params = make_shared<ParamListNode>(lhs);
-    params->addParam(param);
+    params->addAllParams(result.node);
     params->setRangeEnd(param->getRange().getEnd());
 
     accept(params);

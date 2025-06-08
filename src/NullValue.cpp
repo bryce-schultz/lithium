@@ -12,6 +12,12 @@ string NullValue::toString() const
     return "null";
 }
 
+shared_ptr<Value> NullValue::add(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return make_shared<StringValue>(toString() + other->getValue());
+}
+
 shared_ptr<Value> NullValue::eq(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;

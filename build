@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
 green='\033[0;32m'
+bold_green='\033[1;32m'
 red='\033[0;31m'
+bold_red='\033[1;31m'
 yellow='\033[0;33m'
 blue='\033[0;34m'
+bold_blue='\033[1;34m'
 strike='\033[9m'
 nc='\033[0m'
 
@@ -17,39 +20,20 @@ cd $DIR
 success()
 {
     msg=$1
-    echo -e "👉 ${green}${msg}${nc}"
-}
-
-test_passed()
-{
-    name=$1
-    echo -e "👍 ${green}test suite ${name} passed${nc}"
-}
-
-test_failed()
-{
-    name=$1
-    echo -e n"👎 ${red}test suite ${name} failed${nc}"
+    echo -en "\n ${bold_green}●${nc} ${msg}${nc}"
 }
 
 failure()
 {
     msg=$1
-    echo -e "🤏 ${red}${strike}${msg}${nc}"
+    echo -en "\n ${bold_red}●${nc} ${msg}${nc}"
 }
 
 print_build_header()
 {
-    echo -e "${blue}==============================================${nc}"
-    echo -e "${blue}Building${nc}"
-    echo -e "${blue}==============================================${nc}"
-}
-
-print_test_header()
-{
-    echo -e "${blue}==============================================${nc}"
-    echo -e "${blue}Running Tests${nc}"
-    echo -e "${blue}==============================================${nc}"
+    echo -e  "${blue}╭────────────────────────────────────────────╮${nc}"
+    echo -e  "${blue}│                  ${bold_blue}Building                  │${nc}"
+    echo -en "${blue}╰────────────────────────────────────────────╯${nc}"
 }
 
 contains_clean()
@@ -111,8 +95,6 @@ do_tests()
     contains_no_test || contains_clean && {
         return
     }
-
-    print_test_header
 
     run_all_tests
 }

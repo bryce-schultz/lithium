@@ -67,3 +67,13 @@ shared_ptr<Value> BooleanValue::logicalOr(const shared_ptr<BooleanValue> &other)
 {
     return make_shared<BooleanValue>(value || other->getValue());
 }
+
+shared_ptr<Value> BooleanValue::unaryNot() const
+{
+    return make_shared<BooleanValue>(!value);
+}
+
+shared_ptr<Value> BooleanValue::add(const shared_ptr<StringValue> &other) const
+{
+    return make_shared<StringValue>(toString() + other->getValue());
+}

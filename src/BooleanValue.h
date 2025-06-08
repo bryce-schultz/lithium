@@ -30,6 +30,10 @@ public:
     virtual shared_ptr<Value> logicalAnd(const shared_ptr<BooleanValue> &other) const override;
 
     virtual shared_ptr<Value> logicalOr(const shared_ptr<BooleanValue> &other) const override;
+
+    virtual shared_ptr<Value> unaryNot() const override;
+
+    virtual shared_ptr<Value> add(const shared_ptr<StringValue> &other) const override;
 private:
     bool value;
 };
