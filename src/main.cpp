@@ -13,6 +13,7 @@
 #include "Interpreter.h"
 #include "Environment.h"
 #include "SemanticErrorVisitor.h"
+#include "Values.h"
 
 int runInteractiveMode();
 int runFileMode(const std::string &filename);
@@ -34,6 +35,7 @@ int runInteractiveMode()
 {
     Parser parser;
     shared_ptr<Environment> env = make_shared<Environment>();
+    env->declare("FILE", make_shared<StringValue>("cin"), true);
 
     string line;
     while ((line = Utils::getInputLine()) != "exit")
@@ -51,7 +53,7 @@ int runInteractiveMode()
             continue;
         }
 
-        Interpreter interpreter(env); // Use the shared environment
+        Interpreter interpreter(true, env); // Use the shared environment
         interpreter.visitAllChildren(result.node.get());
         line.clear();
     }
@@ -63,6 +65,8 @@ int runFileMode(const string &filename)
 {
     string input;
     shared_ptr<Environment> env = make_shared<Environment>();
+    env->declare("FILE", make_shared<StringValue>(filename), true);
+
     try
     {
         input = Utils::readWholeFile(filename);
@@ -87,7 +91,8 @@ int runFileMode(const string &filename)
         return 1;
     }
 
-    Interpreter interpreter(env); // Create a new environment for file execution
+    Interpreter interpreter(false, env); // Create a new environment for file execution
+
     interpreter.visitAllChildren(result.node.get());
 
     return 0;

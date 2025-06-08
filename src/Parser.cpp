@@ -15,14 +15,6 @@
 #define red "\033[31m"
 #define reset "\033[0m"
 
-#define error(msg) \
-    tokenError(msg, currentToken, __FILE__, __LINE__); \
-    hadError = true; \
-    reject()
-
-#define expected(expected) \
-    error("expected '" + string(expected) + "' but found '" + currentToken.toString() + "'")
-
 #define accept(x) return { true, x }
 #define reject() return { false, nullptr }
 #define acceptNode(x) \
@@ -35,9 +27,26 @@
         accept(result.node); \
     }
 
+#define error(msg) \
+    tokenError(msg, currentToken, __FILE__, __LINE__); \
+    hadError = true; \
+    reject()
+
+#define expected(expected) \
+    if (currentToken == Token::END) \
+    { \
+        error(string("unexpected end of file, expected '") + expected + string("'")); \
+    } \
+    else \
+    { \
+        error(string("expected '") + expected + string("' but found '") + currentToken.toString() + "'"); \
+    }
+
 #define expectToken(x) \
-    if (peekToken() != x) { \
-        expected(x); \
+    peekToken(); \
+    if (peekToken() != x) \
+    { \
+        expected(Token::tokenTypeToString(x)); \
     } \
     advanceToken()
 
@@ -210,12 +219,7 @@ Result<StatementNode> Parser::parseExprStmt()
             reject();
         }
 
-        token = peekToken();
-        if (token != ';')
-        {
-            expected(";");
-        }
-        advanceToken(); // consume ';'
+        expectToken(';');
 
         accept(exprResult.node);
     }
@@ -226,20 +230,9 @@ Result<StatementNode> Parser::parseExprStmt()
 // forStmt -> FOR ( exprStmt exprStmt expr ) stmt
 Result<ForStatementNode> Parser::parseForStmt()
 {
-    Token token = peekToken();
-    if (token != Token::FOR)
-    {
-        expected("for");
-    }
-    Token forToken = token;
-    advanceToken(); // consume 'for'
+    Token forToken = expectToken(Token::FOR);
 
-    token = peekToken();
-    if (token != '(')
-    {
-        expected("(");
-    }
-    advanceToken(); // consume '('
+    Token openParenToken = expectToken('(');
 
     auto initResult = parseExprStmt();
     if (!initResult.success)
@@ -259,12 +252,7 @@ Result<ForStatementNode> Parser::parseForStmt()
         reject();
     }
 
-    token = peekToken();
-    if (token != ')')
-    {
-        expected(")");
-    }
-    advanceToken(); // consume ')'
+    Token closeParenToken = expectToken(')');
 
     auto bodyResult = parseStmt();
     if (!bodyResult.success)
@@ -281,20 +269,9 @@ Result<ForStatementNode> Parser::parseForStmt()
 // whileStmt -> WHILE ( expr ) stmt
 Result<WhileNode> Parser::parseWhileStmt()
 {
-    Token token = peekToken();
-    if (token != Token::WHILE)
-    {
-        expected("while");
-    }
-    Token whileToken = token;
-    advanceToken(); // consume 'while'
+    Token whileToken = expectToken(Token::WHILE);
 
-    token = peekToken();
-    if (token != '(')
-    {
-        expected("(");
-    }
-    advanceToken(); // consume '('
+    Token openParenToken = expectToken('(');
 
     auto exprResult = parseExpr();
     if (!exprResult.success)
@@ -302,12 +279,7 @@ Result<WhileNode> Parser::parseWhileStmt()
         reject();
     }
 
-    token = peekToken();
-    if (token != ')')
-    {
-        expected(")");
-    }
-    advanceToken(); // consume ')'
+    Token closeParenToken = expectToken(')');
 
     auto bodyResult = parseStmt();
     if (!bodyResult.success)
@@ -325,20 +297,9 @@ Result<WhileNode> Parser::parseWhileStmt()
 //         | IF ( expr ) stmt ELSE stmt
 Result<IfStatementNode> Parser::parseIfStmt()
 {
-    Token token = peekToken();
-    if (token != Token::IF)
-    {
-        expected("if");
-    }
-    Token ifToken = token;
-    advanceToken(); // consume 'if'
+    Token ifToken = expectToken(Token::IF);
 
-    token = peekToken();
-    if (token != '(')
-    {
-        expected("(");
-    }
-    advanceToken(); // consume '('
+    Token openParenToken = expectToken('(');
 
     auto exprResult = parseExpr();
     if (!exprResult.success)
@@ -346,12 +307,7 @@ Result<IfStatementNode> Parser::parseIfStmt()
         reject();
     }
 
-    token = peekToken();
-    if (token != ')')
-    {
-        expected(")");
-    }
-    advanceToken(); // consume ')'
+    Token closeParenToken = expectToken(')');
 
     auto thenStmtResult = parseStmt();
     if (!thenStmtResult.success)
@@ -359,8 +315,8 @@ Result<IfStatementNode> Parser::parseIfStmt()
         reject();
     }
 
-    std::shared_ptr<StatementNode> elseBranch = nullptr;
-    token = peekToken();
+    shared_ptr<StatementNode> elseBranch = nullptr;
+    Token token = peekToken();
     if (token == Token::ELSE)
     {
         advanceToken(); // consume 'else'
@@ -382,24 +338,21 @@ Result<IfStatementNode> Parser::parseIfStmt()
 //        | { }
 Result<BlockNode> Parser::parseBlock()
 {
-    Token token = peekToken();
-    if (token != '{')
-    {
-        expected("{");
-    }
-    depth++;
-    Token blockStart = token;
-    advanceToken(); // consume '{'
+    Token openCurlyToken = expectToken('{');
 
-    token = peekToken();
+    depth++;
+
+    Token token = peekToken();
     if (token == '}')
     {
-        advanceToken(); // consume '}'
+        advanceToken();
+
         depth--;
+
         auto emptyBlock = make_shared<BlockNode>();
-        emptyBlock->setRangeStart(blockStart.getRange().getStart());
+        emptyBlock->setRangeStart(openCurlyToken.getRange().getStart());
         emptyBlock->setRangeEnd(token.getRange().getEnd());
-        accept(emptyBlock); // Empty block
+        accept(emptyBlock);
     }
 
     auto stmtsResult = parseStmts();
@@ -408,17 +361,13 @@ Result<BlockNode> Parser::parseBlock()
         reject();
     }
 
-    token = peekToken();
-    if (token != '}')
-    {
-        expected("}");
-    }
-    advanceToken(); // consume '}'
+    Token closeCurlyToken = expectToken('}');
+
     depth--;
 
     auto blockNode = make_shared<BlockNode>(stmtsResult.node);
-    blockNode->setRangeStart(blockStart.getRange().getStart());
-    blockNode->setRangeEnd(token.getRange().getEnd());
+    blockNode->setRangeStart(openCurlyToken.getRange().getStart());
+    blockNode->setRangeEnd(closeCurlyToken.getRange().getEnd());
 
     accept(blockNode);
 }
@@ -427,32 +376,15 @@ Result<BlockNode> Parser::parseBlock()
 //           | FN IDENT ( ) stmt;
 Result<FuncDeclNode> Parser::parseFuncDecl()
 {
+    Token fnToken = expectToken(Token::FN);
+
+    Token identifier = expectToken(Token::IDENT);
+
+    Token openParenToken = expectToken('(');
+
+    shared_ptr<ParamListNode> params = nullptr;
+
     Token token = peekToken();
-    if (token != Token::FN)
-    {
-        expected("fn");
-    }
-    Token fnToken = token;
-    advanceToken(); // consume 'fn'
-
-    token = peekToken();
-    if (token.getType() != Token::IDENT)
-    {
-        expected("identifier");
-    }
-    Token identifier = token;
-    advanceToken(); // consume identifier
-
-    token = peekToken();
-    if (token != '(')
-    {
-        expected("(");
-    }
-    advanceToken(); // consume '('
-
-    token = peekToken();
-
-    auto params = make_shared<ParamListNode>();
     if (token != ')')
     {
         auto result = parseParamList();
@@ -463,12 +395,7 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
         params = result.node;
     }
 
-    token = peekToken();
-    if (token != ')')
-    {
-        expected(")");
-    }
-    advanceToken(); // consume ')'
+    Token closeParenToken = expectToken(')');
 
     auto bodyResult = parseStmt();
     if (!bodyResult.success)
@@ -486,13 +413,7 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
 //            | ε
 Result<ParamListNode> Parser::parseParamList()
 {
-    Token token = peekToken();
-    if (token.getType() != Token::IDENT)
-    {
-        expected("identifier");
-    }
-    Token identifier = token;
-    advanceToken(); // consume identifier
+    Token identifier = expectToken(Token::IDENT);
 
     auto param = make_shared<VarDeclNode>(identifier);
     param->setRangeStart(identifier.getRange().getStart());
@@ -519,13 +440,7 @@ Result<ParamListNode> Parser::parseParamListP(shared_ptr<VarDeclNode> lhs)
     }
     advanceToken(); // consume ','
 
-    token = peekToken();
-    if (token.getType() != Token::IDENT)
-    {
-        expected("identifier");
-    }
-    Token identifier = token;
-    advanceToken(); // consume identifier
+    Token identifier = expectToken(Token::IDENT);
 
     auto param = make_shared<VarDeclNode>(identifier);
     param->setRangeStart(identifier.getRange().getStart());
@@ -547,13 +462,7 @@ Result<ParamListNode> Parser::parseParamListP(shared_ptr<VarDeclNode> lhs)
 //             | RETURN ;
 Result<ReturnStatementNode> Parser::parseReturnStmt()
 {
-    Token token = peekToken();
-    if (token != Token::RETURN)
-    {
-        expected("return");
-    }
-    Token returnToken = token;
-    advanceToken(); // consume 'return'
+    Token returnToken = expectToken(Token::RETURN);
 
     auto exprResult = parseExpr();
     if (!exprResult.success)
@@ -561,16 +470,11 @@ Result<ReturnStatementNode> Parser::parseReturnStmt()
         reject();
     }
 
-    token = peekToken();
-    if (token != ';')
-    {
-        expected(";");
-    }
-    advanceToken(); // consume ';'
+    Token semicolonToken = expectToken(';');
 
     auto returnStmt = make_shared<ReturnStatementNode>(exprResult.node);
     returnStmt->setRangeStart(returnToken.getRange().getStart());
-    returnStmt->setRangeEnd(token.getRange().getEnd());
+    returnStmt->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(returnStmt);
 }
@@ -578,28 +482,11 @@ Result<ReturnStatementNode> Parser::parseReturnStmt()
 // letStmt -> LET IDENT = expr ;
 Result<VarDeclNode> Parser::parseLetStmt()
 {
-    Token token = peekToken();
-    if (token != Token::LET)
-    {
-        expected("let");
-    }
-    Token let = token;
-    advanceToken(); // consume 'let'
+    Token letToken = expectToken(Token::LET);
 
-    token = peekToken();
-    if (token.getType() != Token::IDENT)
-    {
-        expected("identifier");
-    }
-    Token identifier = token;
-    advanceToken(); // consume identifier
+    Token identifier = expectToken(Token::IDENT);
 
-    token = peekToken();
-    if (token != '=')
-    {
-        expected("=");
-    }
-    advanceToken(); // consume '='
+    Token equalsToken = expectToken('=');
 
     auto exprResult = parseExpr();
     if (!exprResult.success)
@@ -607,16 +494,12 @@ Result<VarDeclNode> Parser::parseLetStmt()
         reject();
     }
 
-    token = peekToken();
-    if (token != ';')
-    {
-        expected(";");
-    }
-    advanceToken(); // consume ';'
+    Token semicolonToken = expectToken(';');
 
     // Create a variable declaration node with the identifier and the expression
     auto varDecl = make_shared<VarDeclNode>(identifier, exprResult.node);
-    varDecl->setRangeStart(let.getRange().getStart());
+    varDecl->setRangeStart(letToken.getRange().getStart());
+    varDecl->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(varDecl);
 }
@@ -624,28 +507,11 @@ Result<VarDeclNode> Parser::parseLetStmt()
 // constStmt -> CONST IDENT = expr ;
 Result<VarDeclNode> Parser::parseConstStmt()
 {
-    Token token = peekToken();
-    if (token != Token::CONST)
-    {
-        reject();
-    }
-    Token constToken = token;
-    advanceToken(); // consume 'const'
+    Token constToken = expectToken(Token::CONST);
 
-    token = peekToken();
-    if (token.getType() != Token::IDENT)
-    {
-        expected("identifier");
-    }
-    Token identifier = token;
-    advanceToken(); // consume identifier
+    Token identifier = expectToken(Token::IDENT);
 
-    token = peekToken();
-    if (token != '=')
-    {
-        expected("=");
-    }
-    advanceToken(); // consume '='
+    Token equalsToken = expectToken('=');
 
     auto exprResult = parseExpr();
     if (!exprResult.success)
@@ -653,16 +519,12 @@ Result<VarDeclNode> Parser::parseConstStmt()
         reject();
     }
 
-    token = peekToken();
-    if (token != ';')
-    {
-        expected(";");
-    }
-    advanceToken(); // consume ';'
+    Token semicolonToken = expectToken(';');
 
     // Create a variable declaration node with the identifier and the expression
     auto varDecl = make_shared<VarDeclNode>(identifier, exprResult.node, true);
     varDecl->setRangeStart(constToken.getRange().getStart());
+    varDecl->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(varDecl);
 }
@@ -670,43 +532,27 @@ Result<VarDeclNode> Parser::parseConstStmt()
 // printStmt -> PRINT ( expr ) ;
 Result<PrintStatementNode> Parser::parsePrintStmt()
 {
+    Token printToken = expectToken(Token::PRINT);
+
+    Token openParanToken = expectToken('(');
+
+    shared_ptr<ExpressionNode> exprNode = nullptr;
     Token token = peekToken();
-    if (token != Token::PRINT)
-    {
-        expected("print");
-    }
-    Token printToken = token;
-    advanceToken(); // consume
-
-    token = peekToken();
-    if (token != '(')
-    {
-        expected("(");
-    }
-    advanceToken(); // consume '('
-
-    auto exprResult = parseExpr();
-    if (!exprResult.success)
-    {
-        reject();
-    }
-
-    token = peekToken();
     if (token != ')')
     {
-        expected(")");
+        auto exprResult = parseExpr();
+        if (!exprResult.success)
+        {
+            reject();
+        }
+        exprNode = exprResult.node;
     }
-    advanceToken(); // consume ')'
 
-    token = peekToken();
-    if (token != ';')
-    {
-        expected(";");
-    }
-    Token semicolonToken = token;
-    advanceToken(); // consume ';'
+    Token closeParanToken = expectToken(')');
 
-    auto printStmt = make_shared<PrintStatementNode>(exprResult.node);
+    Token semicolonToken = expectToken(';');
+
+    auto printStmt = make_shared<PrintStatementNode>(exprNode);
     printStmt->setRangeStart(printToken.getRange().getStart());
     printStmt->setRangeEnd(semicolonToken.getRange().getEnd());
     accept(printStmt);
@@ -1190,12 +1036,7 @@ Result<ExpressionNode> Parser::parsePostP(shared_ptr<ExpressionNode> lhs)
             reject();
         }
 
-        token = peekToken();
-        if (token != ']')
-        {
-            expected("]");
-        }
-        advanceToken(); // consume ']'
+        Token closeBracketToken = expectToken(']');
 
         accept(make_shared<BinaryExprNode>(lhs, make_shared<OpNode>(token), exprResult.node));
     }
@@ -1218,12 +1059,7 @@ Result<ExpressionNode> Parser::parsePostP(shared_ptr<ExpressionNode> lhs)
             reject();
         }
 
-        token = peekToken();
-        if (token != ')')
-        {
-            expected(")");
-        }
-        advanceToken(); // consume ')'
+        Token closeParenToken = expectToken(')');
 
         accept(make_shared<CallNode>(lhs, argListResult.node));
     }
@@ -1231,14 +1067,9 @@ Result<ExpressionNode> Parser::parsePostP(shared_ptr<ExpressionNode> lhs)
     {
         advanceToken(); // consume '.'
 
-        token = peekToken();
-        if (token.getType() != Token::IDENT)
-        {
-            expected("identifier");
-        }
-        advanceToken(); // consume identifier
+        Token identifier = expectToken(Token::IDENT);
 
-        accept(make_shared<MemberAccessNode>(lhs, token));
+        accept(make_shared<MemberAccessNode>(lhs, identifier));
     }
     else if (token == Token::INC || token == Token::DEC)
     {
@@ -1293,12 +1124,7 @@ Result<ExpressionNode> Parser::parsePrimary()
             reject();
         }
 
-        token = peekToken();
-        if (token != ')')
-        {
-            expected(")");
-        }
-        advanceToken(); // consume ')'
+        Token closeParenToken = expectToken(')');
 
         accept(exprResult.node);
     }
@@ -1312,12 +1138,7 @@ Result<ExpressionNode> Parser::parsePrimary()
             reject();
         }
 
-        token = peekToken();
-        if (token != ']')
-        {
-            expected("]");
-        }
-        advanceToken(); // consume ']'
+        Token closeBracketToken = expectToken(']');
 
         accept(exprResult.node);
     }

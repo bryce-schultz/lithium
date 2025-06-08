@@ -16,6 +16,9 @@
 #include <string>
 #include <vector>
 
+// macros for unused parameters to avoid compiler warnings
+#define UNUSED(x) (void)(x)
+
 namespace Utils
 {
     using std::string;

@@ -23,6 +23,7 @@
 #include "ArgListNode.h"
 #include "ParamListNode.h"
 #include "MemberAccessNode.h"
+#include "NullNode.h"
 
 #include "StatementNode.h"
 #include "ReturnStatementNode.h"

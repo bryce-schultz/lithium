@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+green='\033[0;32m'
+red='\033[0;31m'
+yellow='\033[0;33m'
+blue='\033[0;34m'
+strike='\033[9m'
+nc='\033[0m'
+
+build_args=$@
+
+# get the path of this file
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+cd $DIR
+
+success()
+{
+    msg=$1
+    echo -e "👉 ${green}${msg}${nc}"
+}
+
+test_passed()
+{
+    name=$1
+    echo -e "👍 ${green}test suite ${name} passed${nc}"
+}
+
+test_failed()
+{
+    name=$1
+    echo -e n"👎 ${red}test suite ${name} failed${nc}"
+}
+
+failure()
+{
+    msg=$1
+    echo -e "🤏 ${red}${strike}${msg}${nc}"
+}
+
+print_build_header()
+{
+    echo -e "${blue}==============================================${nc}"
+    echo -e "${blue}Building${nc}"
+    echo -e "${blue}==============================================${nc}"
+}
+
+print_test_header()
+{
+    echo -e "${blue}==============================================${nc}"
+    echo -e "${blue}Running Tests${nc}"
+    echo -e "${blue}==============================================${nc}"
+}
+
+contains_clean()
+{
+    for arg in $build_args; do
+        if [ $arg == "clean" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+contains_no_test()
+{
+    for arg in $build_args; do
+        if [ $arg == "--no-test" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+build_target()
+{
+    target=$1
+
+    build_args_without_no_test=$(echo $build_args | sed 's/--no-test//g')
+
+    cd src/$target
+    make $build_args_without_no_test > /dev/null
+
+    if [ -z "$target" ]; then
+        target="src"
+    fi
+
+    if [ $? -eq 0 ]; then
+        success $target
+    else
+        failure $target
+    fi
+
+    cd $DIR
+}
+
+do_builds()
+{
+    print_build_header
+    build_target
+
+    contains_clean && {
+        echo -e "${blue}Cleaned Project${nc}"
+    }
+}
+
+do_tests()
+{
+    contains_no_test || contains_clean && {
+        return
+    }
+
+    print_test_header
+
+    run_all_tests
+}
+
+main()
+{
+    do_builds
+    echo ""
+    do_tests
+}
+
+main

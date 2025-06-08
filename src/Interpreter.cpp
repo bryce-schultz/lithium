@@ -6,7 +6,7 @@
 
 #include "Interpreter.h"
 #include "Nodes.h"
-#include "Value.h"
+#include "Values.h"
 #include "Error.h"
 #include "Utils.h"
 
@@ -34,7 +34,7 @@ using std::fmod;
 
 #define variableNotDefined(node) errorAtToken("variable '" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
 
-// Exception to handle function returns
+// exception to handle function returns
 struct ReturnException : public exception
 {
     shared_ptr<Value> value;
@@ -42,14 +42,16 @@ struct ReturnException : public exception
     ReturnException(shared_ptr<Value> val, Range range = {}): value(val), range(range) {}
 };
 
-// Exception to handle exit calls
+// exception to handle exit calls
 struct ExitException : public exception
 {
     int exitCode;
     ExitException(int code = 0): exitCode(code) {}
 };
 
-Interpreter::Interpreter(shared_ptr<Environment> env)
+Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env):
+    isInteractive(isInteractive),
+    returnValue(nullptr)
 {
     if (!env)
     {
@@ -59,6 +61,35 @@ Interpreter::Interpreter(shared_ptr<Environment> env)
     {
         this->env = env; // Use the provided environment
     }
+
+    this->env->declare("LINE", make_shared<NumberValue>(1), true);
+
+    // runtime values defined in all environments
+    this->env->declare("null", make_shared<NullValue>(), true);
+    this->env->declare("true", make_shared<BooleanValue>(true), true);
+    this->env->declare("false", make_shared<BooleanValue>(false), true);
+    this->env->declare("PI", make_shared<NumberValue>(M_PI), true);
+    this->env->declare("E", make_shared<NumberValue>(M_E), true);
+    this->env->declare("VERSION", make_shared<StringValue>(INTERPRETER_VERSION), true);
+    this->env->declare("printall", make_shared<BuiltinFunctionValue>([](const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env) -> shared_ptr<Value>
+    {
+        UNUSED(env);
+        if (args.empty())
+        {
+            cout << "\n";
+            return nullptr; // indicate no return value, this will prevent printing "null" in interactive mode
+        }
+
+        for (const auto &arg : args)
+        {
+            if (arg)
+            {
+                cout << arg->toString() << " ";
+            }
+        }
+        cout << "\n";
+        return nullptr;
+    }), true);
 }
 
 void Interpreter::visitAllChildren(Node *node)
@@ -73,13 +104,27 @@ void Interpreter::visit(StatementsNode *node)
         if (statement)
         {
             returnValue = nullptr;
+            env->redeclare("LINE", make_shared<NumberValue>(statement->getRange().getStart().getLine()), true); // Declare a constant variable for the current line number
             statement->visit(this);
+
+            if (returnValue && isInteractive)
+            {
+                // if in interactive mode, print the return value
+                cout << returnValue->toString() << endl;
+            }
         }
     }
 }
 
 void Interpreter::visit(PrintStatementNode *node)
 {
+    if (!node->getExpr())
+    {
+        cout << "\n"; // Print a newline if no expression is provided
+        returnValue = nullptr;
+        return;
+    }
+
     node->getExpr()->visit(this);
     auto result = returnValue;
     if (!result)
@@ -97,6 +142,12 @@ void Interpreter::visit(NumberNode *node)
 
 void Interpreter::visit(StringNode *node)
 {
+    if (!node)
+    {
+        error("StringNode is null", Range());
+        return;
+    }
+
     returnValue = make_shared<StringValue>(node->getValue());
 }
 
@@ -126,7 +177,7 @@ shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> l
     if (!leftValue)
     {
         error("left operand of binary expression is null", left->getRange());
-        return nullptr; // or throw an error
+        return nullptr;
     }
 
     right->visit(this);
@@ -134,32 +185,63 @@ shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> l
     if (!rightValue)
     {
         error("right operand of binary expression is null", right->getRange());
-        return nullptr; // or throw an error
+        return nullptr;
     }
 
-    if (leftValue->getType() == Value::Type::number && rightValue->getType() == Value::Type::number)
+    returnValue = nullptr;
+    switch(opNode->getType())
     {
-        return evalNumericBinaryExpression(
-            dynamic_pointer_cast<NumberValue>(leftValue),
-            opNode,
-            dynamic_pointer_cast<NumberValue>(rightValue));
+        case '+':
+            returnValue = leftValue->add(rightValue);
+            break;
+        case '-':
+            returnValue = leftValue->sub(rightValue);
+            break;
+        case '*':
+            returnValue = leftValue->mul(rightValue);
+            break;
+        case '/':
+            returnValue = leftValue->div(rightValue);
+            break;
+        case '%':
+            returnValue = leftValue->mod(rightValue);
+            break;
+        case Token::EQ:
+            returnValue = leftValue->eq(rightValue);
+            break;
+        case Token::NE:
+            returnValue = leftValue->ne(rightValue);
+            break;
+        case Token::LE:
+            returnValue = leftValue->le(rightValue);
+            break;
+        case Token::GE:
+            returnValue = leftValue->ge(rightValue);
+            break;
+        case '<':
+            returnValue = leftValue->lt(rightValue);
+            break;
+        case '>':
+            returnValue = leftValue->gt(rightValue);
+            break;
+        case Token::AND:
+            returnValue = leftValue->logicalAnd(rightValue);
+            break;
+        case Token::OR:
+            returnValue = leftValue->logicalOr(rightValue);
+            break;
+        default:
+            error("unsupported binary operation: " + opNode->getToken().getValue(), opNode->getRange());
+            return nullptr;
     }
-    else if (leftValue->getType() == Value::Type::string && rightValue->getType() == Value::Type::string)
+
+    if (returnValue)
     {
-        return evalStringBinaryExpression(
-            dynamic_pointer_cast<StringValue>(leftValue),
-            opNode,
-            dynamic_pointer_cast<StringValue>(rightValue));
+        return returnValue;
     }
-    else if (leftValue->getType() == Value::Type::boolean && rightValue->getType() == Value::Type::boolean)
-    {
-        return evalBooleanBinaryExpression(
-            dynamic_pointer_cast<BooleanValue>(leftValue),
-            opNode,
-            dynamic_pointer_cast<BooleanValue>(rightValue));
-    }
-    // Add more type checks as needed
-    return nullptr; // Unsupported operation
+
+    error("unsupported binary operation between " + leftValue->typeAsString() + " and " + rightValue->typeAsString(), opNode->getRange());
+    return nullptr;
 }
 
 shared_ptr<Value> Interpreter::evalNumericBinaryExpression(shared_ptr<NumberValue> left, shared_ptr<OpNode> opNode, shared_ptr<NumberValue> right)
@@ -305,7 +387,7 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
         if (!varExpr)
         {
             error("expected variable expression", expression->getRange());
-            return nullptr; // or throw an error
+            return nullptr;
         }
         return evalVariableUnaryExpression(varExpr, opNode, prefix);
     }
@@ -314,7 +396,7 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
     if (!value)
     {
         error("unary expression evaluation failed", expression->getRange());
-        return nullptr; // or throw an error
+        return nullptr;
     }
     if (value->getType() == Value::Type::number)
     {
@@ -342,13 +424,13 @@ shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNod
         if (!value)
         {
             error("variable " + expression->getName() + " is not defined", expression->getRange());
-            return nullptr; // or throw an error
+            return nullptr;
         }
 
         if (value->getType() != Value::Type::number)
         {
             error("variable " + expression->getName() + " is not a number", expression->getRange());
-            return nullptr; // or throw an error
+            return nullptr;
         }
         auto numberValue = dynamic_pointer_cast<NumberValue>(value);
         auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
@@ -369,7 +451,7 @@ shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNod
         if (!value || value->getType() != Value::Type::number)
         {
             error("variable " + expression->getName() + " is not a number", expression->getRange());
-            return nullptr; // or throw an error
+            return nullptr;
         }
         auto numberValue = dynamic_pointer_cast<NumberValue>(value);
         auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
@@ -396,7 +478,8 @@ void Interpreter::visit(CallNode *node)
         for (auto &arg : node->getArgs()->getArgs())
         {
             arg->visit(this);
-            if (!returnValue) {
+            if (!returnValue)
+            {
                 error("function argument evaluated to null", arg->getRange());
                 return;
             }
@@ -406,49 +489,79 @@ void Interpreter::visit(CallNode *node)
 
     auto calleeNode = node->getCallee();
     calleeNode->visit(this);
-    if (!returnValue) {
-        error("function callee evaluated to null", calleeNode->getRange());
+    if (!returnValue)
+    {
         return;
     }
+
     shared_ptr<Value> callee = returnValue;
-    if (callee->getType() != Value::Type::function)
+    if (callee->getType() == Value::Type::function)
     {
-        error("callee is not a function", calleeNode->getRange());
-        returnValue = nullptr;
-        return;
-    }
+        shared_ptr<FunctionValue> function = dynamic_pointer_cast<FunctionValue>(callee);
+        if (!function)
+        {
+            error("callee could not be cast to FunctionValue", calleeNode->getRange());
+            returnValue = nullptr;
+            return;
+        }
 
-    shared_ptr<FunctionValue> function = dynamic_pointer_cast<FunctionValue>(callee);
-    if (!function)
-    {
-        error("callee could not be cast to FunctionValue", calleeNode->getRange());
-        returnValue = nullptr;
-        return;
-    }
+        if (function->getParameters() && (size_t)function->getParameters()->getParamCount() != args.size())
+        {
+            error("function '" + function->getName() + "' expects " +
+                std::to_string(function->getParameters()->getParamCount()) +
+                " arguments, but got " + std::to_string(args.size()), node->getRange());
+            returnValue = nullptr;
+            return;
+        }
+        else if (!function->getParameters() && !args.empty())
+        {
+            error("function '" + function->getName() + "' does not take any arguments, but got " + std::to_string(args.size()), node->getRange());
+            returnValue = nullptr;
+            return;
+        }
 
-    if (args.size() != (size_t)function->getParameters()->getParamCount())
+        shared_ptr<Environment> scope = make_shared<Environment>(function->getEnvironment());
+        for (size_t i = 0; i < args.size(); ++i)
+        {
+            scope->declare(function->getParameters()->getParam(i)->getName(), args[i]);
+        }
+        auto previousEnv = env;
+        env = scope;
+        try
+        {
+            function->getBody()->visit(this);
+            returnValue = nullptr;
+        }
+        catch (const ReturnException& e)
+        {
+            returnValue = e.value;
+        }
+        env = previousEnv;
+    }
+    else if (callee->getType() == Value::Type::builtin)
     {
-        error("argument count mismatch in function call", node->getRange());
+        shared_ptr<BuiltinFunctionValue> builtin = dynamic_pointer_cast<BuiltinFunctionValue>(callee);
+        if (!builtin)
+        {
+            error("callee could not be cast to BuiltinFunctionValue", calleeNode->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        try
+        {
+            returnValue = builtin->call(args, env);
+        }
+        catch (const ExitException& e)
+        {
+            throw e; // rethrow exit exception
+        }
+    }
+    else
+    {
+        error("cannot call non-function value: " + callee->typeAsString(), calleeNode->getRange());
         returnValue = nullptr;
-        return;
     }
-    shared_ptr<Environment> scope = make_shared<Environment>(function->getEnvironment());
-    for (size_t i = 0; i < args.size(); ++i)
-    {
-        scope->declare(function->getParameters()->getParam(i)->getName(), args[i]);
-    }
-    auto previousEnv = env;
-    env = scope;
-    try
-    {
-        function->getBody()->visit(this);
-        returnValue = make_shared<NullValue>();
-    }
-    catch (const ReturnException& e)
-    {
-        returnValue = e.value;
-    }
-    env = previousEnv;
 }
 
 void Interpreter::visit(ReturnStatementNode *node)
@@ -457,7 +570,8 @@ void Interpreter::visit(ReturnStatementNode *node)
     if (expr)
     {
         expr->visit(this);
-        if (!returnValue) {
+        if (!returnValue)
+        {
             error("return expression evaluated to null", node->getRange());
             throw ReturnException(make_shared<NullValue>(), node->getRange());
         }
@@ -529,18 +643,25 @@ void Interpreter::visit(AssignNode *node)
         return;
     }
     returnValue = env->assign(asignee->getName(), value);
-    if (!returnValue) {
+    if (!returnValue)
+    {
         error("assignment failed (possibly assigning to constant or undefined variable)", node->getRange());
     }
 }
 
 void Interpreter::visit(BlockNode *node)
 {
-    shared_ptr<Environment> blockEnv = make_shared<Environment>(env);
-    auto previousEnv = env;
-    env = blockEnv;
+    if (!node->getStatements())
+    {
+        returnValue = nullptr; // Empty block, nothing to do
+        return;
+    }
+
+    env = make_shared<Environment>(env);
     node->getStatements()->visit(this);
-    env = previousEnv;
+    env = env->getParent();
+
+    returnValue = nullptr;
 }
 
 void Interpreter::visit(IfStatementNode *node)
@@ -548,15 +669,14 @@ void Interpreter::visit(IfStatementNode *node)
     node->getCondition()->visit(this);
     if (!returnValue)
     {
-        returnValue = nullptr;
         return;
     }
 
     if (returnValue->getType() != Value::Type::boolean &&
-        returnValue->getType() != Value::Type::number)
+        returnValue->getType() != Value::Type::number &&
+        returnValue->getType() != Value::Type::string)
     {
-        error("condition must be a boolean expression",
-            node->getCondition()->getRange());
+        error("condition must be a boolean expression", node->getCondition()->getRange());
         returnValue = nullptr;
         return;
     }
@@ -583,7 +703,8 @@ void Interpreter::visit(FuncDeclNode *node)
         return;
     }
     auto function = make_shared<FunctionValue>(node->getName(), node->getParams(), node->getBody(), env);
-    returnValue = env->declare(node->getName(), function, node->isConst());
+    env->declare(node->getName(), function, node->isConst());
+    returnValue = nullptr;
 }
 
 void Interpreter::visit(WhileNode *node)
@@ -593,8 +714,6 @@ void Interpreter::visit(WhileNode *node)
         node->getCondition()->visit(this);
         if (!returnValue)
         {
-            error("condition evaluation failed", node->getCondition()->getRange());
-            returnValue = nullptr;
             break;
         }
 
@@ -617,6 +736,8 @@ void Interpreter::visit(WhileNode *node)
 
 void Interpreter::visit(ForStatementNode *node)
 {
+    shared_ptr<Environment> forEnv = make_shared<Environment>(env);
+    env = forEnv;
     // Initialize the loop variable
     if (node->getInit())
     {
@@ -625,14 +746,12 @@ void Interpreter::visit(ForStatementNode *node)
 
     while (true)
     {
-        // Check the loop condition
         if (node->getCondition())
         {
             node->getCondition()->visit(this);
             if (!returnValue)
             {
                 error("for loop condition evaluation failed", node->getCondition()->getRange());
-                returnValue = nullptr;
                 break;
             }
 
@@ -640,7 +759,6 @@ void Interpreter::visit(ForStatementNode *node)
                 returnValue->getType() != Value::Type::number)
             {
                 error("for loop condition must be a boolean expression", node->getCondition()->getRange());
-                returnValue = nullptr;
                 break;
             }
 
@@ -648,7 +766,6 @@ void Interpreter::visit(ForStatementNode *node)
             if (!condition) break;
         }
 
-        // Execute the loop body
         node->getBody()->visit(this);
 
         if (node->getIncrement())
@@ -657,5 +774,13 @@ void Interpreter::visit(ForStatementNode *node)
         }
     }
 
+    // Reset the environment after the loop
+    env = forEnv->getParent();
     returnValue = nullptr; // reset return value after the loop
+}
+
+void Interpreter::visit(NullNode *node)
+{
+    UNUSED(node);
+    returnValue = make_shared<NullValue>();
 }

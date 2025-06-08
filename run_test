@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+# this script takes a test by name ex: test_print and runs the interpreter
+# on the test file which will be test_print.li redirecting it to
+# test_print.out it will then diff -b the output with the expected output test_print.correct
+# it will return 0 if the test passes and 1 if it fails
+# if the -v option is given it will print the output of the test
+
+if [[ -z "$1" ]]; then
+  echo "Usage: $0 <test_name> [-v]"
+  exit 1
+fi
+test_name="$1"
+
+# check if the second argument is -v for verbose output
+verbose=0
+if [[ "$2" == "-v" ]]; then
+  verbose=1
+fi
+
+# check for the test folder and if it exists cd into it
+if [[ ! -d "tests" ]]; then
+  echo "Tests directory does not exist."
+  exit 1
+fi
+
+cd tests || exit 1
+
+# split the test name into the path and the name if there is a path, cd into it
+if [[ "$test_name" == */* ]]; then
+  IFS='/' read -r -a path_parts <<< "$test_name"
+  test_name="${path_parts[-1]}"
+  unset path_parts[-1]
+  for part in "${path_parts[@]}"; do
+    if [[ ! -d "$part" ]]; then
+      echo "Directory $part does not exist."
+      exit 1
+    fi
+    cd "$part" || exit 1
+  done
+fi
+
+test_file="${test_name}.li"
+expected_file="${test_name}.correct"
+output_file="${test_name}.out"
+if [[ ! -f "$test_file" ]]; then
+  echo "Test file $test_file does not exist."
+  exit 1
+fi
+if [[ ! -f "$expected_file" ]]; then
+  echo "Expected output file $expected_file does not exist."
+  exit 1
+fi
+
+lithium=$(which li)
+
+if [[ -z "$lithium" ]]; then
+  echo "Lithium interpreter not found in PATH."
+  exit 1
+fi
+
+# Run the interpreter on the test file
+$lithium "$test_file" > "$output_file"
+# Check if the output matches the expected output
+if diff -b "$output_file" "$expected_file" > /dev/null; then
+  if [[ $verbose -eq 1 ]]; then
+    echo "Test $test_name passed."
+  fi
+  rm "$output_file"
+  exit 0
+else
+  if [[ $verbose -eq 1 ]]; then
+    echo "Test $test_name failed."
+    echo "Output:"
+    cat "$output_file"
+    echo "Expected output:"
+    cat "$expected_file"
+  fi
+  rm "$output_file"
+  exit 1
+fi

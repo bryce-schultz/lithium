@@ -1,6 +1,20 @@
-#include "Value.h"
+#include "Values.h"
 #include "Utils.h"
 #include "ExpressionNode.h"
+
+string Value::typeAsString() const
+{
+    switch (type)
+    {
+        case Type::null: return "null";
+        case Type::number: return "number";
+        case Type::string: return "string";
+        case Type::boolean: return "boolean";
+        case Type::function: return "function";
+        case Type::builtin: return "builtin";
+        default: return "unknown";
+    }
+}
 
 Value::Type Value::getType() const
 {
@@ -12,176 +26,752 @@ bool Value::toBoolean() const
     return type != Type::null;
 }
 
-NumberValue::NumberValue(double value):
-    value(value)
+shared_ptr<Value> Value::add(const shared_ptr<Value> &other) const
 {
-    type = Type::number;
-}
+    if (!other) return nullptr;
 
-double NumberValue::getValue() const
-{
-    return value;
-}
-
-void NumberValue::setValue(double value)
-{
-    this->value = value;
-}
-
-bool NumberValue::isInteger() const
-{
-    return value == static_cast<int>(value);
-}
-
-string NumberValue::toString() const
-{
-    if (isInteger())
+    switch (other->getType())
     {
-        return std::to_string(static_cast<int>(value)); // Return as integer if it is an integer
+        case Type::null:
+            return add(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return add(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return add(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return add(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return add(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for addition
     }
-    return std::to_string(value); // Otherwise return as float
 }
 
-bool NumberValue::toBoolean() const
+shared_ptr<Value> Value::sub(const shared_ptr<Value> &other) const
 {
-    return value != 0.0; // Non-zero numbers are true, zero is false
-}
+    if (!other) return nullptr;
 
-StringValue::StringValue(const string &value):
-    value(value)
-{
-    type = Type::string;
-}
-
-const string &StringValue::getValue() const
-{
-    return value;
-}
-
-void StringValue::setValue(const string &value)
-{
-    this->value = value;
-}
-
-string StringValue::toString() const
-{
-    return value;
-}
-
-bool StringValue::toBoolean() const
-{
-    return !value.empty(); // Non-empty strings are true, empty strings are false
-}
-
-BooleanValue::BooleanValue(bool value):
-    value(value)
-{
-    type = Type::boolean;
-}
-
-bool BooleanValue::getValue() const
-{
-    return value;
-}
-
-void BooleanValue::setValue(bool value)
-{
-    this->value = value;
-}
-
-string BooleanValue::toString() const
-{
-    return value ? "true" : "false";
-}
-
-bool BooleanValue::toBoolean() const
-{
-    return value; // true is true, false is false
-}
-
-FunctionValue::FunctionValue(const std::string &name,
-    std::shared_ptr<ParamListNode> params,
-    std::shared_ptr<StatementNode> body,
-    std::shared_ptr<Environment> closureEnv):
-    name(name),
-    params(params),
-    body(body),
-    closureEnv(closureEnv)
-{
-    type = Type::function;
-}
-
-const string &FunctionValue::getName() const
-{
-    return name;
-}
-
-std::shared_ptr<ParamListNode> FunctionValue::getParameters() const
-{
-    return params;
-}
-
-std::shared_ptr<StatementNode> FunctionValue::getBody() const
-{
-    return body;
-}
-
-std::shared_ptr<Environment> FunctionValue::getEnvironment() const
-{
-    return closureEnv;
-}
-
-string FunctionValue::toString() const
-{
-    return "<function " + name + ">";
-}
-
-ObjectValue::ObjectValue()
-{
-    type = Type::object;
-}
-
-void ObjectValue::setProperty(const string &name, ExpressionNode *value)
-{
-    properties[name] = value;
-}
-
-ExpressionNode *ObjectValue::getProperty(const string &name) const
-{
-    auto it = properties.find(name);
-    if (it != properties.end())
+    switch (other->getType())
     {
-        return it->second;
+        case Type::null:
+            return sub(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return sub(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return sub(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return sub(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return sub(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for subtraction
     }
-    return nullptr; // or throw an error if property not found
 }
 
-bool ObjectValue::hasProperty(const string &name) const
+shared_ptr<Value> Value::mul(const shared_ptr<Value> &other) const
 {
-    return properties.find(name) != properties.end();
-}
+    if (!other) return nullptr;
 
-string ObjectValue::toString() const
-{
-    string result = "{";
-    for (const auto &pair : properties)
+    switch (other->getType())
     {
-        if (result.length() > 1) // not the first property
-        {
-            result += ", ";
-        }
-        result += pair.first;
+        case Type::null:
+            return mul(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return mul(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return mul(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return mul(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return mul(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for multiplication
     }
-    result += "}";
-    return result;
 }
 
-NullValue::NullValue()
+shared_ptr<Value> Value::div(const shared_ptr<Value> &other) const
 {
-    type = Type::null;
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return div(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return div(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return div(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return div(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return div(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for division
+    }
 }
 
-string NullValue::toString() const
+shared_ptr<Value> Value::mod(const shared_ptr<Value> &other) const
 {
-    return "null";
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return mod(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return mod(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return mod(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return mod(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return mod(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for modulo
+    }
+}
+
+shared_ptr<Value> Value::eq(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return eq(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return eq(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return eq(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return eq(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return eq(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for equality check
+    }
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return ne(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return ne(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return ne(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return ne(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return ne(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for inequality check
+    }
+}
+
+shared_ptr<Value> Value::lt(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return lt(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return lt(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return lt(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return lt(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return lt(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for less than check
+    }
+}
+
+shared_ptr<Value> Value::le(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return le(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return le(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return le(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return le(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return le(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for less than or equal check
+    }
+}
+
+shared_ptr<Value> Value::gt(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return gt(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return gt(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return gt(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return gt(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return gt(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for greater than check
+    }
+}
+
+shared_ptr<Value> Value::ge(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return ge(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return ge(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return ge(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return ge(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return ge(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for greater than or equal check
+    }
+}
+
+shared_ptr<Value> Value::logicalAnd(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return logicalAnd(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return logicalAnd(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return logicalAnd(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return logicalAnd(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return logicalAnd(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for logical AND
+    }
+}
+
+shared_ptr<Value> Value::logicalOr(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return logicalOr(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return logicalOr(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return logicalOr(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return logicalOr(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return logicalOr(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for logical OR
+    }
+}
+
+shared_ptr<Value> Value::add(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::add(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::add(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::add(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::add(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::add(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::sub(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::sub(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::sub(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::sub(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::sub(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::sub(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mul(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mul(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mul(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mul(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mul(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mul(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::div(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::div(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::div(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::div(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::div(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::div(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mod(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+shared_ptr<Value> Value::mod(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mod(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mod(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mod(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mod(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::eq(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::eq(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::eq(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::eq(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::eq(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::eq(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::lt(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::lt(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::lt(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::lt(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::lt(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::lt(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::le(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::le(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::le(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::le(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::le(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::le(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::gt(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::gt(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::gt(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::gt(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::gt(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::gt(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ge(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ge(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ge(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ge(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ge(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ge(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalAnd(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalAnd(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalAnd(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalAnd(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalAnd(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalAnd(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalOr(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalOr(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalOr(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalOr(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalOr(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalOr(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::unaryMinus() const
+{
+    return nullptr;
+}
+
+shared_ptr<Value> Value::unaryNot() const
+{
+    return nullptr;
 }

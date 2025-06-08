@@ -14,10 +14,12 @@ using std::cout;
 using std::endl;
 using std::shared_ptr;
 
+constexpr const char *INTERPRETER_VERSION = "1.0";
+
 class Interpreter : public Visitor
 {
 public:
-    Interpreter(std::shared_ptr<Environment> env = nullptr);
+    Interpreter(bool isInteractive, std::shared_ptr<Environment> env = nullptr);
     virtual void visitAllChildren(Node *node) override;
 
     // Override visit methods for different node types
@@ -36,6 +38,7 @@ public:
     virtual void visit(WhileNode *node) override;
     virtual void visit(ReturnStatementNode *node) override;
     virtual void visit(ForStatementNode *node) override;
+    virtual void visit(NullNode *node) override;
 private:
     shared_ptr<Value> evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right);
     shared_ptr<Value> evalNumericBinaryExpression(shared_ptr<NumberValue> left, shared_ptr<OpNode> opNode, shared_ptr<NumberValue> right);
@@ -46,6 +49,7 @@ private:
     shared_ptr<Value> evalNumericUnaryExpression(shared_ptr<NumberValue> value, shared_ptr<OpNode> opNode, bool prefix = false);
     shared_ptr<Value> evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
 private:
+    bool isInteractive;
     shared_ptr<Environment> env;
     shared_ptr<Value> returnValue;
 };

@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+verbose=""
+
+# check for the -v flag to enable verbose output
+while getopts "v" opt; do
+  case $opt in
+    v)
+      verbose="-v"
+      ;;
+    *)
+      echo "Usage: $0 [-v]"
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+# check for the test folder and if it exists cd into it
+if [[ ! -d "tests" ]]; then
+  echo "Tests directory does not exist."
+  exit 1
+fi
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+RESET='\033[0m'
+
+run_test="$(dirname "$0")/run_test"
+
+cd "$(dirname "$run_test")" || exit 1
+
+# find all .li files under tests/, outputting paths relative to tests/
+cd tests || exit 1
+mapfile -t test_files < <(find . -type f -name '*.li' | sed 's|^./||')
+cd ..
+
+if [[ ${#test_files[@]} -eq 0 ]]; then
+  echo -e "${RED}error${RESET}: no test files found."
+  exit 1
+fi
+
+did_fail=0
+# call run_test on each test file (relative to tests/)
+for test_file in "${test_files[@]}"; do
+  test_name="${test_file%.li}"
+  "$run_test" "$test_name" "$verbose"
+  if [[ $? -ne 0 ]]; then
+    echo -e "test $test_name ${RED}failed${RESET}."
+    did_fail=1
+  else
+    echo -e "test $test_name ${GREEN}passed${RESET}."
+  fi
+done
+
+if [[ $did_fail -eq 1 ]]; then
+  echo -e "\n${RED}some tests failed.${RESET}"
+  exit 1
+else
+  echo -e "\n${GREEN}all tests passed!${RESET}"
+  exit 0
+fi

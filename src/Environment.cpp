@@ -31,6 +31,18 @@ std::shared_ptr<Value> Environment::declare(const string &name, std::shared_ptr<
     return value;
 }
 
+shared_ptr<Value> Environment::redeclare(const string &name, shared_ptr<Value> value, bool constant)
+{
+    variables[name] = value;
+
+    if (constant)
+    {
+        constants.insert(name);
+    }
+
+    return value;
+}
+
 std::shared_ptr<Value> Environment::assign(const string &name, std::shared_ptr<Value> value)
 {
     std::shared_ptr<Environment> env = resolve(name);
@@ -62,7 +74,9 @@ std::shared_ptr<Environment> Environment::resolve(const string &name) const
     {
         return std::const_pointer_cast<Environment>(shared_from_this());
     }
+
     auto parentPtr = parent.lock();
+
     if (!parentPtr)
     {
         // TODO: Handle error for unresolved variable
@@ -89,7 +103,9 @@ void Environment::dump() const
     {
         cout << "  " << name << "\n";
     }
+
     auto parentPtr = parent.lock();
+
     if (parentPtr)
     {
         cout << "Parent Environment:\n";

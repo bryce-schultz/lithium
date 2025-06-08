@@ -8,26 +8,30 @@
 using std::string;
 using std::map;
 using std::set;
+using std::shared_ptr;
+using std::weak_ptr;
+using std::enable_shared_from_this;
 
 class Value; // forward declaration
 
-class Environment : public std::enable_shared_from_this<Environment>
+class Environment : public enable_shared_from_this<Environment>
 {
 public:
-    Environment(std::shared_ptr<Environment> parent = nullptr);
+    Environment(shared_ptr<Environment> parent = nullptr);
 
-    std::shared_ptr<Value> declare(const string &name, std::shared_ptr<Value> value, bool constant = false);
-    std::shared_ptr<Value> assign(const string &name, std::shared_ptr<Value> value);
-    std::shared_ptr<Value> lookup(const string &name) const;
-    std::shared_ptr<Environment> resolve(const string &name) const;
-    std::shared_ptr<Environment> getParent() const;
+    shared_ptr<Value> declare(const string &name, shared_ptr<Value> value, bool constant = false);
+    shared_ptr<Value> redeclare(const string &name, shared_ptr<Value> value, bool constant = false);
+    shared_ptr<Value> assign(const string &name, shared_ptr<Value> value);
+    shared_ptr<Value> lookup(const string &name) const;
+    shared_ptr<Environment> resolve(const string &name) const;
+    shared_ptr<Environment> getParent() const;
 
-    void dump() const; // For debugging purposes, prints all variables and constants
+    void dump() const; // for debugging purposes, prints all variables and constants
 private:
     bool hasVariable(const string &name) const;
     bool hasConstant(const string &name) const;
 private:
-    std::weak_ptr<Environment> parent; // changed from shared_ptr to weak_ptr
-    map<string, std::shared_ptr<Value>> variables; // runtime variables
+    weak_ptr<Environment> parent; // changed from shared_ptr to weak_ptr
+    map<string, shared_ptr<Value>> variables; // runtime variables
     set<string> constants; // constants
 };

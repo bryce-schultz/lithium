@@ -68,6 +68,13 @@ string Utils::getInputLine()
         if (indent == 0 && part.back() != '{' && part.back() != '(' && part.back() != '[' && part.back() != ',')
             break;
     }
+
+    // remove trailing newline if it exists
+    /*if (!line.empty() && line.back() == '\n')
+    {
+        line.pop_back();
+    }*/
+
     return line;
 }
 

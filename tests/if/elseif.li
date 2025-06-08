@@ -1,0 +1,77 @@
+if (1)
+{
+    print(0);
+}
+else if (0)
+{
+    print(1);
+}
+else
+{
+    print(2);
+}
+
+if (0)
+{
+    print(3);
+}
+else if (1)
+{
+    print(4);
+}
+else
+{
+    print(5);
+}
+
+if (10)
+{
+    print(6);
+}
+else if (0)
+{
+    print(7);
+}
+else
+{
+    print(8);
+}
+
+if (0)
+{
+    print(9);
+}
+else if (false)
+{
+    print(10);
+}
+else
+{
+    print(11);
+}
+
+if (10.1)
+{
+    print(12);
+}
+else if (10)
+{
+    print(13);
+}
+else
+{
+    print(14);
+}
+
+if ("hello")
+{
+    print(15);
+}
+else if ("")
+{
+    print(16);
+}
+else
+{
+    print(17);
+}

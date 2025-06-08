@@ -8,10 +8,8 @@
 //**************************************************
 
 #include "Visitor.h"
-
 #include "Nodes.h"
-
-#define UNUSED(x) (void)(x) // Macro to avoid unused parameter warnings
+#include "Utils.h"
 
 void Visitor::visit(Node *node)
 {
@@ -120,6 +118,11 @@ void Visitor::visit(FuncDeclNode *node)
 }
 
 void Visitor::visit(ForStatementNode *node)
+{
+    UNUSED(node);
+}
+
+void Visitor::visit(NullNode *node)
 {
     UNUSED(node);
 }

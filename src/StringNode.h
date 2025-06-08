@@ -32,7 +32,7 @@ public:
 
     void visit(Visitor *visitor) override;
 private:
-    const Token &token;
+    Token token;
 };
 
 using StringNodePtr = shared_ptr<StringNode>;
