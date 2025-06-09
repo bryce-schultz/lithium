@@ -20,6 +20,15 @@ using std::set;
 static set<Location> errorLocations;
 static bool reportAllErrorsFlag = false;
 
+#ifdef DEBUG
+static bool includeCppFileAndLine = true;
+#else
+static bool includeCppFileAndLine = false;
+#endif
+
+#define bar "│ "
+#define ball "○ "
+
 void reportAllErrors(bool reportAll)
 {
     reportAllErrorsFlag = reportAll;
@@ -58,10 +67,10 @@ string getErrorLineSquiggles(const Range &range)
     }
 
     stringstream result;
-    result << "│  " << line << "\n│  ";
+    result << bar << line << "\n" bar;
     result << string(start, ' ');
     result << red << string(end - start, '~') << reset; // Add squiggles from start to end position
-    result << "\n│  ";
+    result << "\n" bar;
     result << string(start, ' ') << boldRed << "^" << reset; // Add caret at the start position
 
     return result.str();
@@ -83,10 +92,10 @@ string getErrorLineLocationSquiggles(const Location &location, const Range &rang
     }
 
     stringstream result;
-    result << "│  " << line << "\n│  ";
+    result << bar << line << "\n" bar;
     result << string(start, ' ');
     result << red << string(end - start, '~') << reset; // add squiggles from start to end position
-    result << "\n│  ";
+    result << "\n" bar;
     result << string(tokenStart, ' ') << boldRed << "^" << reset; // add caret at the start position
 
     return result.str();
@@ -97,9 +106,9 @@ void generalError(const string &msg, const string &cppFile, int cppLine)
     stringstream ss;
     ss << red << "error" << reset << ": " << msg;
 
-    if (!cppFile.empty() && cppLine > 0)
+    if (includeCppFileAndLine && !cppFile.empty() && cppLine > 0)
     {
-        ss << "\n╰─ @ " << cppFile << ":" << cppLine;
+        ss << "\n" ball << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;
@@ -116,9 +125,9 @@ void tokenError(const string &msg, const Token &token, const string &cppFile, in
     ss << red << "error" << reset << ": " << token.getRange().getStart().toString() << ": " << msg << "\n"
     << getErrorLineSquiggles(token.getRange());
 
-    if (!cppFile.empty() && cppLine > 0)
+    if (includeCppFileAndLine && !cppFile.empty() && cppLine > 0)
     {
-        ss <<  "\n╰─ @ " << cppFile << ":" << cppLine;
+        ss <<  "\n" ball << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;
@@ -137,9 +146,9 @@ void rangeError(const string &msg, const Range &range, const string &cppFile, in
     ss << red << "error" << reset << ": " << range.getStart().toString() << ": " << msg << "\n"
     << getErrorLineSquiggles(range);
 
-    if (!cppFile.empty() && cppLine > 0)
+    if (includeCppFileAndLine && !cppFile.empty() && cppLine > 0)
     {
-        ss << "\n╰─ @ " << cppFile << ":" << cppLine;
+        ss << "\n" ball << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;
@@ -163,9 +172,9 @@ void tokenRangeError(const string &msg, const Token &token, const Range &range, 
     ss << red << "error" << reset << ": " << range.getStart().toString() << ": " << msg << "\n"
     << getErrorLineLocationSquiggles(token.getRange().getStart(), range);
 
-    if (!cppFile.empty() && cppLine > 0)
+    if (includeCppFileAndLine && !cppFile.empty() && cppLine > 0)
     {
-        ss << "\n╰─ @ " << cppFile << ":" << cppLine;
+        ss << "\n" ball << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;
@@ -190,9 +199,9 @@ void locationRangeError(const string &msg, const Location &location, const Range
     ss << red << "error" << reset << ": " << location.toString() << ": " << msg << "\n"
     << getErrorLineLocationSquiggles(location, range);
 
-    if (!cppFile.empty() && cppLine > 0)
+    if (includeCppFileAndLine && !cppFile.empty() && cppLine > 0)
     {
-        ss << "\n╰─ @ " << cppFile << ":" << cppLine;
+        ss << "\n" ball << cppFile << ":" << cppLine;
     }
 
     cerr << ss.str() << endl;

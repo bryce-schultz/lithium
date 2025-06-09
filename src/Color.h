@@ -21,6 +21,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Color& color);
 private:
     string code;
+    static bool enabled;
 };
 
 // standard asni colors

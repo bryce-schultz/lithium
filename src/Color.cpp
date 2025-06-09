@@ -34,6 +34,8 @@ const Color reset = Color::fromCode("0");
 const Color bold = Color::fromCode("1");
 const Color underline = Color::fromCode("4");
 
+bool Color::enabled = isatty(fileno(stderr));
+
 Color::Color():
     code("\033[0m")
 { }
@@ -66,6 +68,16 @@ Color Color::fromCode(const std::string& colorCode)
 
 std::ostream& operator<<(std::ostream& os, const Color& color)
 {
+    if (!Color::enabled)
+    {
+        return os; // If color is not enabled, do nothing
+    }
+
+    if (!os.good())
+    {
+        return os; // If the stream is not good, do nothing
+    }
+
     os << color.code; // Apply color code to output stream
     return os;
 }

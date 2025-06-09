@@ -70,7 +70,7 @@ fi
   echo -e "${blue}╰────────────────────────────────────────────╯${nc}"
 }
 
-"$lithium" "$test_file" > "$output_file"
+"$lithium" "$test_file" > "$output_file" 2>&1
 if diff -b "$output_file" "$expected_file" > /dev/null; then
   [[ $silent -eq 0 ]] && {
     echo -e " ${bold_green}●${nc} ${test_name}"
