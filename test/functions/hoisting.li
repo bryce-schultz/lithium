@@ -1,0 +1,33 @@
+let a = 5;
+a = 10;
+let b = a;
+
+test();
+
+b = 20;
+
+test();
+
+fn test()
+{
+    print(b);
+    print("Hoisting test");
+}
+
+{
+    let a = 5;
+    a = 10;
+    let b = a;
+
+    test();
+
+    b = 20;
+
+    test();
+
+    fn test()
+    {
+        print(b);
+        print("Hoisting test");
+    }
+}

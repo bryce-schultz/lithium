@@ -1,0 +1,4 @@
+error: function_not_in_scope.li:1:1: 'test' is not defined
+│ test();
+│ ~~~~
+│ ^

@@ -1,0 +1,8 @@
+test();
+
+{
+    fn test()
+    {
+        print("This function is not in scope yet.");
+    }
+}

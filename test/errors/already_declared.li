@@ -1,0 +1,11 @@
+fn test()
+{
+    print("test");
+}
+
+fn test()
+{
+    print("test");
+}
+
+test();

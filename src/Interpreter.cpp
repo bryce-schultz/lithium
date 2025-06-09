@@ -34,9 +34,9 @@ using std::fmod;
 #define errorAtToken(msg, token, range) \
     tokenRangeError(msg, token, range, __FILE__, __LINE__)
 
-#define variableDefined(node) errorAtToken("variable '" + Utils::truncate(node->getName(), MAX_PEEK) + "' is already defined", node->getToken(), node->getRange())
+#define alreadyDefined(node) errorAtToken("'" + Utils::truncate(node->getName(), MAX_PEEK) + "' is already defined", node->getToken(), node->getRange())
 
-#define variableNotDefined(node) errorAtToken("variable '" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
+#define notDefined(node) errorAtToken("'" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
 
 Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env):
     isInteractive(isInteractive),
@@ -96,20 +96,38 @@ void Interpreter::visitAllChildren(Node *node)
 
 void Interpreter::visit(StatementsNode *node)
 {
+    // First pass: hoist all function declarations
     for (auto &statement : node->getStatements())
     {
-        if (!statement)
+        if (auto funcDecl = std::dynamic_pointer_cast<FuncDeclNode>(statement))
         {
-            continue;
+            shared_ptr<Value> value = env->lookupLocal(funcDecl->getName());
+            // Only declare if not already declared (to avoid redeclaration error)
+            if (value)
+            {
+                alreadyDefined(funcDecl);
+                continue;
+            }
+
+            auto function = make_shared<FunctionValue>(
+                funcDecl->getName(),
+                funcDecl->getParams(),
+                funcDecl->getBody(),
+                env
+            );
+            env->declare(funcDecl->getName(), function, funcDecl->isConst());
         }
+    }
 
+    // Second pass: execute all statements
+    for (auto &statement : node->getStatements())
+    {
+        if (!statement) continue;
         returnValue = nullptr;
-        env->redeclare("LINE", make_shared<NumberValue>(statement->getRange().getStart().getLine()), true); // Declare a constant variable for the current line number
+        env->redeclare("LINE", make_shared<NumberValue>(statement->getRange().getStart().getLine()), true);
         statement->visit(this);
-
         if (returnValue && isInteractive)
         {
-            // if in interactive mode, print the return value
             cout << returnValue->toString() << endl;
         }
     }
@@ -501,7 +519,7 @@ void Interpreter::visit(VarDeclNode *node)
     returnValue = env->declare(node->getName(), returnValue, node->isConst());
     if (!returnValue)
     {
-        variableDefined(node);
+        alreadyDefined(node);
     }
 
     returnValue = nullptr;
@@ -512,7 +530,7 @@ void Interpreter::visit(VarExprNode *node)
     returnValue = env->lookup(node->getName());
     if (!returnValue)
     {
-        variableNotDefined(node);
+        notDefined(node);
         returnValue = nullptr;
     }
 }
@@ -626,13 +644,13 @@ void Interpreter::visit(IfStatementNode *node)
 
 void Interpreter::visit(FuncDeclNode *node)
 {
-    if (env->lookup(node->getName()))
+    /*if (env->lookup(node->getName()))
     {
-        variableDefined(node);
+        alreadyDefined(node);
         return;
-    }
+    }*/
     auto function = make_shared<FunctionValue>(node->getName(), node->getParams(), node->getBody(), env);
-    env->declare(node->getName(), function, node->isConst());
+    env->redeclare(node->getName(), function, node->isConst());
     returnValue = nullptr;
 }
 

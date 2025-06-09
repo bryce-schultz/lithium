@@ -83,8 +83,26 @@ string getErrorLineLocationSquiggles(const Location &location, const Range &rang
     size_t end = range.getEnd().getColumn() - 1; // Convert to 0-based index
     size_t tokenStart = location.getColumn() - 1; // Convert to 0-based index
 
+    size_t startLine = range.getStart().getLine() - 1; // Convert to 0-based index
+    size_t endLine = range.getEnd().getLine() - 1; // Convert to 0-based index
+
     if (start > line.length()) start = line.length() - 1;
     if (end > line.length()) end = line.length() - 1;
+
+    if (start > end && startLine == endLine)
+    {
+        std::swap(start, end);
+    }
+    else if (startLine < endLine)
+    {
+        // only print to the end of the line if the range spans multiple lines
+        end = line.length();
+    }
+
+    if (start == end)
+    {
+        end = start + 1; // ensure at least one character is highlighted, for expected end tokens like ';'
+    }
 
     if (start == end)
     {

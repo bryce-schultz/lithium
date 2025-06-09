@@ -410,6 +410,7 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
 
     auto funcDecl = make_shared<FuncDeclNode>(identifier, params, bodyResult.node);
     funcDecl->setRangeStart(fnToken.getRange().getStart());
+    //funcDecl->setRangeEnd(closeParenToken.getRange().getEnd());
 
     accept(funcDecl);
 }

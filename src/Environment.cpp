@@ -68,6 +68,16 @@ std::shared_ptr<Value> Environment::lookup(const string &name) const
     return env ? env->variables.at(name) : nullptr;
 }
 
+shared_ptr<Value> Environment::lookupLocal(const string &name) const
+{
+    auto it = variables.find(name);
+    if (it != variables.end())
+    {
+        return it->second;
+    }
+    return nullptr;
+}
+
 std::shared_ptr<Environment> Environment::resolve(const string &name) const
 {
     if (hasVariable(name))
