@@ -14,7 +14,11 @@ public:
 public:
     virtual void visit(FuncDeclNode *node) override;
     virtual void visit(ReturnStatementNode *node) override;
+    virtual void visit(ForStatementNode *node) override;
+    virtual void visit(WhileNode *node) override;
+    virtual void visit(BreakNode *node) override;
 public:
     int errorCount;
     int functionDepth;
+    int loopDepth;
 };

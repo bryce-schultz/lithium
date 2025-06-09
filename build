@@ -61,33 +61,54 @@ contains_no_test()
 build_target()
 {
     target=$1
+    failed=0
 
     build_args_without_no_test=$(echo $build_args | sed 's/--no-test//g')
 
     cd src/$target
-    make $build_args_without_no_test > /dev/null
 
     if [ -z "$target" ]; then
         target="src"
     fi
 
+    make $build_args_without_no_test > /dev/null
+
     if [ $? -eq 0 ]; then
         success $target
     else
+        failed=1
         failure $target
     fi
 
     cd $DIR
+
+    return $failed
 }
 
 do_builds()
 {
+    build_failed=0
     print_build_header
     build_target
 
+    if [ $? -ne 0 ]; then
+        build_failed=1
+    fi
+
     contains_clean && {
-        echo -e "${blue}Cleaned Project${nc}"
+        echo -e "\n${green}╭────────────────────────────────────────────╮${nc}"
+        echo -e   "${green}│                  ${bold_green}Cleaned                   │${nc}"
+        echo -e   "${green}╰────────────────────────────────────────────╯${nc}"
+        exit 0
     }
+
+    if [ $build_failed -eq 1 ]; then
+        exit 1
+    fi
+
+    echo -e "\n${green}╭────────────────────────────────────────────╮${nc}"
+    echo -e   "${green}│              ${bold_green}Builds Succeeded              │${nc}"
+    echo -en  "${green}╰────────────────────────────────────────────╯${nc}"
 }
 
 do_tests()

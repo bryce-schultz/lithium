@@ -9,6 +9,7 @@ stmt -> exprStmt
       | ifStmt
       | block
       | returnStmt
+      | breakStmt
 
 exprStmt -> LET IDENTIFIER = expr ;
           | CONST IDENTIFIER = expr ;
@@ -28,6 +29,8 @@ block -> { stmts }
 
 returnStmt -> RETURN expression ;
             | RETURN ;
+
+breakStmt -> BREAK ;
 
 printStmt -> PRINT ( exprList ) ;
            | PRINT ( ) ;

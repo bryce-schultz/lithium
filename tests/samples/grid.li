@@ -1,0 +1,15 @@
+for (let i = 0; i < 64; i++)
+{
+    if (i % 8 == 0 && i != 0)
+    {
+        print();
+    }
+
+    if (i < 10)
+    {
+        printall("0");
+    }
+    printall(i, "");
+}
+
+print();

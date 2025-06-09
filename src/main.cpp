@@ -14,6 +14,7 @@
 #include "Environment.h"
 #include "SemanticErrorVisitor.h"
 #include "Values.h"
+#include "Error.h"
 
 int runInteractiveMode();
 int runFileMode(const std::string &filename);
@@ -56,6 +57,7 @@ int runInteractiveMode()
         Interpreter interpreter(true, env); // Use the shared environment
         interpreter.visitAllChildren(result.node.get());
         line.clear();
+        clearErrorLocations();
     }
 
     return 0;

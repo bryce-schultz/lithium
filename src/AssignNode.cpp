@@ -13,14 +13,21 @@
 #include "AssignNode.h"
 #include "Visitor.h"
 
-AssignNode::AssignNode(shared_ptr<ExpressionNode> asignee, shared_ptr<ExpressionNode> expr):
+AssignNode::AssignNode(shared_ptr<ExpressionNode> asignee, const Token &opToken, shared_ptr<ExpressionNode> expr):
     asignee(asignee),
+    opToken(opToken),
     expr(expr)
 {
     if (asignee)
     {
         setRange(asignee->getRange());
     }
+    else
+    {
+        setRangeStart(opToken.getRange().getStart());
+    }
+    setRangeEnd(opToken.getRange().getEnd());
+
     if (expr)
     {
         setRangeEnd(expr->getRange().getEnd());
@@ -41,6 +48,12 @@ shared_ptr<ExpressionNode> AssignNode::getAsignee() const
 shared_ptr<ExpressionNode> AssignNode::getExpr() const
 {
     return expr;
+}
+
+int AssignNode::getOp() const
+{
+    // Return the operator token type, e.g., '=', '+=', etc.
+    return opToken.getType();
 }
 
 void AssignNode::visit(Visitor *visitor)

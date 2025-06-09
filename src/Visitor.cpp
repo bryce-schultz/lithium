@@ -126,3 +126,8 @@ void Visitor::visit(NullNode *node)
 {
     UNUSED(node);
 }
+
+void Visitor::visit(BreakNode *node)
+{
+    UNUSED(node);
+}

@@ -11,9 +11,9 @@ blue='\033[34m'
 bold_blue='\033[1;34m'
 nc='\033[0m'
 
-verbose=""
+verbose="-s"
 while getopts "v" opt; do
-  [[ $opt == v ]] && verbose="-v"
+  [[ $opt == v ]] && verbose=""
 done
 shift $((OPTIND - 1))
 

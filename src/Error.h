@@ -38,9 +38,13 @@ using std::cerr;
 using std::stringstream;
 using std::endl;
 
+void reportAllErrors(bool reportAll = true);
+void clearErrorLocations();
+
 string getErrorLineSquiggles(const Range &range);
 string getErrorLineLocationSquiggles(const Location &location, const Range &range);
 
+void generalError(const string &msg, const string &cppFile = "", int cppLine = 0);
 void tokenError(const string &msg, const Token &token, const string &cppFile = "", int cppLine = 0);
 void rangeError(const string &msg, const Range &range, const string &cppFile = "", int cppLine = 0);
 void tokenRangeError(const string &msg, const Token &token, const Range &range, const string &cppFile = "", int cppLine = 0);

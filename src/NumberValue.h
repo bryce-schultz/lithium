@@ -2,12 +2,13 @@
 
 #include <memory>
 
-#include "Value.h"
+#include "Values.h"
+#include "Range.h"
 
 class NumberValue : public Value
 {
 public:
-    NumberValue(double value);
+    NumberValue(double value, Range range = {});
 
     double getValue() const;
     void setValue(double value);
@@ -43,6 +44,8 @@ public:
     virtual shared_ptr<Value> logicalAnd(const shared_ptr<NumberValue> &other) const override;
 
     virtual shared_ptr<Value> logicalOr(const shared_ptr<NumberValue> &other) const override;
+
+    virtual shared_ptr<Value> unaryMinus() const override;
 private:
     double value;
 };

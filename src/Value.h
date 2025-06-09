@@ -6,6 +6,8 @@
 #include "StatementsNode.h"
 #include "Environment.h"
 #include "ParamListNode.h"
+#include "Range.h"
+#include "Location.h"
 
 using std::string;
 using std::static_pointer_cast;
@@ -32,8 +34,10 @@ public:
 
     string typeAsString() const;
 public:
+    Value(Type type, Range range = {});
     virtual ~Value() = default;
     Type getType() const;
+    Range getRange() const;
 
     virtual string toString() const = 0; // makes this class abstract
     virtual bool toBoolean() const; // Default implementation for converting to boolean
@@ -164,4 +168,5 @@ public:
     virtual shared_ptr<Value> unaryNot() const;
 protected:
     Type type;
+    Range range;
 };

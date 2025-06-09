@@ -31,6 +31,7 @@ class WhileNode;
 class FuncDeclNode;
 class ForStatementNode;
 class NullNode;
+class BreakNode;
 
 class Visitor
 {
@@ -63,4 +64,5 @@ public:
     virtual void visit(FuncDeclNode *node);
     virtual void visit(ForStatementNode *node);
     virtual void visit(NullNode *node);
+    virtual void visit(BreakNode *node);
 };

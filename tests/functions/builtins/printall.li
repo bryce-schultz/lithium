@@ -1,0 +1,3 @@
+printall(); # this will print nothing, not even a newline
+printall(10, 20, 30, 40, 50, "\n");
+printall("Hello", "World", "from", "Lithium", "\n");

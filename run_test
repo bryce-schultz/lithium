@@ -1,16 +1,29 @@
 #!/usr/bin/env bash
 
-# Usage: run_test <test_name> [-v]
-# Runs the interpreter on tests/<test_name>.li, compares output to .correct, and returns 0 if the test passes.
+green='\033[0;32m'
+bold_green='\033[1;32m'
+red='\033[0;31m'
+bold_red='\033[1;31m'
+blue='\033[0;34m'
+bold_blue='\033[1;34m'
+nc='\033[0m'
 
 if [[ -z "$1" ]]; then
-  echo "Usage: $0 <test_name> [-v]"
+  echo "Usage: $0 (<test> | -l) [-s]"
   exit 1
 fi
 
 test_name="$1"
-verbose=0
-[[ "$2" == "-v" ]] && verbose=1
+silent=0
+[[ "$2" == "-s" ]] && silent=1
+[[ "$1" == "-l" ]] && {
+  if [[ $silent -eq 1 ]]; then
+    exit 0
+  fi
+  echo "Available tests:"
+  find tests -type f -name '*.li' | sed 's|^tests/||' | sed 's|\.li$||'
+  exit 0
+}
 
 if [[ ! -d "tests" ]]; then
   echo "Tests directory does not exist."
@@ -51,14 +64,29 @@ if [[ -z "$lithium" ]]; then
   exit 1
 fi
 
+[[ $silent -eq 0 ]] && {
+  echo -e "${blue}╭────────────────────────────────────────────╮${nc}"
+  echo -e "${blue}│                ${bold_blue}Running Test                │${nc}"
+  echo -e "${blue}╰────────────────────────────────────────────╯${nc}"
+}
+
 "$lithium" "$test_file" > "$output_file"
 if diff -b "$output_file" "$expected_file" > /dev/null; then
+  [[ $silent -eq 0 ]] && {
+    echo -e " ${bold_green}●${nc} ${test_name}"
+    echo -e "${green}╭────────────────────────────────────────────╮${nc}"
+    echo -e "${green}│                ${bold_green}Test Passed                 │${nc}"
+    echo -e "${green}╰────────────────────────────────────────────╯${nc}"
+  }
   rm "$output_file"
   exit 0
 else
-  [[ $verbose -eq 1 ]] && {
-    echo "Test $test_name failed."
+  [[ $silent -eq 0 ]] && {
     diff -b "$output_file" "$expected_file"
+    echo -e " ${bold_red}●${nc} ${test_name}"
+    echo -e "${red}╭────────────────────────────────────────────╮${nc}"
+    echo -e "${red}│                ${bold_red}Test Passed                 │${nc}"
+    echo -e "${red}╰────────────────────────────────────────────╯${nc}"
   }
   exit 1
 fi

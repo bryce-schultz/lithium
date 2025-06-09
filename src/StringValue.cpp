@@ -2,10 +2,10 @@
 
 #include "Values.h"
 
-StringValue::StringValue(const string &value)
+StringValue::StringValue(const string &value, Range range):
+    Value(Type::string, range), // set the type to string
+    value(value)
 {
-    this->value = value;
-    type = Type::string;
     replaceEscapeSequences();
 }
 

@@ -1,0 +1,20 @@
+fn test()
+{
+    return null;
+}
+
+fn test2()
+{ }
+
+print(type("hello"));
+print(type(10));
+print(type(10.1));
+print(type(true));
+print(type(false));
+print(type(null));
+print(type(test));
+print(type(test()));
+print(type(test2()));
+print(type(10 + 10));
+print(type("Hello" + " World"));
+print(type("number: " + 10));

@@ -2,11 +2,10 @@
 
 #include "Values.h"
 
-BooleanValue::BooleanValue(bool value):
+BooleanValue::BooleanValue(bool value, Range range):
+    Value(Type::boolean, range), // set the type to boolean
     value(value)
-{
-    type = Type::boolean;
-}
+{ }
 
 bool BooleanValue::getValue() const
 {

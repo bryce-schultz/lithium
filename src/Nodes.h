@@ -36,5 +36,4 @@
 #include "WhileNode.h"
 #include "ForStatementNode.h"
 #include "FuncDeclNode.h"
-
-// All AST node classes will now use std::shared_ptr for children and relationships.
+#include "BreakNode.h"

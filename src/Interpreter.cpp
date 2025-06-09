@@ -9,6 +9,10 @@
 #include "Values.h"
 #include "Error.h"
 #include "Utils.h"
+#include "Environment.h"
+#include "Visitor.h"
+#include "Builtins.h"
+#include "Exceptions.h"
 
 using std::shared_ptr;
 using std::string;
@@ -34,21 +38,6 @@ using std::fmod;
 
 #define variableNotDefined(node) errorAtToken("variable '" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
 
-// exception to handle function returns
-struct ReturnException : public exception
-{
-    shared_ptr<Value> value;
-    Range range;
-    ReturnException(shared_ptr<Value> val, Range range = {}): value(val), range(range) {}
-};
-
-// exception to handle exit calls
-struct ExitException : public exception
-{
-    int exitCode;
-    ExitException(int code = 0): exitCode(code) {}
-};
-
 Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env):
     isInteractive(isInteractive),
     returnValue(nullptr)
@@ -65,53 +54,63 @@ Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env):
     this->env->declare("LINE", make_shared<NumberValue>(1), true);
 
     // runtime values defined in all environments
-    this->env->declare("null", make_shared<NullValue>(), true);
-    this->env->declare("true", make_shared<BooleanValue>(true), true);
-    this->env->declare("false", make_shared<BooleanValue>(false), true);
-    this->env->declare("PI", make_shared<NumberValue>(M_PI), true);
-    this->env->declare("E", make_shared<NumberValue>(M_E), true);
-    this->env->declare("VERSION", make_shared<StringValue>(INTERPRETER_VERSION), true);
-    this->env->declare("printall", make_shared<BuiltinFunctionValue>([](const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env) -> shared_ptr<Value>
-    {
-        UNUSED(env);
-        if (args.empty())
-        {
-            cout << "\n";
-            return nullptr; // indicate no return value, this will prevent printing "null" in interactive mode
-        }
+    setupEnvironment();
+}
 
-        for (const auto &arg : args)
-        {
-            if (arg)
-            {
-                cout << arg->toString() << " ";
-            }
-        }
-        cout << "\n";
-        return nullptr;
-    }), true);
+void Interpreter::setupEnvironment()
+{
+    setupBuiltInFunctions();
+    setupRuntimeValues();
+}
+
+void Interpreter::setupBuiltInFunctions()
+{
+    env->declare("printall", make_shared<BuiltinFunctionValue>(Builtins::printall), true);
+    env->declare("type", make_shared<BuiltinFunctionValue>(Builtins::type), true);
+    env->declare("exit", make_shared<BuiltinFunctionValue>(Builtins::exit), true);
+    env->declare("input", make_shared<BuiltinFunctionValue>(Builtins::input), true);
+}
+
+void Interpreter::setupRuntimeValues()
+{
+    // FILE is also declared, but its setup in the main file for now.
+    env->declare("null", make_shared<NullValue>(), true);
+    env->declare("true", make_shared<BooleanValue>(true), true);
+    env->declare("false", make_shared<BooleanValue>(false), true);
+    env->declare("PI", make_shared<NumberValue>(M_PI), true);
+    env->declare("E", make_shared<NumberValue>(M_E), true);
+    env->declare("VERSION", make_shared<StringValue>(INTERPRETER_VERSION), true);
 }
 
 void Interpreter::visitAllChildren(Node *node)
 {
-    node->visit(this);
+    try
+    {
+        node->visit(this);
+    }
+    catch (const ExitException & e)
+    {
+        exit(e.exitCode);
+    }
 }
 
 void Interpreter::visit(StatementsNode *node)
 {
     for (auto &statement : node->getStatements())
     {
-        if (statement)
+        if (!statement)
         {
-            returnValue = nullptr;
-            env->redeclare("LINE", make_shared<NumberValue>(statement->getRange().getStart().getLine()), true); // Declare a constant variable for the current line number
-            statement->visit(this);
+            continue;
+        }
 
-            if (returnValue && isInteractive)
-            {
-                // if in interactive mode, print the return value
-                cout << returnValue->toString() << endl;
-            }
+        returnValue = nullptr;
+        env->redeclare("LINE", make_shared<NumberValue>(statement->getRange().getStart().getLine()), true); // Declare a constant variable for the current line number
+        statement->visit(this);
+
+        if (returnValue && isInteractive)
+        {
+            // if in interactive mode, print the return value
+            cout << returnValue->toString() << endl;
         }
     }
 }
@@ -120,7 +119,7 @@ void Interpreter::visit(PrintStatementNode *node)
 {
     if (!node->getExpr())
     {
-        cout << "\n"; // Print a newline if no expression is provided
+        cout << "\n"; // print a newline if no expression is provided
         returnValue = nullptr;
         return;
     }
@@ -137,7 +136,7 @@ void Interpreter::visit(PrintStatementNode *node)
 
 void Interpreter::visit(NumberNode *node)
 {
-    returnValue = make_shared<NumberValue>(node->getValue());
+    returnValue = make_shared<NumberValue>(node->getValue(), node->getRange());
 }
 
 void Interpreter::visit(StringNode *node)
@@ -235,162 +234,29 @@ shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> l
             return nullptr;
     }
 
-    if (returnValue)
+    if (returnValue && returnValue->getType() != Value::Type::null)
     {
         return returnValue;
+    }
+
+    if (returnValue && returnValue->getType() == Value::Type::null)
+    {
+        // If the operation resulted in a null value, we can return it as is
+        return nullptr;
     }
 
     error("unsupported binary operation between " + leftValue->typeAsString() + " and " + rightValue->typeAsString(), opNode->getRange());
     return nullptr;
 }
 
-shared_ptr<Value> Interpreter::evalNumericBinaryExpression(shared_ptr<NumberValue> left, shared_ptr<OpNode> opNode, shared_ptr<NumberValue> right)
-{
-    if (opNode->getType() == '+')
-    {
-        auto result = left->getValue() + right->getValue();
-        return make_shared<NumberValue>(result);
-    }
-    else if (opNode->getType() == '-')
-    {
-        auto result = left->getValue() - right->getValue();
-        return make_shared<NumberValue>(result);
-    }
-    else if (opNode->getType() == '*')
-    {
-        auto result = left->getValue() * right->getValue();
-        return make_shared<NumberValue>(result);
-    }
-    else if (opNode->getType() == '/')
-    {
-        if (right->getValue() == 0)
-        {
-            // Handle division by zero error
-            return nullptr;
-        }
-        auto result = left->getValue() / right->getValue();
-        return make_shared<NumberValue>(result);
-    }
-    else if (opNode->getType() == '%')
-    {
-        if (right->getValue() == 0)
-        {
-            // Handle modulo by zero error
-            return nullptr;
-        }
-        return make_shared<NumberValue>(fmod(left->getValue(), right->getValue()));
-    }
-    else if (opNode->getType() == Token::EQ)
-    {
-        return make_shared<BooleanValue>(left->getValue() == right->getValue());
-    }
-    else if (opNode->getType() == Token::NE)
-    {
-        return make_shared<BooleanValue>(left->getValue() != right->getValue());
-    }
-    else if (opNode->getType() == Token::LE)
-    {
-        return make_shared<BooleanValue>(left->getValue() <= right->getValue());
-    }
-    else if (opNode->getType() == Token::GE)
-    {
-        return make_shared<BooleanValue>(left->getValue() >= right->getValue());
-    }
-    else if (opNode->getType() == '<')
-    {
-        return make_shared<BooleanValue>(left->getValue() < right->getValue());
-    }
-    else if (opNode->getType() == '>')
-    {
-        return make_shared<BooleanValue>(left->getValue() > right->getValue());
-    }
-
-    error("unsupported numeric operation: " + opNode->getToken().getValue(), opNode->getRange());
-    return nullptr;
-}
-
-shared_ptr<Value> Interpreter::evalStringBinaryExpression(shared_ptr<StringValue> left, shared_ptr<OpNode> opNode, shared_ptr<StringValue> right)
-{
-    if (opNode->getType() == '+')
-    {
-        // Concatenate strings
-        return make_shared<StringValue>(left->getValue() + right->getValue());
-    }
-    // Add more string operations as needed
-    return nullptr; // Unsupported operation
-}
-
-shared_ptr<Value> Interpreter::evalBooleanBinaryExpression(shared_ptr<BooleanValue> left, shared_ptr<OpNode> opNode, shared_ptr<BooleanValue> right)
-{
-    if (opNode->getType() == Token::AND)
-    {
-        return make_shared<BooleanValue>(
-            dynamic_pointer_cast<BooleanValue>(left)->getValue() &&
-            dynamic_pointer_cast<BooleanValue>(right)->getValue());
-    }
-    else if (opNode->getType() == Token::OR)
-    {
-        return make_shared<BooleanValue>(
-            dynamic_pointer_cast<BooleanValue>(left)->getValue() ||
-            dynamic_pointer_cast<BooleanValue>(right)->getValue());
-    }
-    else if (opNode->getType() == Token::EQ)
-    {
-        return make_shared<BooleanValue>(
-            dynamic_pointer_cast<BooleanValue>(left)->getValue() ==
-            dynamic_pointer_cast<BooleanValue>(right)->getValue());
-    }
-    else if (opNode->getType() == Token::NE)
-    {
-        return make_shared<BooleanValue>(
-            dynamic_pointer_cast<BooleanValue>(left)->getValue() !=
-            dynamic_pointer_cast<BooleanValue>(right)->getValue());
-    }
-    else if (opNode->getType() == Token::LE)
-    {
-        // Assuming boolean values are treated as 0 (false) and 1 (true)
-        return make_shared<BooleanValue>(
-            dynamic_pointer_cast<BooleanValue>(left)->getValue() <=
-            dynamic_pointer_cast<BooleanValue>(right)->getValue());
-    }
-    else if (opNode->getType() == Token::GE)
-    {
-        return make_shared<BooleanValue>(
-            dynamic_pointer_cast<BooleanValue>(left)->getValue() >=
-            dynamic_pointer_cast<BooleanValue>(right)->getValue());
-    }
-    else if (opNode->getType() == '<')
-    {
-        return make_shared<BooleanValue>(
-            dynamic_pointer_cast<BooleanValue>(left)->getValue() <
-            dynamic_pointer_cast<BooleanValue>(right)->getValue());
-    }
-    else if (opNode->getType() == '>')
-    {
-        return make_shared<BooleanValue>(
-            dynamic_pointer_cast<BooleanValue>(left)->getValue() >
-            dynamic_pointer_cast<BooleanValue>(right)->getValue());
-    }
-    // Add more boolean operations as needed
-    return nullptr; // Unsupported operation
-}
-
 shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix)
 {
-    if (!expression) {
-        error("null expression in unary operation", Range());
+    if (!expression)
+    {
+        error("null expression in unary operation", opNode->getRange());
         return nullptr;
     }
-    if (expression->isLval())
-    {
-        shared_ptr<VarExprNode> varExpr = dynamic_pointer_cast<VarExprNode>(expression);
-        if (!varExpr)
-        {
-            error("expected variable expression", expression->getRange());
-            return nullptr;
-        }
-        return evalVariableUnaryExpression(varExpr, opNode, prefix);
-    }
+
     expression->visit(this);
     auto value = returnValue;
     if (!value)
@@ -398,102 +264,108 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
         error("unary expression evaluation failed", expression->getRange());
         return nullptr;
     }
-    if (value->getType() == Value::Type::number)
+
+    switch(opNode->getType())
     {
-        return evalNumericUnaryExpression(dynamic_pointer_cast<NumberValue>(value), opNode, prefix);
-    }
-    else if (value->getType() == Value::Type::boolean)
-    {
-        // Handle boolean unary operations if needed
-        if (opNode->getType() == '!')
+        case Token::INC:
+        case Token::DEC:
         {
-            return make_shared<BooleanValue>(value->unaryNot()->toBoolean());
+            if (!expression->isLval())
+            {
+                error("expected a modifiable expression", expression->getRange());
+                return nullptr;
+            }
+
+            shared_ptr<VarExprNode> varExpr = dynamic_pointer_cast<VarExprNode>(expression);
+            if (!varExpr)
+            {
+                error("expected a modifiable expression", expression->getRange());
+                return nullptr;
+            }
+
+            return evalVariableUnaryExpression(varExpr, opNode, prefix);
         }
-        // Add more boolean unary operations as needed
+        case '!':
+            returnValue = value->unaryNot();
+            break;
+        case '-':
+            returnValue = value->unaryMinus();
+            break;
     }
 
-    // Add more type checks for other unary operations as needed
-    return nullptr; // Unsupported operation
-}
-
-shared_ptr<Value> Interpreter::evalNumericUnaryExpression(shared_ptr<NumberValue> value, shared_ptr<OpNode> opNode, bool prefix)
-{
-    if (opNode->getType() == '-' && prefix)
+    if (returnValue && returnValue->getType() != Value::Type::null)
     {
-        return make_shared<NumberValue>(-value->getValue());
+        return returnValue;
     }
-    // Add more unary operations as needed
-    return nullptr; // Unsupported operation
+
+    if (returnValue && returnValue->getType() == Value::Type::null)
+    {
+        // If the operation resulted in a null value, we can return it as is
+        return nullptr;
+    }
+
+    error("unsupported unary operation on " + value->typeAsString() + " and ", opNode->getRange());
+    return nullptr;
 }
 
 shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix)
 {
-    if (opNode->getType() == Token::INC)
+    auto value = env->lookup(expression->getName());
+    if (!value)
     {
-        auto value = env->lookup(expression->getName());
-        if (!value)
-        {
-            error("variable " + expression->getName() + " is not defined", expression->getRange());
-            return nullptr;
-        }
+        error("variable " + expression->getName() + " is not defined", expression->getRange());
+        return nullptr;
+    }
 
-        if (value->getType() != Value::Type::number)
+    switch(opNode->getType())
+    {
+        case Token::INC:
         {
-            error("variable " + expression->getName() + " is not a number", expression->getRange());
-            return nullptr;
-        }
-        auto numberValue = dynamic_pointer_cast<NumberValue>(value);
-        auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
-        env->assign(expression->getName(), tmp);
+            if (value->getType() != Value::Type::number)
+            {
+                error("variable " + expression->getName() + " is not a number", expression->getRange());
+                return nullptr;
+            }
+            auto numberValue = dynamic_pointer_cast<NumberValue>(value);
+            auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
+            env->assign(expression->getName(), tmp);
 
-        if (prefix)
-        {
-            return tmp; // return the incremented value if prefix
+            if (prefix)
+            {
+                return tmp; // return the incremented value if prefix
+            }
+            else
+            {
+                return numberValue; // return the original value if postfix
+            }
+
+            break;
         }
-        else
+        case Token::DEC:
         {
-            return numberValue; // return the original value if postfix
+            if (value->getType() != Value::Type::number)
+            {
+                error("variable " + expression->getName() + " is not a number", expression->getRange());
+                return nullptr;
+            }
+            auto numberValue = dynamic_pointer_cast<NumberValue>(value);
+            auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
+            env->assign(expression->getName(), tmp);
+
+            if (prefix)
+            {
+                return tmp; // return the incremented value if prefix
+            }
+            else
+            {
+                return numberValue; // return the original value if postfix
+            }
+
+            break;
         }
     }
-    else if (opNode->getType() == Token::DEC)
-    {
-        auto value = env->lookup(expression->getName());
-        if (!value || value->getType() != Value::Type::number)
-        {
-            error("variable " + expression->getName() + " is not a number", expression->getRange());
-            return nullptr;
-        }
-        auto numberValue = dynamic_pointer_cast<NumberValue>(value);
-        auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
-        env->assign(expression->getName(), tmp);
 
-        if (prefix)
-        {
-            return tmp; // return the incremented value if prefix
-        }
-        else
-        {
-            return numberValue; // return the original value if postfix
-        }
-    }
-    else if (opNode->getType() == '!')
-    {
-        auto value = env->lookup(expression->getName());
-        if (!value)
-        {
-            error("variable " + expression->getName() + " is not defined", expression->getRange());
-            return nullptr;
-        }
-
-        if (value->getType() != Value::Type::boolean)
-        {
-            error("variable " + expression->getName() + " is not a boolean", expression->getRange());
-            return nullptr;
-        }
-        return make_shared<BooleanValue>(value->unaryNot()->toBoolean());
-    }
-    // Add more unary operations as needed
-    return nullptr; // Unsupported operation
+    return nullptr;
 }
 
 void Interpreter::visit(CallNode *node)
@@ -504,11 +376,6 @@ void Interpreter::visit(CallNode *node)
         for (auto &arg : node->getArgs()->getArgs())
         {
             arg->visit(this);
-            if (!returnValue)
-            {
-                error("function argument evaluated to null", arg->getRange());
-                return;
-            }
             args.push_back(returnValue);
         }
     }
@@ -574,7 +441,7 @@ void Interpreter::visit(CallNode *node)
             return;
         }
 
-        returnValue = builtin->call(args, env);
+        returnValue = builtin->call(args, env, node->getRange());
     }
     else
     {
@@ -616,7 +483,6 @@ void Interpreter::visit(VarDeclNode *node)
     if (!returnValue)
     {
         errorAt("invalid assignment", node->getExpr()->getRange().getStart(), node->getRange());
-        returnValue = nullptr; // reset return value if expression evaluation failed
         return;
     }
 
@@ -661,24 +527,54 @@ void Interpreter::visit(AssignNode *node)
         returnValue = nullptr;
         return;
     }
-    returnValue = env->assign(asignee->getName(), value);
-    if (!returnValue)
+
+    switch (node->getOp())
     {
-        error("assignment failed (possibly assigning to constant or undefined variable)", node->getRange());
+        case '=':
+            // No additional operation, just assign the value
+            break;
+        case Token::PLUS_EQUAL:
+            value = env->lookup(asignee->getName())->add(value);
+            break;
+        case Token::MINUS_EQUAL:
+            value = env->lookup(asignee->getName())->sub(value);
+            break;
+        case Token::MUL_EQUAL:
+            value = env->lookup(asignee->getName())->mul(value);
+            break;
+        case Token::DIV_EQUAL:
+            value = env->lookup(asignee->getName())->div(value);
+            break;
+        case Token::MOD_EQUAL:
+            value = env->lookup(asignee->getName())->mod(value);
+            break;
+        default:
+            error("invalid assignment operator", node->getRange());
+            returnValue = nullptr;
+            return;
     }
+
+    if (!value)
+    {
+        error("invalid operators in assignment", node->getRange());
+        returnValue = nullptr;
+        return;
+    }
+
+    returnValue = env->assign(asignee->getName(), value);
 }
 
 void Interpreter::visit(BlockNode *node)
 {
     if (!node->getStatements())
     {
-        returnValue = nullptr; // Empty block, nothing to do
+        returnValue = nullptr;
         return;
     }
 
-    env = make_shared<Environment>(env);
+    env = make_shared<Environment>(env); // push a new environment for the block
     node->getStatements()->visit(this);
-    env = env->getParent();
+    env = env->getParent(); // pop the environment after visiting the block
 
     returnValue = nullptr;
 }
@@ -695,23 +591,25 @@ void Interpreter::visit(IfStatementNode *node)
         returnValue->getType() != Value::Type::number &&
         returnValue->getType() != Value::Type::string)
     {
-        error("condition must be a boolean expression", node->getCondition()->getRange());
+        error("condition evaluate to a boolean expression", node->getCondition()->getRange());
         returnValue = nullptr;
         return;
     }
 
     bool condition = returnValue->toBoolean();
 
-    if (condition)
+    if (condition && node->getThenBranch())
     {
+        // if the condition is true, visit the then branch
         node->getThenBranch()->visit(this);
     }
-    else if (node->getElseBranch())
+    else if (!condition && node->getElseBranch())
     {
+        // if the condition is false, visit the else branch if it exists
         node->getElseBranch()->visit(this);
     }
 
-    returnValue = nullptr; // reset return value after visiting branches
+    returnValue = nullptr;
 }
 
 void Interpreter::visit(FuncDeclNode *node)
@@ -747,7 +645,19 @@ void Interpreter::visit(WhileNode *node)
         bool condition = returnValue->toBoolean();
         if (!condition) break;
 
-        node->getBody()->visit(this);
+        // don't visit an empty body
+        if (node->getBody())
+        {
+            try
+            {
+                node->getBody()->visit(this);
+            }
+            catch (const BreakException &)
+            {
+                // handle break statement
+                break;
+            }
+        }
     }
 
     returnValue = nullptr; // reset return value after the loop
@@ -785,7 +695,19 @@ void Interpreter::visit(ForStatementNode *node)
             if (!condition) break;
         }
 
-        node->getBody()->visit(this);
+        // don't visit an empty body
+        if (node->getBody())
+        {
+            try
+            {
+                node->getBody()->visit(this);
+            }
+            catch (const BreakException &)
+            {
+                // handle break statement
+                break;
+            }
+        }
 
         if (node->getIncrement())
         {
@@ -802,4 +724,10 @@ void Interpreter::visit(NullNode *node)
 {
     UNUSED(node);
     returnValue = make_shared<NullValue>();
+}
+
+void Interpreter::visit(BreakNode *node)
+{
+    UNUSED(node);
+    throw BreakException(node->getRange());
 }

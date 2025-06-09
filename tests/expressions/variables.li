@@ -1,0 +1,47 @@
+let a = 10;
+let b = 20;
+print(a);
+print(-b);
+print(a + 1);
+print(a++);
+print(++a);
+print(a--);
+print(--a);
+print(a + b);
+print(a - b);
+print(a * b);
+print(a / b);
+print(a % b);
+print(a == b);
+print(a != b);
+print(a < b);
+print(a <= b);
+print(a > b);
+print(a >= b);
+
+let c = "hello";
+print(c);
+print(c + " world");
+print("number: " + a);
+print("number: " + (a + b));
+
+a += 5;
+b -= 5;
+print(a);
+print(b);
+
+a *= 2;
+b /= 2;
+print(a);
+print(b);
+
+let string = "test";
+print(string);
+string += "ing";
+print(string);
+string += " is fun ";
+print(string);
+string += 100;
+print(string);
+string += "!";
+print(string);

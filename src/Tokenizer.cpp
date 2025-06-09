@@ -43,10 +43,7 @@ Token Tokenizer::lex()
 
     //-----------------------------------------------------------
     // one character tokens
-    if (c == '*' ||
-        c == '/' ||
-        c == '%' ||
-        c == ';' ||
+    if (c == ';' ||
         c == ',' ||
         c == '(' ||
         c == ')' ||
@@ -136,6 +133,11 @@ Token Tokenizer::lex()
             advance();
             return Token(Token::INC, Range(start, location), "++");
         }
+        else if (peek() == '=')
+        {
+            advance();
+            return Token(Token::PLUS_EQUAL, Range(start, location), "+=");
+        }
         return Token(static_cast<int>(c), Range(start, location), c);
     }
 
@@ -146,6 +148,11 @@ Token Tokenizer::lex()
         {
             advance();
             return Token(Token::DEC, Range(start, location), "--");
+        }
+        else if (peek() == '=')
+        {
+            advance();
+            return Token(Token::MINUS_EQUAL, Range(start, location), "-=");
         }
         else if (isdigit(peek()))
         {
@@ -163,6 +170,39 @@ Token Tokenizer::lex()
                 c = peek();
             }
             return Token(Token::NUMBER, Range(start, location), number);
+        }
+        return Token(static_cast<int>(c), Range(start, location), c);
+    }
+
+    if (c == '*')
+    {
+        advance();
+        if (peek() == '=')
+        {
+            advance();
+            return Token(Token::MUL_EQUAL, Range(start, location), "*=");
+        }
+        return Token(static_cast<int>(c), Range(start, location), c);
+    }
+
+    if (c == '/')
+    {
+        advance();
+        if (peek() == '=')
+        {
+            advance();
+            return Token(Token::DIV_EQUAL, Range(start, location), "/=");
+        }
+        return Token(static_cast<int>(c), Range(start, location), c);
+    }
+
+    if (c == '%')
+    {
+        advance();
+        if (peek() == '=')
+        {
+            advance();
+            return Token(Token::MOD_EQUAL, Range(start, location), "%=");
         }
         return Token(static_cast<int>(c), Range(start, location), c);
     }
@@ -229,6 +269,7 @@ Token Tokenizer::lex()
         if (identifier == "while") return Token(Token::WHILE, Range(start, location), identifier);
         if (identifier == "fn") return Token(Token::FN, Range(start, location), identifier);
         if (identifier == "return") return Token(Token::RETURN, Range(start, location), identifier);
+        if (identifier == "break") return Token(Token::BREAK, Range(start, location), identifier);
         if (identifier == "class") return Token(Token::CLASS, Range(start, location), identifier);
         if (identifier == "import") return Token(Token::IMPORT, Range(start, location), identifier);
         if (identifier == "print") return Token(Token::PRINT, Range(start, location), identifier);

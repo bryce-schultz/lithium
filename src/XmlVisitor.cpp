@@ -8,8 +8,8 @@
 //**************************************************
 
 #include "XmlVisitor.h"
-
 #include "Nodes.h"
+#include "Utils.h"
 
 void XmlVisitor::visitAllChildren(Node *node)
 {
@@ -233,4 +233,52 @@ void XmlVisitor::visit(FuncDeclNode *node)
         node->getBody()->visit(this);
     }
     closeTag("FuncDecl");
+}
+
+void XmlVisitor::visit(WhileNode *node)
+{
+    openTag("WhileStatement");
+    if (node->getCondition())
+    {
+        node->getCondition()->visit(this);
+    }
+    if (node->getBody())
+    {
+        node->getBody()->visit(this);
+    }
+    closeTag("WhileStatement");
+}
+
+void XmlVisitor::visit(ForStatementNode *node)
+{
+    openTag("ForStatement");
+    if (node->getInit())
+    {
+        node->getInit()->visit(this);
+    }
+    if (node->getCondition())
+    {
+        node->getCondition()->visit(this);
+    }
+    if (node->getIncrement())
+    {
+        node->getIncrement()->visit(this);
+    }
+    if (node->getBody())
+    {
+        node->getBody()->visit(this);
+    }
+    closeTag("ForStatement");
+}
+
+void XmlVisitor::visit(NullNode *node)
+{
+    UNUSED(node);
+    openTag("Null", {}, true);
+}
+
+void XmlVisitor::visit(BreakNode *node)
+{
+    UNUSED(node);
+    openTag("Break", {}, true);
 }

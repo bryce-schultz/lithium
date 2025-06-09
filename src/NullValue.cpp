@@ -2,10 +2,9 @@
 
 #include "Values.h"
 
-NullValue::NullValue()
-{
-    type = Type::null;
-}
+NullValue::NullValue(Range range):
+    Value(Type::null, range) // set the type to null
+{ }
 
 string NullValue::toString() const
 {

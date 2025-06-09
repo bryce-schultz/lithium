@@ -1,0 +1,17 @@
+fn pascal_triangle(rows) {
+    for (let i = 0; i < rows; i++) {
+        let num = 1;
+        for (let j = 0; j < (rows - i - 1); j++) {
+            printall(" ");
+        }
+
+        for (let j = 0; j < (i + 1); j++) {
+            printall(num);
+            printall(" ");
+            num = num * (i - j) / (j + 1);
+        }
+        print();
+    }
+}
+
+pascal_triangle(5);

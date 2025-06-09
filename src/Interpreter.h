@@ -21,7 +21,7 @@ class Interpreter : public Visitor
 public:
     Interpreter(bool isInteractive, std::shared_ptr<Environment> env = nullptr);
     virtual void visitAllChildren(Node *node) override;
-
+public:
     // Override visit methods for different node types
     virtual void visit(StatementsNode *node) override;
     virtual void visit(PrintStatementNode *node) override;
@@ -39,6 +39,7 @@ public:
     virtual void visit(ReturnStatementNode *node) override;
     virtual void visit(ForStatementNode *node) override;
     virtual void visit(NullNode *node) override;
+    virtual void visit(BreakNode *node) override;
 private:
     shared_ptr<Value> evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right);
     shared_ptr<Value> evalNumericBinaryExpression(shared_ptr<NumberValue> left, shared_ptr<OpNode> opNode, shared_ptr<NumberValue> right);
@@ -48,6 +49,10 @@ private:
     shared_ptr<Value> evalUnaryExpression(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
     shared_ptr<Value> evalNumericUnaryExpression(shared_ptr<NumberValue> value, shared_ptr<OpNode> opNode, bool prefix = false);
     shared_ptr<Value> evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
+private:
+    void setupEnvironment();
+    void setupBuiltInFunctions();
+    void setupRuntimeValues();
 private:
     bool isInteractive;
     shared_ptr<Environment> env;

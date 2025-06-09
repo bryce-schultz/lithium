@@ -1,6 +1,7 @@
 #include "Values.h"
 #include "Utils.h"
 #include "ExpressionNode.h"
+#include "Value.h"
 
 string Value::typeAsString() const
 {
@@ -16,9 +17,19 @@ string Value::typeAsString() const
     }
 }
 
+Value::Value(Type type, Range range):
+    type(type),
+    range(range)
+{ }
+
 Value::Type Value::getType() const
 {
     return type;
+}
+
+Range Value::getRange() const
+{
+    return range;
 }
 
 bool Value::toBoolean() const

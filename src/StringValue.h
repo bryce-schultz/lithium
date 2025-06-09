@@ -5,7 +5,7 @@
 class StringValue : public Value
 {
 public:
-    StringValue(const string &value);
+    StringValue(const string &value, Range range = {});
 
     const string &getValue() const;
     void setValue(const string &value);

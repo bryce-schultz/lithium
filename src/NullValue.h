@@ -5,7 +5,7 @@
 class NullValue : public Value
 {
 public:
-    NullValue();
+    NullValue(Range range = {});
 
     string toString() const override;
 public:

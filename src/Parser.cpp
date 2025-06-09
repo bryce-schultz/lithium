@@ -66,6 +66,7 @@ void Parser::initFirstSets()
     blockFirsts = { '{' };
     funcDeclFirsts = { Token::FN };
     returnStmtFirsts = { Token::RETURN };
+    breakStmtFirsts = { Token::BREAK };
     letStmtFirsts = { Token::LET };
     constStmtFirsts = { Token::CONST };
     printStmtFirsts = { Token::PRINT };
@@ -176,6 +177,10 @@ Result<StatementNode> Parser::parseStmt()
     else if (isInFirstSet(token, returnStmtFirsts))
     {
         acceptNode(parseReturnStmt());
+    }
+    else if (isInFirstSet(token, breakStmtFirsts))
+    {
+        acceptNode(parseBreakStmt());
     }
     else if (token == '}' && depth != 0)
     {
@@ -479,6 +484,19 @@ Result<ReturnStatementNode> Parser::parseReturnStmt()
     accept(returnStmt);
 }
 
+Result<BreakNode> Parser::parseBreakStmt()
+{
+    Token breakToken = expectToken(Token::BREAK);
+
+    Token semicolonToken = expectToken(';');
+
+    auto breakNode = make_shared<BreakNode>(breakToken);
+    breakNode->setRangeStart(breakToken.getRange().getStart());
+    breakNode->setRangeEnd(semicolonToken.getRange().getEnd());
+
+    accept(breakNode);
+}
+
 // letStmt -> LET IDENT = expr ;
 Result<VarDeclNode> Parser::parseLetStmt()
 {
@@ -623,11 +641,21 @@ Result<ExpressionNode> Parser::parseAssign()
     accept(result.node);
 }
 // assign' -> = or assign'
+//          | += or assign'
+//          | -= or assign'
+//          | *= or assign'
+//          | /= or assign'
+//          | %= or assign'
 //          | nothing
 Result<ExpressionNode> Parser::parseAssignP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
-    if (token != '=')
+    if (token != '=' &&
+        token != Token::PLUS_EQUAL &&
+        token != Token::MINUS_EQUAL &&
+        token != Token::MUL_EQUAL &&
+        token != Token::DIV_EQUAL &&
+        token != Token::MOD_EQUAL)
     {
         accept(lhs);
     }
@@ -639,7 +667,7 @@ Result<ExpressionNode> Parser::parseAssignP(shared_ptr<ExpressionNode> lhs)
         reject();
     }
 
-    rhs = parseAssignP(make_shared<AssignNode>(lhs, rhs.node));
+    rhs = parseAssignP(make_shared<AssignNode>(lhs, token, rhs.node));
     if (!rhs.success)
     {
         reject();
@@ -1050,7 +1078,9 @@ Result<ExpressionNode> Parser::parsePostP(shared_ptr<ExpressionNode> lhs)
         if (token == ')')
         {
             advanceToken(); // consume ')'
-            accept(make_shared<CallNode>(lhs));
+            auto callNode = make_shared<CallNode>(lhs);
+            callNode->setRangeEnd(token.getRange().getEnd());
+            accept(callNode);
         }
 
         auto argListResult = parseArgList();
@@ -1061,7 +1091,10 @@ Result<ExpressionNode> Parser::parsePostP(shared_ptr<ExpressionNode> lhs)
 
         Token closeParenToken = expectToken(')');
 
-        accept(make_shared<CallNode>(lhs, argListResult.node));
+        auto callNode = make_shared<CallNode>(lhs, argListResult.node);
+        callNode->setRangeEnd(closeParenToken.getRange().getEnd());
+
+        accept(callNode);
     }
     else if (token == '.')
     {

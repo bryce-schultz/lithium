@@ -27,6 +27,7 @@ string Token::tokenTypeToString(int type)
         case WHILE:     return "keyword (while)";
         case FN:        return "keyword (fn)";
         case RETURN:    return "keyword (return)";
+        case BREAK:     return "keyword (break)";
         case CLASS:     return "keyword (class)";
         case IMPORT:    return "keyword (import)";
         case PRINT:     return "keyword (print)";
@@ -38,6 +39,11 @@ string Token::tokenTypeToString(int type)
         case AND:       return "operator (&&)";
         case INC:       return "operator (++)";
         case DEC:       return "operator (--)";
+        case PLUS_EQUAL: return "operator (+=)";
+        case MINUS_EQUAL: return "operator (-=)";
+        case MUL_EQUAL: return "operator (*=)";
+        case DIV_EQUAL: return "operator (/=)";
+        case MOD_EQUAL: return "operator (%=)";
         case JUNK:      return "junk";
         default:
         {

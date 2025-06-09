@@ -7,7 +7,28 @@
 // represents errors with messages and source ranges.
 //**************************************************
 
+#include <iostream>
+#include <sstream>
+#include <set>
+#include <string>
+
 #include "Error.h"
+
+using std::set;
+
+// used to prevent showing multiple errors at the same location
+static set<Location> errorLocations;
+static bool reportAllErrorsFlag = false;
+
+void reportAllErrors(bool reportAll)
+{
+    reportAllErrorsFlag = reportAll;
+}
+
+void clearErrorLocations()
+{
+    errorLocations.clear();
+}
 
 string getErrorLineSquiggles(const Range &range)
 {
@@ -64,15 +85,33 @@ string getErrorLineLocationSquiggles(const Location &location, const Range &rang
     stringstream result;
     result << "│  " << line << "\n│  ";
     result << string(start, ' ');
-    result << red << string(end - start, '~') << reset; // Add squiggles from start to end position
+    result << red << string(end - start, '~') << reset; // add squiggles from start to end position
     result << "\n│  ";
-    result << string(tokenStart, ' ') << boldRed << "^" << reset; // Add caret at the start position
+    result << string(tokenStart, ' ') << boldRed << "^" << reset; // add caret at the start position
 
     return result.str();
 }
 
+void generalError(const string &msg, const string &cppFile, int cppLine)
+{
+    stringstream ss;
+    ss << red << "error" << reset << ": " << msg;
+
+    if (!cppFile.empty() && cppLine > 0)
+    {
+        ss << "\n╰─ @ " << cppFile << ":" << cppLine;
+    }
+
+    cerr << ss.str() << endl;
+}
+
 void tokenError(const string &msg, const Token &token, const string &cppFile, int cppLine)
 {
+    if (!reportAllErrorsFlag && errorLocations.find(token.getRange().getStart()) != errorLocations.end())
+    {
+        return; // skip if this location has already been reported
+    }
+
     stringstream ss;
     ss << red << "error" << reset << ": " << token.getRange().getStart().toString() << ": " << msg << "\n"
     << getErrorLineSquiggles(token.getRange());
@@ -83,10 +122,17 @@ void tokenError(const string &msg, const Token &token, const string &cppFile, in
     }
 
     cerr << ss.str() << endl;
+
+    errorLocations.insert(token.getRange().getStart()); // mark this location as reported
 }
 
 void rangeError(const string &msg, const Range &range, const string &cppFile, int cppLine)
 {
+    if (!reportAllErrorsFlag && errorLocations.find(range.getStart()) != errorLocations.end())
+    {
+        return; // skip if this location has already been reported
+    }
+
     stringstream ss;
     ss << red << "error" << reset << ": " << range.getStart().toString() << ": " << msg << "\n"
     << getErrorLineSquiggles(range);
@@ -97,10 +143,22 @@ void rangeError(const string &msg, const Range &range, const string &cppFile, in
     }
 
     cerr << ss.str() << endl;
+
+    errorLocations.insert(range.getStart()); // mark this location as reported
 }
 
 void tokenRangeError(const string &msg, const Token &token, const Range &range, const string &cppFile, int cppLine)
 {
+    if (!reportAllErrorsFlag && errorLocations.find(token.getRange().getStart()) != errorLocations.end())
+    {
+        return; // skip if this location has already been reported
+    }
+
+    if (!reportAllErrorsFlag && errorLocations.find(range.getStart()) != errorLocations.end())
+    {
+        return; // skip if this location has already been reported
+    }
+
     stringstream ss;
     ss << red << "error" << reset << ": " << range.getStart().toString() << ": " << msg << "\n"
     << getErrorLineLocationSquiggles(token.getRange().getStart(), range);
@@ -111,10 +169,23 @@ void tokenRangeError(const string &msg, const Token &token, const Range &range, 
     }
 
     cerr << ss.str() << endl;
+
+    errorLocations.insert(token.getRange().getStart()); // mark this location as reported
+    errorLocations.insert(range.getStart()); // also mark the start of the range as reported
 }
 
 void locationRangeError(const string &msg, const Location &location, const Range &range, const string &cppFile, int cppLine)
 {
+    if (!reportAllErrorsFlag && errorLocations.find(location) != errorLocations.end())
+    {
+        return; // skip if this location has already been reported
+    }
+
+    if (!reportAllErrorsFlag && errorLocations.find(range.getStart()) != errorLocations.end())
+    {
+        return; // skip if this location has already been reported
+    }
+
     stringstream ss;
     ss << red << "error" << reset << ": " << location.toString() << ": " << msg << "\n"
     << getErrorLineLocationSquiggles(location, range);
@@ -125,4 +196,7 @@ void locationRangeError(const string &msg, const Location &location, const Range
     }
 
     cerr << ss.str() << endl;
+
+    errorLocations.insert(location); // mark this location as reported
+    errorLocations.insert(range.getStart()); // also mark the start of the range as reported
 }

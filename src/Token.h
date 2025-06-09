@@ -10,7 +10,10 @@
 #pragma once
 
 #include <string>
+
 #include "Range.h"
+
+using std::string;
 
 class Token
 {
@@ -29,6 +32,7 @@ public:
         WHILE,
         FN,
         RETURN,
+        BREAK,
         CLASS,
         IMPORT,
         PRINT,
@@ -40,18 +44,23 @@ public:
         AND,
         INC,
         DEC,
+        PLUS_EQUAL,
+        MINUS_EQUAL,
+        MUL_EQUAL,
+        DIV_EQUAL,
+        MOD_EQUAL,
         JUNK
     };
 
     static string tokenTypeToString(int type);
 public:
     Token();
-    Token(int type, const Range& range, const std::string& value);
+    Token(int type, const Range& range, const string& value);
     Token(int type, const Range& range, char value);
 
     int getType() const;
     const Range& getRange() const;
-    const std::string& getValue() const;
+    const string& getValue() const;
 
     bool operator==(const Token& other) const;
     bool operator!=(const Token& other) const;
@@ -59,7 +68,7 @@ public:
     bool operator==(int type) const;
     bool operator!=(int type) const;
 
-    std::string toString() const;
+    string toString() const;
 private:
     int type;
     Range range;

@@ -90,6 +90,9 @@ private:
     //             | RETURN ;
     Result<ReturnStatementNode> parseReturnStmt();
 
+    // breakStmt -> BREAK ;
+    Result<BreakNode> parseBreakStmt();
+
     // letStmt -> LET IDENT = expr ;
     Result<VarDeclNode> parseLetStmt();
 
@@ -214,6 +217,7 @@ private:
     set<int> blockFirsts;
     set<int> funcDeclFirsts;
     set<int> returnStmtFirsts;
+    set<int> breakStmtFirsts;
     set<int> letStmtFirsts;
     set<int> constStmtFirsts;
     set<int> printStmtFirsts;

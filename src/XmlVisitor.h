@@ -41,6 +41,10 @@ public:
     void visit(AssignNode *node) override;
     void visit(IfStatementNode *node) override;
     void visit(FuncDeclNode *node) override;
+    void visit(WhileNode *node) override;
+    void visit(ForStatementNode *node) override;
+    void visit(NullNode *node) override;
+    void visit(BreakNode *node) override;
 private:
     void openTag(const string &tagName, vector<string> attributes = {}, bool selfClosing = false);
     void closeTag(const string &tagName);

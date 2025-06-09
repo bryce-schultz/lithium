@@ -24,16 +24,19 @@ class AssignNode : public ExpressionNode
 public:
     using Ptr = shared_ptr<AssignNode>;
 public:
-    AssignNode(shared_ptr<ExpressionNode> asignee, shared_ptr<ExpressionNode> expr = nullptr);
+    AssignNode(shared_ptr<ExpressionNode> asignee, const Token &opToken, shared_ptr<ExpressionNode> expr = nullptr);
 
     virtual bool isLval() const override;
 
     shared_ptr<ExpressionNode> getAsignee() const;
     shared_ptr<ExpressionNode> getExpr() const;
 
+    int getOp() const;
+
     virtual void visit(Visitor *visitor) override;
 
 private:
     shared_ptr<ExpressionNode> asignee;
+    Token opToken;
     shared_ptr<ExpressionNode> expr;
 };
