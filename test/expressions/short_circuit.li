@@ -1,0 +1,9 @@
+fn fail()
+{
+    print("fail");
+    return true;
+}
+
+(true || fail());
+(false && fail());
+print("done");

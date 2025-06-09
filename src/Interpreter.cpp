@@ -179,6 +179,18 @@ shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> l
         return nullptr;
     }
 
+    // short-circuit evaluation for logical operators
+    if (opNode->getType() == Token::AND && leftValue->toBoolean() == false)
+    {
+        returnValue = leftValue;
+        return leftValue;
+    }
+    else if (opNode->getType() == Token::OR && leftValue->toBoolean() == true)
+    {
+        returnValue = leftValue;
+        return leftValue;
+    }
+
     right->visit(this);
     auto rightValue = returnValue;
     if (!rightValue)

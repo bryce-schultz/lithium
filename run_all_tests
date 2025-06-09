@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Usage: run_all_tests [-v]
-# Runs all .li tests under tests/, using run_test, and reports pass/fail summary.
+# Runs all .li tests under test/, using run_test, and reports pass/fail summary.
 
 red='\033[31m'
 bold_red='\033[1;31m'
@@ -11,13 +11,7 @@ blue='\033[34m'
 bold_blue='\033[1;34m'
 nc='\033[0m'
 
-verbose="-s"
-while getopts "v" opt; do
-  [[ $opt == v ]] && verbose=""
-done
-shift $((OPTIND - 1))
-
-if [[ ! -d "tests" ]]; then
+if [[ ! -d "test" ]]; then
   echo "Tests directory does not exist."
   exit 1
 fi
@@ -25,7 +19,7 @@ fi
 run_test="$(dirname "$0")/run_test"
 cd "$(dirname "$run_test")" || exit 1
 
-cd tests || exit 1
+cd test || exit 1
 mapfile -t test_files < <(find . -type f -name '*.li' | sed 's|^./||' | sort)
 cd ..
 
@@ -41,12 +35,9 @@ echo -e "${blue}╰────────────────────�
 did_fail=0
 for test_file in "${test_files[@]}"; do
   test_name="${test_file%.li}"
-  "$run_test" "$test_name" $verbose
+  "$run_test" "$test_name"
   if [[ $? -ne 0 ]]; then
-    echo -e " ${bold_red}●${nc} $test_name"
     did_fail=1
-  else
-    echo -e " ${bold_green}●${nc} $test_name"
   fi
 done
 

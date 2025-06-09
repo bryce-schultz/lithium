@@ -1,0 +1,8 @@
+error: arity_error.li:2:1: function 'f' expects 2 arguments, but got 1
+│  f(1);
+│  ~~~~
+│  ^
+error: arity_error.li:3:1: function 'f' expects 2 arguments, but got 3
+│  f(1,2,3);
+│  ~~~~~~~~
+│  ^

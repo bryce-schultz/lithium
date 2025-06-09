@@ -79,7 +79,8 @@ shared_ptr<Value> NumberValue::mod(const shared_ptr<NumberValue> &other) const
 {
     if (other->getValue() == 0.0)
     {
-        return nullptr; // Handle modulo by zero error
+        error("cannot divide by zero", other->getRange());
+        return make_shared<NullValue>(Range(getRange().getStart(), other->getRange().getEnd()));
     }
     return make_shared<NumberValue>(fmod(value, other->getValue()), Range(getRange().getStart(), other->getRange().getEnd()));
 }
