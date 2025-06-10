@@ -1,5 +1,5 @@
-print(PI);
-print(E);
-print(true);
-print(false);
-print(null);
+println(PI);
+println(E);
+println(true);
+println(false);
+println(null);

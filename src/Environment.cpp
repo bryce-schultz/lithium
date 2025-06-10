@@ -5,15 +5,21 @@
 #include "Error.h"
 
 using std::cout;
+using std::string;
+using std::shared_ptr;
+using std::make_shared;
+using std::enable_shared_from_this;
+using std::const_pointer_cast;
+using std::dynamic_pointer_cast;
 
-Environment::Environment(std::shared_ptr<Environment> parent):
+Environment::Environment(shared_ptr<Environment> parent):
     parent(parent),
     variables(),
     constants()
 {
 }
 
-std::shared_ptr<Value> Environment::declare(const string &name, std::shared_ptr<Value> value, bool constant)
+shared_ptr<Value> Environment::declare(const string &name, shared_ptr<Value> value, bool constant)
 {
     if (hasVariable(name))
     {
@@ -43,28 +49,27 @@ shared_ptr<Value> Environment::redeclare(const string &name, shared_ptr<Value> v
     return value;
 }
 
-std::shared_ptr<Value> Environment::assign(const string &name, std::shared_ptr<Value> value)
+Result<Value> Environment::assign(const string &name, shared_ptr<Value> value)
 {
-    std::shared_ptr<Environment> env = resolve(name);
+    shared_ptr<Environment> env = resolve(name);
     if (!env)
     {
-        return nullptr; // Variable not found in any environment
+        return { VARIABLE_NOT_FOUND, nullptr };
     }
 
     if (env->hasConstant(name))
     {
-        // TODO: Handle error for assigning to a constant
-        return nullptr; // Cannot assign to a constant
+        return { VARIABLE_IS_CONSTANT, nullptr };
     }
 
     env->variables[name] = value;
 
-    return value; // Return the assigned value
+    return { SUCCESS, value };
 }
 
-std::shared_ptr<Value> Environment::lookup(const string &name) const
+shared_ptr<Value> Environment::lookup(const string &name) const
 {
-    std::shared_ptr<Environment> env = resolve(name);
+    shared_ptr<Environment> env = resolve(name);
     return env ? env->variables.at(name) : nullptr;
 }
 
@@ -78,19 +83,16 @@ shared_ptr<Value> Environment::lookupLocal(const string &name) const
     return nullptr;
 }
 
-std::shared_ptr<Environment> Environment::resolve(const string &name) const
+shared_ptr<Environment> Environment::resolve(const string &name) const
 {
     if (hasVariable(name))
     {
-        return std::const_pointer_cast<Environment>(shared_from_this());
+        return const_pointer_cast<Environment>(shared_from_this());
     }
-
-    //auto parentPtr = parent.lock();
 
     if (!parent)
     {
-        // TODO: Handle error for unresolved variable
-        return nullptr; // No parent environment to resolve to
+        return nullptr;
     }
     return parent->resolve(name);
 }

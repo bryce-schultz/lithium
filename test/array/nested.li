@@ -1,0 +1,9 @@
+let a = [10, 20];
+let b = [a, 30];
+println(b);
+println(b[0]);
+println(b[0][0]);
+
+b[0][0] *= 10;
+b[0][1] *= 10;
+println(b);

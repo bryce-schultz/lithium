@@ -1,15 +1,15 @@
 fn test()
 {
-    print(10);
+    println(10);
 }
 
 test();
 
 fn test_args(a, b, c)
 {
-    print(a);
-    print(b);
-    print(c);
+    println(a);
+    println(b);
+    println(c);
 }
 
 test_args(1, 2, 3);

@@ -26,9 +26,13 @@ namespace Utils
 
     string readWholeFile(const string &filename);
 
+    bool fileExists(const string &filename);
+
     string getInputLine();
 
     string join(const vector<string> &lines, const string &delimiter = "\n");
 
     string truncate(const string &str, size_t maxLength, const string &suffix = "...");
+
+    string formatString(const string &format, const vector<string> &args);
 }

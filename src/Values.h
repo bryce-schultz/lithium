@@ -8,3 +8,4 @@
 #include "StringValue.h"
 #include "BooleanValue.h"
 #include "FunctionValue.h"
+#include "ArrayValue.h"

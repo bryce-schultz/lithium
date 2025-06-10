@@ -5,6 +5,8 @@
 #include <set>
 #include <memory>
 
+#include "Result.h"
+
 using std::string;
 using std::map;
 using std::set;
@@ -17,11 +19,19 @@ class Value; // forward declaration
 class Environment : public enable_shared_from_this<Environment>
 {
 public:
+    enum ResultStatus
+    {
+        SUCCESS = 0,
+        VARIABLE_NOT_FOUND = 1,
+        VARIABLE_ALREADY_DECLARED = 2,
+        VARIABLE_IS_CONSTANT = 3,
+    };
+public:
     Environment(shared_ptr<Environment> parent = nullptr);
 
     shared_ptr<Value> declare(const string &name, shared_ptr<Value> value, bool constant = false);
     shared_ptr<Value> redeclare(const string &name, shared_ptr<Value> value, bool constant = false);
-    shared_ptr<Value> assign(const string &name, shared_ptr<Value> value);
+    Result<Value> assign(const string &name, shared_ptr<Value> value);
     shared_ptr<Value> lookup(const string &name) const;
     shared_ptr<Value> lookupLocal(const string &name) const;
     shared_ptr<Environment> resolve(const string &name) const;

@@ -261,6 +261,8 @@ Token Tokenizer::lex()
             c = peek();
         }
 
+        //-----------------------------------------------------------
+        // keywords
         if (identifier == "let") return Token(Token::LET, Range(start, location), identifier);
         if (identifier == "const") return Token(Token::CONST, Range(start, location), identifier);
         if (identifier == "if") return Token(Token::IF, Range(start, location), identifier);
@@ -272,8 +274,9 @@ Token Tokenizer::lex()
         if (identifier == "break") return Token(Token::BREAK, Range(start, location), identifier);
         if (identifier == "class") return Token(Token::CLASS, Range(start, location), identifier);
         if (identifier == "import") return Token(Token::IMPORT, Range(start, location), identifier);
-        if (identifier == "print") return Token(Token::PRINT, Range(start, location), identifier);
 
+        //-----------------------------------------------------------
+        // identifiers
         return Token(Token::IDENT, Range(start, location), identifier);
     }
 

@@ -13,6 +13,8 @@
 #include "Visitor.h"
 #include "Builtins.h"
 #include "Exceptions.h"
+#include "Parser.h"
+#include "SemanticErrorVisitor.h"
 
 using std::shared_ptr;
 using std::string;
@@ -34,9 +36,15 @@ using std::fmod;
 #define errorAtToken(msg, token, range) \
     tokenRangeError(msg, token, range, __FILE__, __LINE__)
 
-#define alreadyDefined(node) errorAtToken("'" + Utils::truncate(node->getName(), MAX_PEEK) + "' is already defined", node->getToken(), node->getRange())
+#define alreadyDefined(node) \
+    errorAtToken("'" + Utils::truncate(node->getName(), MAX_PEEK) + "' is already defined", node->getToken(), node->getRange())
 
-#define notDefined(node) errorAtToken("'" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
+#define notDefined(node) \
+    errorAtToken("'" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
+
+#define failedToLoadModule(token, range) \
+    errorAtToken("failed to load module '" + token.getValue() + "'", token, range); \
+    return false
 
 Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env):
     isInteractive(isInteractive),
@@ -65,7 +73,9 @@ void Interpreter::setupEnvironment()
 
 void Interpreter::setupBuiltInFunctions()
 {
-    env->declare("printall", make_shared<BuiltinFunctionValue>(Builtins::printall), true);
+    env->declare("print", make_shared<BuiltinFunctionValue>(Builtins::print), true);
+    env->declare("println", make_shared<BuiltinFunctionValue>(Builtins::println), true);
+    env->declare("printf", make_shared<BuiltinFunctionValue>(Builtins::printf), true);
     env->declare("type", make_shared<BuiltinFunctionValue>(Builtins::type), true);
     env->declare("exit", make_shared<BuiltinFunctionValue>(Builtins::exit), true);
     env->declare("input", make_shared<BuiltinFunctionValue>(Builtins::input), true);
@@ -80,6 +90,51 @@ void Interpreter::setupRuntimeValues()
     env->declare("PI", make_shared<NumberValue>(M_PI), true);
     env->declare("E", make_shared<NumberValue>(M_E), true);
     env->declare("VERSION", make_shared<StringValue>(INTERPRETER_VERSION), true);
+}
+
+bool Interpreter::import(const Token& moduleName, const Range &range)
+{
+    const string modulePath = "modules/" + moduleName.getValue() + ".li";
+    if (!Utils::fileExists(modulePath))
+    {
+        errorAt("module '" + moduleName.getValue() + "' not found", moduleName.getRange().getStart(), range);
+        return false;
+    }
+
+    const string moduleContent = Utils::readWholeFile(modulePath);
+    if (moduleContent.empty())
+    {
+        // empty modules are fine, just return true
+        return true;
+    }
+
+    try
+    {
+        Parser parser;
+        auto moduleNode = parser.parse(moduleContent, modulePath);
+        if (!moduleNode.status)
+        {
+            failedToLoadModule(moduleName, range);
+        }
+
+        // Check for semantic errors in the module
+        SemanticErrorVisitor semanticVisitor;
+        semanticVisitor.visitAllChildren(moduleNode.value.get());
+        if (semanticVisitor.hasErrors())
+        {
+            failedToLoadModule(moduleName, range);
+        }
+
+        Interpreter interpreter(isInteractive, env);
+        interpreter.visitAllChildren(moduleNode.value.get());
+    }
+    catch (const exception &e)
+    {
+        errorAtToken("error while importing module '" + moduleName.getValue() + "': " + e.what(), moduleName, range);
+        return false;
+    }
+
+    return true;
 }
 
 void Interpreter::visitAllChildren(Node *node)
@@ -133,25 +188,6 @@ void Interpreter::visit(StatementsNode *node)
     }
 }
 
-void Interpreter::visit(PrintStatementNode *node)
-{
-    if (!node->getExpr())
-    {
-        cout << "\n"; // print a newline if no expression is provided
-        returnValue = nullptr;
-        return;
-    }
-
-    node->getExpr()->visit(this);
-    auto result = returnValue;
-    if (!result)
-    {
-        return;
-    }
-    cout << result->toString() << "\n";
-    returnValue = nullptr;
-}
-
 void Interpreter::visit(NumberNode *node)
 {
     returnValue = make_shared<NumberValue>(node->getValue(), node->getRange());
@@ -170,21 +206,12 @@ void Interpreter::visit(StringNode *node)
 
 void Interpreter::visit(BinaryExprNode *node)
 {
-    if (node->isUnary())
-    {
-        if (node->isPrefix())
-        {
-            returnValue = evalUnaryExpression(node->getRight(), node->getOperator(), true);
-        }
-        else
-        {
-            returnValue = evalUnaryExpression(node->getLeft(), node->getOperator(), false);
-        }
-    }
-    else
-    {
-        returnValue = evalBinaryExpression(node->getLeft(), node->getOperator(), node->getRight());
-    }
+    returnValue = evalBinaryExpression(node->getLeft(), node->getOperator(), node->getRight());
+}
+
+void Interpreter::visit(UnaryExprNode *node)
+{
+    returnValue = evalUnaryExpression(node->getExpression(), node->getOperator(), node->isPrefix());
 }
 
 shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right)
@@ -551,47 +578,143 @@ void Interpreter::visit(AssignNode *node)
         return;
     }
     auto asignee = dynamic_pointer_cast<VarExprNode>(node->getAsignee());
-    if (!asignee)
+    if (asignee)
     {
-        error("invalid assignment target", node->getRange());
-        returnValue = nullptr;
-        return;
-    }
+        switch (node->getOp())
+        {
+            case '=':
+                // No additional operation, just assign the value
+                break;
+            case Token::PLUS_EQUAL:
+                value = env->lookup(asignee->getName())->add(value);
+                break;
+            case Token::MINUS_EQUAL:
+                value = env->lookup(asignee->getName())->sub(value);
+                break;
+            case Token::MUL_EQUAL:
+                value = env->lookup(asignee->getName())->mul(value);
+                break;
+            case Token::DIV_EQUAL:
+                value = env->lookup(asignee->getName())->div(value);
+                break;
+            case Token::MOD_EQUAL:
+                value = env->lookup(asignee->getName())->mod(value);
+                break;
+            default:
+                error("invalid assignment operator", node->getRange());
+                returnValue = nullptr;
+                return;
+        }
 
-    switch (node->getOp())
-    {
-        case '=':
-            // No additional operation, just assign the value
-            break;
-        case Token::PLUS_EQUAL:
-            value = env->lookup(asignee->getName())->add(value);
-            break;
-        case Token::MINUS_EQUAL:
-            value = env->lookup(asignee->getName())->sub(value);
-            break;
-        case Token::MUL_EQUAL:
-            value = env->lookup(asignee->getName())->mul(value);
-            break;
-        case Token::DIV_EQUAL:
-            value = env->lookup(asignee->getName())->div(value);
-            break;
-        case Token::MOD_EQUAL:
-            value = env->lookup(asignee->getName())->mod(value);
-            break;
-        default:
-            error("invalid assignment operator", node->getRange());
+        if (!value)
+        {
+            error("invalid operators in assignment", node->getRange());
             returnValue = nullptr;
             return;
-    }
+        }
 
-    if (!value)
+        auto result = env->assign(asignee->getName(), value);
+        if (result.status == Environment::VARIABLE_NOT_FOUND)
+        {
+            notDefined(asignee);
+            returnValue = nullptr;
+            return;
+        }
+        else if (result.status == Environment::VARIABLE_IS_CONSTANT)
+        {
+            errorAtToken("cannot assign to constant variable '" + asignee->getName() + "'", asignee->getToken(), node->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        returnValue = result.value;
+        return;
+    }
+    shared_ptr<ArrayAccessNode> access = dynamic_pointer_cast<ArrayAccessNode>(node->getAsignee());
+    if (access)
     {
-        error("invalid operators in assignment", node->getRange());
-        returnValue = nullptr;
+        access->getArray()->visit(this);
+        if (!returnValue)
+        {
+            error("array access left-hand side evaluated to null", access->getArray()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        if (returnValue->getType() != Value::Type::array)
+        {
+            error("left-hand side of array access is not an array", access->getArray()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
+        if (!arrayValue)
+        {
+            error("left-hand side of array access could not be cast to ArrayValue", access->getArray()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        access->getIndex()->visit(this);
+        if (!returnValue)
+        {
+            error("array access index evaluated to null", access->getIndex()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        if (returnValue->getType() != Value::Type::number)
+        {
+            error("array access index must be a number", access->getIndex()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        auto indexValue = dynamic_pointer_cast<NumberValue>(returnValue);
+        int index = static_cast<int>(indexValue->getValue());
+
+        if (index < 0 || index >= arrayValue->getElementCount())
+        {
+            error("array index out of bounds: " + std::to_string(index), access->getIndex()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        switch (node->getOp())
+        {
+            case '=':
+                // No additional operation, just assign the value
+                break;
+            case Token::PLUS_EQUAL:
+                value = arrayValue->getElement(index)->add(value);
+                break;
+            case Token::MINUS_EQUAL:
+                value = arrayValue->getElement(index)->sub(value);
+                break;
+            case Token::MUL_EQUAL:
+                value = arrayValue->getElement(index)->mul(value);
+                break;
+            case Token::DIV_EQUAL:
+                value = arrayValue->getElement(index)->div(value);
+                break;
+            case Token::MOD_EQUAL:
+                value = arrayValue->getElement(index)->mod(value);
+                break;
+            default:
+                error("invalid assignment operator", node->getRange());
+                returnValue = nullptr;
+                return;
+        }
+
+        // assign the value to the specified index
+        arrayValue->setElement(index, value);
+        returnValue = value;
         return;
     }
 
-    returnValue = env->assign(asignee->getName(), value);
+    error("invalid assignment target", node->getAsignee()->getRange());
+    returnValue = nullptr;
 }
 
 void Interpreter::visit(BlockNode *node)
@@ -760,4 +883,96 @@ void Interpreter::visit(BreakNode *node)
 {
     UNUSED(node);
     throw BreakException(node->getRange());
+}
+
+void Interpreter::visit(ImportNode *node)
+{
+    if (!node)
+    {
+        error("ImportNode is null", node->getRange());
+        return;
+    }
+
+    const string &moduleName = node->getToken().getValue();
+    if (moduleName.empty())
+    {
+        error("imported module name is empty", node->getToken().getRange());
+        return;
+    }
+
+    // check if the module is already imported in the interpreter
+    if (importedModules.find(moduleName) != importedModules.end())
+    {
+        return;
+    }
+
+    // Attempt to import the module
+    import(node->getToken(), node->getRange());
+}
+
+void Interpreter::visit(ArrayNode *node)
+{
+    vector<shared_ptr<Value>> elements;
+    for (const auto &element : node->getElements())
+    {
+        element->visit(this);
+        if (!returnValue)
+        {
+            return;
+        }
+        elements.push_back(returnValue);
+    }
+
+    returnValue = make_shared<ArrayValue>(elements, node->getRange());
+}
+
+void Interpreter::visit(ArrayAccessNode *node)
+{
+    node->getArray()->visit(this);
+    if (!returnValue)
+    {
+        error("array access left-hand side evaluated to null", node->getArray()->getRange());
+        return;
+    }
+
+    if (returnValue->getType() != Value::Type::array)
+    {
+        error("left-hand side of array access is not an array", node->getArray()->getRange());
+        returnValue = nullptr;
+        return;
+    }
+
+    auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
+    if (!arrayValue)
+    {
+        error("left-hand side of array access could not be cast to ArrayValue", node->getArray()->getRange());
+        returnValue = nullptr;
+        return;
+    }
+
+    node->getIndex()->visit(this);
+    if (!returnValue)
+    {
+        error("array access index evaluated to null", node->getIndex()->getRange());
+        return;
+    }
+
+    if (returnValue->getType() != Value::Type::number)
+    {
+        error("array access index must be a number", node->getIndex()->getRange());
+        returnValue = nullptr;
+        return;
+    }
+
+    auto indexValue = dynamic_pointer_cast<NumberValue>(returnValue);
+    int index = static_cast<int>(indexValue->getValue());
+
+    if (index < 0 || index >= arrayValue->getElementCount())
+    {
+        error("array index out of bounds: " + std::to_string(index), node->getIndex()->getRange());
+        returnValue = nullptr;
+        return;
+    }
+
+    returnValue = arrayValue->getElement(index);
 }

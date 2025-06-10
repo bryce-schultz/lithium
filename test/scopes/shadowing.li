@@ -1,12 +1,12 @@
 let x = 1;
-print(x);
+println(x);
 {
     let x = 2;
-    print(x);
+    println(x);
     {
         let x = 3;
-        print(x);
+        println(x);
     }
-    print(x);
+    println(x);
 }
-print(x);
+println(x);

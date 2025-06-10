@@ -1,13 +1,13 @@
 while(true)
 {
-    print(0);
+    println(0);
     break;
 }
 
 let i = 1;
 while(true)
 {
-    print(i++);
+    println(i++);
     if (i > 10)
     {
         break;
@@ -16,7 +16,7 @@ while(true)
 
 for (let i = 0; i < 10; i++)
 {
-    print(i);
+    println(i);
     if (i == 5)
     {
         break;

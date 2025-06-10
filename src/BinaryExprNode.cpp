@@ -50,19 +50,6 @@ shared_ptr<ExpressionNode> BinaryExprNode::getRight() const
     return right;
 }
 
-bool BinaryExprNode::isUnary() const
-{
-    return !left || !right;
-}
-
-bool BinaryExprNode::isPrefix() const
-{
-    // left op right
-    //      ++ num   -> prefix
-    //  num ++       -> postfix
-    return (!left && right);
-}
-
 void BinaryExprNode::visit(Visitor *visitor)
 {
     visitor->visit(this);

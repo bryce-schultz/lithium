@@ -1,5 +1,0 @@
-error: already_declared.li:6:1: 'test' is already defined
-│ fn test()
-│ ~~~~~~~~~
-│    ^
-test

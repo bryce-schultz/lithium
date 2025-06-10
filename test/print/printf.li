@@ -1,0 +1,16 @@
+let a = 10;
+printf("a = %\n", a);
+let b = 20;
+printf("b = %\n", b);
+let c = a + b;
+printf("a + b = c (% + % = %)\n", a, b, c);
+let d = "Hello, World!";
+printf("d = %\n", d);
+let e = true;
+printf("e = %\n", e);
+let f = false;
+printf("f = %\n", f);
+let g = null;
+printf("g = %\n", g);
+let h = 3.14;
+printf("h = %\n", h);

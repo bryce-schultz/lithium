@@ -1,26 +1,26 @@
 let a = 5;
 let b = 15;
-print(a);
-print(b);
+println(a);
+println(b);
 {
     let a = 10;
     let b = 30;
-    print(a);
-    print(b);
+    println(a);
+    println(b);
     {
         let a = 20;
-        print(a);
-        print(b);
+        println(a);
+        println(b);
         {
             let b = 40;
-            print(a);
-            print(b);
+            println(a);
+            println(b);
         }
-        print(a);
-        print(b);
+        println(a);
+        println(b);
     }
-    print(a);
-    print(b);
+    println(a);
+    println(b);
 }
-print(a);
-print(b);
+println(a);
+println(b);

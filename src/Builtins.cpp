@@ -21,7 +21,7 @@ using std::dynamic_pointer_cast;
     rangeError(msg, range, __FILE__, __LINE__)
 
 // returns nullptr, this will prevent printing "null" in interactive mode
-shared_ptr<Value> Builtins::printall(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::print(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
     UNUSED(env);
     UNUSED(range);
@@ -31,20 +31,72 @@ shared_ptr<Value> Builtins::printall(const vector<shared_ptr<Value>> &args, shar
         return nullptr;
     }
 
-    for (const auto &arg : args)
+    for (size_t i = 0; i < args.size(); ++i)
     {
-        // print the argument's string representation
-        if (arg)
+        if (args[i])
         {
-            cout << arg->toString();
+            cout << args[i]->toString();
         }
 
-        // print space between arguments
-        if (arg != args.back())
+        if (i != args.size() - 1)
         {
             cout << " ";
         }
     }
+    cout.flush();
+    return nullptr;
+}
+
+shared_ptr<Value> Builtins::println(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+    UNUSED(range);
+
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        if (args[i])
+        {
+            cout << args[i]->toString();
+        }
+
+        if (i != args.size() - 1)
+        {
+            cout << " ";
+        }
+    }
+    cout << endl;
+    return nullptr;
+}
+
+shared_ptr<Value> Builtins::printf(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.empty())
+    {
+        error("printf() expects at least 1 argument, but got 0", range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::string)
+    {
+        error("printf() expects a string format as the first argument, but got " + args[0]->typeAsString(), args[0]->getRange());
+        return nullptr;
+    }
+
+    const auto &format = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+
+    vector<string> formatArgs;
+    for (size_t i = 1; i < args.size(); ++i)
+    {
+        if (args[i])
+        {
+            formatArgs.push_back(args[i]->toString());
+        }
+    }
+    string result = Utils::formatString(format, formatArgs);
+
+    cout << result;
     cout.flush();
     return nullptr;
 }

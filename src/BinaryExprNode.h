@@ -28,8 +28,6 @@ public:
     shared_ptr<ExpressionNode> getLeft() const;
     shared_ptr<OpNode> getOperator() const;
     shared_ptr<ExpressionNode> getRight() const;
-    bool isUnary() const;
-    bool isPrefix() const;
     void visit(Visitor *visitor) override;
 private:
     shared_ptr<ExpressionNode> left;

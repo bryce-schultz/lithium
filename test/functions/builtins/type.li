@@ -6,15 +6,15 @@ fn test()
 fn test2()
 { }
 
-print(type("hello"));
-print(type(10));
-print(type(10.1));
-print(type(true));
-print(type(false));
-print(type(null));
-print(type(test));
-print(type(test()));
-print(type(test2()));
-print(type(10 + 10));
-print(type("Hello" + " World"));
-print(type("number: " + 10));
+println(type("hello"));
+println(type(10));
+println(type(10.1));
+println(type(true));
+println(type(false));
+println(type(null));
+println(type(test));
+println(type(test()));
+println(type(test2()));
+println(type(10 + 10));
+println(type("Hello" + " World"));
+println(type("number: " + 10));

@@ -1,0 +1,8 @@
+const stdin = 0;
+const stdout = 1;
+const stderr = 2;
+
+fn add(a, b)
+{
+    return a + b;
+}

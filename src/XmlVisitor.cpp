@@ -94,16 +94,6 @@ void XmlVisitor::visit(VarDeclNode *node)
     closeTag("VarDecl");
 }
 
-void XmlVisitor::visit(PrintStatementNode *node)
-{
-    openTag("PrintStatement");
-    if (node->getExpr())
-    {
-        node->getExpr()->visit(this);
-    }
-    closeTag("PrintStatement");
-}
-
 void XmlVisitor::visit(NumberNode *node)
 {
     openTag("Number", {"value=\"" + std::to_string(node->getValue()) + "\""}, true);

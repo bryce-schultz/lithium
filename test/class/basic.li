@@ -1,0 +1,25 @@
+class pair
+{
+    let x = 0;
+    let y = 0;
+
+    pub fn pair(x, y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    pub fn getX()
+    {
+        return this.x;
+    }
+
+    pub fn getY()
+    {
+        return this.y;
+    }
+}
+
+let p = pair(10, 20);
+println(p.getX());
+println(p.getY());

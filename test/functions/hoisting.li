@@ -10,8 +10,8 @@ test();
 
 fn test()
 {
-    print(b);
-    print("Hoisting test");
+    println(b);
+    println("Hoisting test");
 }
 
 {
@@ -27,7 +27,7 @@ fn test()
 
     fn test()
     {
-        print(b);
-        print("Hoisting test");
+        println(b);
+        println("Hoisting test");
     }
 }

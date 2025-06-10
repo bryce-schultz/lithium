@@ -16,19 +16,13 @@
 
 #include "Tokenizer.h"
 #include "Nodes.h"
+#include "Result.h"
 
 using std::string;
 using std::istream;
 using std::set;
 using std::shared_ptr;
 using std::make_shared;
-
-template<typename T>
-struct Result
-{
-    bool success;
-    shared_ptr<T> node;
-};
 
 class Parser
 {
@@ -51,13 +45,15 @@ private:
     //       | ifStmt       - firsts: IF
     //       | block        - firsts: {
     //       | funcDecl     - firsts: FN
+    //       | classDecl    - firsts: CLASS
     //       | returnStmt   - firsts: RETURN
+    //       | breakStmt    - firsts: BREAK
+    //       | importStmt   - firsts: IMPORT
     Result<StatementNode> parseStmt();
 
     // exprStmt -> expr ;
     //           | letStmt
     //           | constStmt
-    //           | printStmt
     //           | ;
     Result<StatementNode> parseExprStmt();
 
@@ -79,6 +75,22 @@ private:
     //           | FN IDENT ( ) stmt;
     Result<FuncDeclNode> parseFuncDecl();
 
+    // classDecl -> CLASS IDENT { classBody }
+    //            | CLASS IDENT { }
+    Result<ClassNode> parseClassDecl();
+
+    // classBody -> classStmt classBody
+    //            | ε
+    Result<StatementsNode> parseClassBody();
+
+    // classStmt -> PUB funcDecl
+    //            | PUB letStmt
+    //            | PUB constStmt
+    //            | funcDecl
+    //            | letStmt
+    //            | constStmt
+    Result<StatementNode> parseClassStmt();
+
     // paramList -> IDENT paramList'
     //            | ε
     Result<ParamListNode> parseParamList();
@@ -93,15 +105,18 @@ private:
     // breakStmt -> BREAK ;
     Result<BreakNode> parseBreakStmt();
 
+    // importStmt -> IMPORT < moduleName > ;
+    Result<ImportNode> parseImportStmt();
+
+    // moduleName -> IDENT . IDENT
+    //             | IDENT
+    Result<StringNode> parseModuleName();
+
     // letStmt -> LET IDENT = expr ;
     Result<VarDeclNode> parseLetStmt();
 
     // constStmt -> CONST IDENT = expr ;
     Result<VarDeclNode> parseConstStmt();
-
-    // printStmt -> PRINT ( expr ) ;
-    //            | PRINT ( ) ;
-    Result<PrintStatementNode> parsePrintStmt();
 
     //******************************************************************************************
 
@@ -233,6 +248,7 @@ private:
     set<int> argListFirsts;
     set<int> postFirsts;
     set<int> postPFirsts;
+    set<int> importFirsts;
 private:
     Tokenizer tokenizer;
     Token currentToken;

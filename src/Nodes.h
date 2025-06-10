@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include <memory>
-
 #include "Node.h"
 #include "ExpressionNode.h"
 #include "NumberNode.h"
@@ -18,16 +16,18 @@
 #include "VarExprNode.h"
 #include "OpNode.h"
 #include "BinaryExprNode.h"
+#include "UnaryExprNode.h"
 #include "AssignNode.h"
 #include "CallNode.h"
 #include "ArgListNode.h"
+#include "ArrayNode.h"
 #include "ParamListNode.h"
 #include "MemberAccessNode.h"
+#include "ArrayAccessNode.h"
 #include "NullNode.h"
 
 #include "StatementNode.h"
 #include "ReturnStatementNode.h"
-#include "PrintStatementNode.h"
 #include "VarDeclNode.h"
 #include "DeclNode.h"
 #include "BlockNode.h"
@@ -37,3 +37,5 @@
 #include "ForStatementNode.h"
 #include "FuncDeclNode.h"
 #include "BreakNode.h"
+#include "ImportNode.h"
+#include "ClassNode.h"

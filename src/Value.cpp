@@ -310,6 +310,27 @@ shared_ptr<Value> Value::logicalOr(const shared_ptr<Value> &other) const
     }
 }
 
+shared_ptr<Value> Value::comma(const shared_ptr<Value> &other) const
+{
+    if (!other) return nullptr;
+
+    switch (other->getType())
+    {
+        case Type::null:
+            return comma(static_pointer_cast<NullValue>(other));
+        case Type::number:
+            return comma(static_pointer_cast<NumberValue>(other));
+        case Type::string:
+            return comma(static_pointer_cast<StringValue>(other));
+        case Type::boolean:
+            return comma(static_pointer_cast<BooleanValue>(other));
+        case Type::function:
+            return comma(static_pointer_cast<FunctionValue>(other));
+        default:
+            return nullptr; // Unsupported type for comma operation
+    }
+}
+
 shared_ptr<Value> Value::add(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -341,6 +362,12 @@ shared_ptr<Value> Value::add(const shared_ptr<FunctionValue> &other) const
 }
 
 shared_ptr<Value> Value::add(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::add(const shared_ptr<ArrayValue> &other) const
 {
     if (!other) return nullptr;
     return nullptr;
@@ -382,6 +409,12 @@ shared_ptr<Value> Value::sub(const shared_ptr<BuiltinFunctionValue> &other) cons
     return nullptr;
 }
 
+shared_ptr<Value> Value::sub(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
 shared_ptr<Value> Value::mul(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -413,6 +446,12 @@ shared_ptr<Value> Value::mul(const shared_ptr<FunctionValue> &other) const
 }
 
 shared_ptr<Value> Value::mul(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mul(const shared_ptr<ArrayValue> &other) const
 {
     if (!other) return nullptr;
     return nullptr;
@@ -454,6 +493,12 @@ shared_ptr<Value> Value::div(const shared_ptr<BuiltinFunctionValue> &other) cons
     return nullptr;
 }
 
+shared_ptr<Value> Value::div(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
 shared_ptr<Value> Value::mod(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -484,6 +529,12 @@ shared_ptr<Value> Value::mod(const shared_ptr<FunctionValue> &other) const
 }
 
 shared_ptr<Value> Value::mod(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::mod(const shared_ptr<ArrayValue> &other) const
 {
     if (!other) return nullptr;
     return nullptr;
@@ -525,6 +576,12 @@ shared_ptr<Value> Value::eq(const shared_ptr<BuiltinFunctionValue> &other) const
     return nullptr;
 }
 
+shared_ptr<Value> Value::eq(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
 shared_ptr<Value> Value::ne(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -556,6 +613,12 @@ shared_ptr<Value> Value::ne(const shared_ptr<FunctionValue> &other) const
 }
 
 shared_ptr<Value> Value::ne(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<ArrayValue> &other) const
 {
     if (!other) return nullptr;
     return nullptr;
@@ -597,6 +660,12 @@ shared_ptr<Value> Value::lt(const shared_ptr<BuiltinFunctionValue> &other) const
     return nullptr;
 }
 
+shared_ptr<Value> Value::lt(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
 shared_ptr<Value> Value::le(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -628,6 +697,12 @@ shared_ptr<Value> Value::le(const shared_ptr<FunctionValue> &other) const
 }
 
 shared_ptr<Value> Value::le(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::le(const shared_ptr<ArrayValue> &other) const
 {
     if (!other) return nullptr;
     return nullptr;
@@ -669,6 +744,12 @@ shared_ptr<Value> Value::gt(const shared_ptr<BuiltinFunctionValue> &other) const
     return nullptr;
 }
 
+shared_ptr<Value> Value::gt(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
 shared_ptr<Value> Value::ge(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -700,6 +781,12 @@ shared_ptr<Value> Value::ge(const shared_ptr<FunctionValue> &other) const
 }
 
 shared_ptr<Value> Value::ge(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ge(const shared_ptr<ArrayValue> &other) const
 {
     if (!other) return nullptr;
     return nullptr;
@@ -741,6 +828,12 @@ shared_ptr<Value> Value::logicalAnd(const shared_ptr<BuiltinFunctionValue> &othe
     return nullptr;
 }
 
+shared_ptr<Value> Value::logicalAnd(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
 shared_ptr<Value> Value::logicalOr(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -772,6 +865,54 @@ shared_ptr<Value> Value::logicalOr(const shared_ptr<FunctionValue> &other) const
 }
 
 shared_ptr<Value> Value::logicalOr(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::logicalOr(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::comma(const shared_ptr<NullValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::comma(const shared_ptr<NumberValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::comma(const shared_ptr<StringValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::comma(const shared_ptr<BooleanValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::comma(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::comma(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::comma(const shared_ptr<ArrayValue> &other) const
 {
     if (!other) return nullptr;
     return nullptr;

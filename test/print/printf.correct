@@ -1,0 +1,8 @@
+a = 10
+b = 20
+a + b = c (10 + 20 = 30)
+d = Hello, World!
+e = true
+f = false
+g = null
+h = 3.14

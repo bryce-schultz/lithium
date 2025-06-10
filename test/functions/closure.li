@@ -13,13 +13,13 @@ fn make_counter(start_value)
 let counter1 = make_counter(0);
 let counter2 = make_counter(10);
 
-print(counter1());
-print(counter2());
-print(counter1());
-print(counter2());
-print(counter1());
-print(counter2());
-print(counter1());
-print(counter2());
-print(counter1());
-print(counter2());
+println(counter1());
+println(counter2());
+println(counter1());
+println(counter2());
+println(counter1());
+println(counter2());
+println(counter1());
+println(counter2());
+println(counter1());
+println(counter2());

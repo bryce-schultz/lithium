@@ -1,0 +1,4 @@
+fn getfile()
+{
+    return FILE;
+}

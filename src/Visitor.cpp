@@ -52,11 +52,6 @@ void Visitor::visit(VarDeclNode *node)
     UNUSED(node);
 }
 
-void Visitor::visit(PrintStatementNode *node)
-{
-    UNUSED(node);
-}
-
 void Visitor::visit(NumberNode *node)
 {
     UNUSED(node);
@@ -64,17 +59,53 @@ void Visitor::visit(NumberNode *node)
 
 void Visitor::visit(CallNode *node)
 {
-    UNUSED(node);
+    if (node->getCallee())
+    {
+        node->getCallee()->visit(this);
+    }
+    if (node->getArgs())
+    {
+        node->getArgs()->visit(this);
+    }
 }
 
 void Visitor::visit(BinaryExprNode *node)
 {
-    UNUSED(node);
+    if (node->getLeft())
+    {
+        node->getLeft()->visit(this);
+    }
+    if (node->getOperator())
+    {
+        node->getOperator()->visit(this);
+    }
+    if (node->getRight())
+    {
+        node->getRight()->visit(this);
+    }
+}
+
+void Visitor::visit(UnaryExprNode *node)
+{
+    if (node->getOperator())
+    {
+        node->getOperator()->visit(this);
+    }
+    if (node->getExpression())
+    {
+        node->getExpression()->visit(this);
+    }
 }
 
 void Visitor::visit(ArgListNode *node)
 {
-    UNUSED(node);
+    for (const auto &arg : node->getArgs())
+    {
+        if (arg)
+        {
+            arg->visit(this);
+        }
+    }
 }
 
 void Visitor::visit(OpNode *node)
@@ -84,12 +115,30 @@ void Visitor::visit(OpNode *node)
 
 void Visitor::visit(BlockNode *node)
 {
-    UNUSED(node);
+    if (node->getStatements())
+    {
+        node->getStatements()->visit(this);
+    }
 }
 
 void Visitor::visit(MemberAccessNode *node)
 {
-    UNUSED(node);
+    if (node->getExpression())
+    {
+        node->getExpression()->visit(this);
+    }
+}
+
+void Visitor::visit(ArrayAccessNode *node)
+{
+    if (node->getArray())
+    {
+        node->getArray()->visit(this);
+    }
+    if (node->getIndex())
+    {
+        node->getIndex()->visit(this);
+    }
 }
 
 void Visitor::visit(StringNode *node)
@@ -99,27 +148,74 @@ void Visitor::visit(StringNode *node)
 
 void Visitor::visit(AssignNode *node)
 {
-    UNUSED(node);
+    if (node->getAsignee())
+    {
+        node->getAsignee()->visit(this);
+    }
+    if (node->getExpr())
+    {
+        node->getExpr()->visit(this);
+    }
 }
 
 void Visitor::visit(IfStatementNode *node)
 {
-    UNUSED(node);
+    if (node->getCondition())
+    {
+        node->getCondition()->visit(this);
+    }
+    if (node->getThenBranch())
+    {
+        node->getThenBranch()->visit(this);
+    }
+    if (node->getElseBranch())
+    {
+        node->getElseBranch()->visit(this);
+    }
 }
 
 void Visitor::visit(WhileNode *node)
 {
-    UNUSED(node);
+    if (node->getCondition())
+    {
+        node->getCondition()->visit(this);
+    }
+    if (node->getBody())
+    {
+        node->getBody()->visit(this);
+    }
 }
 
 void Visitor::visit(FuncDeclNode *node)
 {
-    UNUSED(node);
+    if (node->getParams())
+    {
+        node->getParams()->visit(this);
+    }
+    if (node->getBody())
+    {
+        node->getBody()->visit(this);
+    }
 }
 
 void Visitor::visit(ForStatementNode *node)
 {
-    UNUSED(node);
+    if (node->getInit())
+    {
+        node->getInit()->visit(this);
+    }
+    if (node->getCondition())
+    {
+        node->getCondition()->visit(this);
+    }
+    if (node->getIncrement())
+    {
+        node->getIncrement()->visit(this);
+    }
+    if (node->getBody())
+    {
+        node->getBody()->visit(this);
+    }
 }
 
 void Visitor::visit(NullNode *node)
@@ -130,4 +226,25 @@ void Visitor::visit(NullNode *node)
 void Visitor::visit(BreakNode *node)
 {
     UNUSED(node);
+}
+
+void Visitor::visit(ImportNode *node)
+{
+    UNUSED(node);
+}
+
+void Visitor::visit(ClassNode *node)
+{
+    node->getBody()->visit(this);
+}
+
+void Visitor::visit(ArrayNode *node)
+{
+    for (const auto &element : node->getElements())
+    {
+        if (element)
+        {
+            element->visit(this);
+        }
+    }
 }

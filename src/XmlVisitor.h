@@ -29,7 +29,6 @@ public:
     void visit(ReturnStatementNode *node) override;
     void visit(VarExprNode *node) override;
     void visit(VarDeclNode *node) override;
-    void visit(PrintStatementNode *node) override;
     void visit(NumberNode *node) override;
     void visit(CallNode *node) override;
     void visit(BinaryExprNode *node) override;

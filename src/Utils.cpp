@@ -36,6 +36,14 @@ string Utils::readWholeFile(const string &filename)
     return string(istreambuf_iterator<char>(file), istreambuf_iterator<char>());
 }
 
+bool Utils::fileExists(const string &filename)
+{
+    ifstream file(filename);
+    bool good = file.good();
+    file.close();
+    return good;
+}
+
 string Utils::getInputLine()
 {
     string line, part;
@@ -107,4 +115,24 @@ string Utils::truncate(const string &str, size_t maxLength, const string &suffix
     }
 
     return str.substr(0, maxLength - suffixLength) + suffix;
+}
+
+string Utils::formatString(const string &format, const vector<string> &args)
+{
+    // loop through the format string and replace placeholders with arguments, placeholder will be %
+    string result;
+    size_t argIndex = 0;
+    for (size_t i = 0; i < format.length(); ++i)
+    {
+        if (format[i] == '%' && argIndex < args.size())
+        {
+            result += args[argIndex++];
+        }
+        else
+        {
+            result += format[i];
+        }
+    }
+
+    return result;
 }

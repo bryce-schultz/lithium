@@ -1,0 +1,10 @@
+import <mod>
+import <io.getfile>
+
+println(add(1, 2));
+
+println("stdin:", stdin);
+println("stdout:", stdout);
+println("stderr:", stderr);
+
+print(getfile());

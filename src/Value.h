@@ -18,6 +18,7 @@ class StringValue;
 class BooleanValue;
 class FunctionValue;
 class BuiltinFunctionValue;
+class ArrayValue;
 
 class Value
 {
@@ -28,6 +29,7 @@ public:
         number,
         string,
         boolean,
+        array,
         function,
         builtin,
     };
@@ -56,6 +58,7 @@ public:
     shared_ptr<Value> ge(const shared_ptr<Value> &other) const;
     shared_ptr<Value> logicalAnd(const shared_ptr<Value> &other) const;
     shared_ptr<Value> logicalOr(const shared_ptr<Value> &other) const;
+    shared_ptr<Value> comma(const shared_ptr<Value> &other) const;
 
     // + operator overloads
     virtual shared_ptr<Value> add(const shared_ptr<NullValue> &other) const;
@@ -64,6 +67,7 @@ public:
     virtual shared_ptr<Value> add(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> add(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> add(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> add(const shared_ptr<ArrayValue> &other) const;
 
     // - operator overloads
     virtual shared_ptr<Value> sub(const shared_ptr<NullValue> &other) const;
@@ -72,6 +76,7 @@ public:
     virtual shared_ptr<Value> sub(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> sub(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> sub(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> sub(const shared_ptr<ArrayValue> &other) const;
 
     // * operator overloads
     virtual shared_ptr<Value> mul(const shared_ptr<NullValue> &other) const;
@@ -80,6 +85,7 @@ public:
     virtual shared_ptr<Value> mul(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> mul(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> mul(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> mul(const shared_ptr<ArrayValue> &other) const;
 
     // / operator overloads
     virtual shared_ptr<Value> div(const shared_ptr<NullValue> &other) const;
@@ -88,6 +94,7 @@ public:
     virtual shared_ptr<Value> div(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> div(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> div(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> div(const shared_ptr<ArrayValue> &other) const;
 
     // % operator overloads
     virtual shared_ptr<Value> mod(const shared_ptr<NullValue> &other) const;
@@ -96,6 +103,7 @@ public:
     virtual shared_ptr<Value> mod(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> mod(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> mod(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> mod(const shared_ptr<ArrayValue> &other) const;
 
     // == operator overloads
     virtual shared_ptr<Value> eq(const shared_ptr<NullValue> &other) const;
@@ -104,6 +112,7 @@ public:
     virtual shared_ptr<Value> eq(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> eq(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> eq(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> eq(const shared_ptr<ArrayValue> &other) const;
 
     // != operator overloads
     virtual shared_ptr<Value> ne(const shared_ptr<NullValue> &other) const;
@@ -112,6 +121,7 @@ public:
     virtual shared_ptr<Value> ne(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> ne(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> ne(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> ne(const shared_ptr<ArrayValue> &other) const;
 
     // < operator overloads
 
@@ -121,6 +131,7 @@ public:
     virtual shared_ptr<Value> lt(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> lt(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> lt(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> lt(const shared_ptr<ArrayValue> &other) const;
 
     // <= operator overloads
 
@@ -130,6 +141,7 @@ public:
     virtual shared_ptr<Value> le(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> le(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> le(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> le(const shared_ptr<ArrayValue> &other) const;
 
     // > operator overloads
     virtual shared_ptr<Value> gt(const shared_ptr<NullValue> &other) const;
@@ -138,6 +150,7 @@ public:
     virtual shared_ptr<Value> gt(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> gt(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> gt(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> gt(const shared_ptr<ArrayValue> &other) const;
 
     // >= operator overloads
     virtual shared_ptr<Value> ge(const shared_ptr<NullValue> &other) const;
@@ -146,6 +159,7 @@ public:
     virtual shared_ptr<Value> ge(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> ge(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> ge(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> ge(const shared_ptr<ArrayValue> &other) const;
 
     // && operator overloads
     virtual shared_ptr<Value> logicalAnd(const shared_ptr<NullValue> &other) const;
@@ -154,6 +168,7 @@ public:
     virtual shared_ptr<Value> logicalAnd(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> logicalAnd(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> logicalAnd(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> logicalAnd(const shared_ptr<ArrayValue> &other) const;
 
     // || operator overloads
     virtual shared_ptr<Value> logicalOr(const shared_ptr<NullValue> &other) const;
@@ -162,6 +177,16 @@ public:
     virtual shared_ptr<Value> logicalOr(const shared_ptr<BooleanValue> &other) const;
     virtual shared_ptr<Value> logicalOr(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> logicalOr(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> logicalOr(const shared_ptr<ArrayValue> &other) const;
+
+    // , operator overloads
+    virtual shared_ptr<Value> comma(const shared_ptr<NullValue> &other) const;
+    virtual shared_ptr<Value> comma(const shared_ptr<NumberValue> &other) const;
+    virtual shared_ptr<Value> comma(const shared_ptr<StringValue> &other) const;
+    virtual shared_ptr<Value> comma(const shared_ptr<BooleanValue> &other) const;
+    virtual shared_ptr<Value> comma(const shared_ptr<FunctionValue> &other) const;
+    virtual shared_ptr<Value> comma(const shared_ptr<BuiltinFunctionValue> &other) const;
+    virtual shared_ptr<Value> comma(const shared_ptr<ArrayValue> &other) const;
 
     // Unary operators
     virtual shared_ptr<Value> unaryMinus() const;

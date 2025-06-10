@@ -35,7 +35,6 @@ public:
         BREAK,
         CLASS,
         IMPORT,
-        PRINT,
         EQ,
         NE,
         LE,

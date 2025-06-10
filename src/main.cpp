@@ -9,7 +9,6 @@
 
 #include "Utils.h"
 #include "Parser.h"
-#include "XmlVisitor.h"
 #include "Interpreter.h"
 #include "Environment.h"
 #include "SemanticErrorVisitor.h"
@@ -42,20 +41,20 @@ int runInteractiveMode()
     while ((line = Utils::getInputLine()) != "exit")
     {
         Result<Node> result = parser.parse(line, "cin");
-        if (!result.success)
+        if (!result.status)
         {
             continue;
         }
 
         SemanticErrorVisitor semanticVisitor;
-        semanticVisitor.visitAllChildren(result.node.get());
+        semanticVisitor.visitAllChildren(result.value.get());
         if (semanticVisitor.hasErrors())
         {
             continue;
         }
 
         Interpreter interpreter(true, env); // Use the shared environment
-        interpreter.visitAllChildren(result.node.get());
+        interpreter.visitAllChildren(result.value.get());
         line.clear();
         clearErrorLocations();
     }
@@ -81,13 +80,13 @@ int runFileMode(const string &filename)
 
     Parser parser;
     Result<Node> result = parser.parse(input, filename);
-    if (!result.success)
+    if (!result.status)
     {
         return 1;
     }
 
     SemanticErrorVisitor semanticVisitor;
-    semanticVisitor.visitAllChildren(result.node.get());
+    semanticVisitor.visitAllChildren(result.value.get());
     if (semanticVisitor.hasErrors())
     {
         return 1;
@@ -95,7 +94,7 @@ int runFileMode(const string &filename)
 
     Interpreter interpreter(false, env); // Create a new environment for file execution
 
-    interpreter.visitAllChildren(result.node.get());
+    interpreter.visitAllChildren(result.value.get());
 
     return 0;
 }

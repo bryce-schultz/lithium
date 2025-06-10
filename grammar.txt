@@ -1,0 +1,153 @@
+only line comments are supported using #.
+Tokens in caps like IF are just the lowercase version (if)
+IDENT is [A-Za-z_][A-Za-z0-9_]*
+NUMBER is [0-9]+\.?[0-9]*
+the PLUS_EQUAL, EQ, NE are self explanatory
+
+there are builtin constants of true, false, null, PI, E, VERSION, FILE, LINE
+
+module -> stmts
+
+stmts -> stmt stmts
+       | ε
+
+stmt -> block
+      | forStmt
+      | whileStmt
+      | ifStmt
+      | funcDecl
+      | classDecl
+      | returnStmt
+      | breakStmt
+      | exprStmt
+      | importStmt
+
+forStmt -> FOR ( exprStmt exprStmt expr ) stmt
+
+whileStmt -> WHILE ( expr ) stmt
+
+ifStmt -> IF ( expr ) stmt
+        | IF ( expr ) stmt ELSE stmt
+
+block -> { stmts }
+       | { }
+
+funcDecl -> FN IDENT ( paramList ) stmt;
+          | FN IDENT ( ) stmt;
+
+paramList -> IDENT paramList'
+           | ε
+
+paramList' -> , IDENT paramList'
+            | ε
+
+classDecl -> CLASS IDENT { classBody }
+
+classBody -> PUB varDecl
+           | PUB funcDecl
+           | varDecl
+           | funcDecl
+
+returnStmt -> RETURN expr ;
+            | RETURN ;
+
+breakStmt -> BREAK ;
+
+exprStmt -> expr ;
+          | varDecl
+          | ;
+
+importStmt -> IMPORT < moduleName >
+
+moduleName -> IDENT . IDENT
+            | IDENT
+
+varDecl -> letStmt
+         | constStmt
+
+letStmt -> LET IDENT = expr ;
+
+constStmt -> CONST IDENT = expr ;
+
+printStmt -> PRINT ( expr ) ;
+           | PRINT ( ) ;
+
+expr -> assign expr'
+
+expr' -> , assign expr'
+       | ϵ
+
+assign -> or assign'
+
+assign' -> = or assign'
+         | PLUS_EQUAL or assign'
+         | MINUS_EQUAL or assign'
+         | MUL_EQUAL or assign'
+         | DIV_EQUAL or assign'
+         | ϵ
+
+or -> and or'
+
+or' -> OR and or'
+     | ϵ
+
+and -> equality and'
+
+and' -> AND equality and'
+      | ϵ
+
+equality -> relation equality'
+
+equality' -> EQ relation equality'
+           | NE relation equality'
+           | ϵ
+
+relation -> addit relation'
+
+relation' -> > addit relation'
+           | < addit relation'
+           | GE addit relation'
+           | LE addit relation'
+           | ϵ
+
+addit -> mult addit'
+
+addit' -> + mult addit'
+        | - mult addit'
+        | ϵ
+
+mult -> unary mult'
+
+mult' -> * uanry mult'
+       | / uanry mult'
+       | % unary mult'
+       | ϵ
+
+unary -> INC unary
+       | DEC unary
+       | + mult
+       | - mult
+       | ! mult
+       | post
+
+argList -> assign argList'
+
+argList' -> , assign argList'
+          | ϵ
+
+post -> primary post''
+
+post' -> [ expr ]
+       | ( argList )
+       | . IDENT
+       | INC
+       | DEC
+
+post'' -> post' post''
+        | ϵ
+
+primary -> ( expr )
+         | [ argList ]
+         | IDENT
+         | NUMBER
+         | STRING

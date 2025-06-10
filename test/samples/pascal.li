@@ -2,15 +2,13 @@ fn pascal_triangle(rows) {
     for (let i = 0; i < rows; i++) {
         let num = 1;
         for (let j = 0; j < (rows - i - 1); j++) {
-            printall(" ");
+            print(" ");
         }
-
         for (let j = 0; j < (i + 1); j++) {
-            printall(num);
-            printall(" ");
+            print(num, "");
             num = num * (i - j) / (j + 1);
         }
-        print();
+        println("");
     }
 }
 
