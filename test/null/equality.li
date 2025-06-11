@@ -1,0 +1,105 @@
+import <io>
+
+let num = 5;
+let str = "test";
+let bool = true;
+let arr = [1, 2, 3];
+let nulvar = null;
+
+if (num == null)
+{
+    println("fail!");
+}
+if (num != null)
+{
+    println("pass!");
+}
+
+if (str == null)
+{
+    println("fail!");
+}
+if (str != null)
+{
+    println("pass!");
+}
+
+if (bool == null)
+{
+    println("fail!");
+}
+if (bool != null)
+{
+    println("pass!");
+}
+
+if (arr == null)
+{
+    println("fail!");
+}
+if (arr != null)
+{
+    println("pass!");
+}
+
+if (nulvar == null)
+{
+    println("pass!");
+}
+if (nulvar != null)
+{
+    println("fail!");
+}
+
+if (null == null)
+{
+    println("pass!");
+}
+if (null != null)
+{
+    println("fail!");
+}
+if (null == num)
+{
+    println("fail!");
+}
+if (null != num)
+{
+    println("pass!");
+}
+
+if (null == str)
+{
+    println("fail!");
+}
+if (null != str)
+{
+    println("pass!");
+}
+
+if (null == bool)
+{
+    println("fail!");
+}
+if (null != bool)
+{
+    println("pass!");
+}
+
+if (null == arr)
+{
+    println("fail!");
+}
+if (null != arr)
+{
+    println("pass!");
+}
+
+if (null == nulvar)
+{
+    println("pass!");
+}
+if (null != nulvar)
+{
+    println("fail!");
+}

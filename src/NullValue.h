@@ -25,4 +25,11 @@ public:
 
     virtual shared_ptr<Value> eq(const shared_ptr<FunctionValue> &other) const override;
     virtual shared_ptr<Value> ne(const shared_ptr<FunctionValue> &other) const override;
+
+    // unsupported for now as this shouldn't be the case.
+    //virtual shared_ptr<Value> eq(const shared_ptr<BuiltinFunctionValue> &other) const override;
+    //virtual shared_ptr<Value> ne(const shared_ptr<BuiltinFunctionValue> &other) const override;
+
+    virtual shared_ptr<Value> eq(const shared_ptr<ArrayValue> &other) const override;
+    virtual shared_ptr<Value> ne(const shared_ptr<ArrayValue> &other) const override;
 };

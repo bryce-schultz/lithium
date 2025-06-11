@@ -1,1 +1,3 @@
+import <io>
+
 print(undefined_variable);

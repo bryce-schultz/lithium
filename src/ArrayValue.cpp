@@ -1,4 +1,5 @@
 #include "ArrayValue.h"
+#include "Values.h"
 
 ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, Range range)
     : Value(Type::array, range), elements(arr) {}
@@ -62,4 +63,50 @@ string ArrayValue::toString() const
 bool ArrayValue::toBoolean() const
 {
     return !elements.empty();
+}
+
+shared_ptr<Value> ArrayValue::eq(const shared_ptr<ArrayValue> &other) const
+{
+    if (elements.size() != (size_t)other->getElementCount())
+    {
+        return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+    }
+
+    for (size_t i = 0; i < elements.size(); ++i)
+    {
+        if (!elements[i]->eq(other->getElement(i)))
+        {
+            return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+        }
+    }
+
+    return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::eq(const shared_ptr<NullValue> &other) const
+{
+    return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::ne(const shared_ptr<ArrayValue> &other) const
+{
+    if (elements.size() != (size_t)other->getElementCount())
+    {
+        return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
+    }
+
+    for (size_t i = 0; i < elements.size(); ++i)
+    {
+        if (!elements[i]->ne(other->getElement(i)))
+        {
+            return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+        }
+    }
+
+    return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::ne(const shared_ptr<NullValue> &other) const
+{
+    return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
 }

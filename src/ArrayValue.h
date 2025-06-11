@@ -23,6 +23,12 @@ public:
 
     string toString() const override;
     bool toBoolean() const override;
+public:
+    virtual shared_ptr<Value> eq(const shared_ptr<ArrayValue> &other) const override;
+    virtual shared_ptr<Value> eq(const shared_ptr<NullValue> &other) const override;
+
+    virtual shared_ptr<Value> ne(const shared_ptr<ArrayValue> &other) const override;
+    virtual shared_ptr<Value> ne(const shared_ptr<NullValue> &other) const override;
 private:
     vector<shared_ptr<Value>> elements;
 };

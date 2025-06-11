@@ -1,3 +1,6 @@
+import <io>
+import <math>
+
 println("test");
 
 println("test" + "test");

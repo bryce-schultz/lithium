@@ -13,6 +13,7 @@ string Value::typeAsString() const
         case Type::boolean: return "boolean";
         case Type::function: return "function";
         case Type::builtin: return "builtin";
+        case Type::array: return "array";
         default: return "unknown";
     }
 }
@@ -53,6 +54,10 @@ shared_ptr<Value> Value::add(const shared_ptr<Value> &other) const
             return add(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return add(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return add(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return add(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for addition
     }
@@ -74,6 +79,10 @@ shared_ptr<Value> Value::sub(const shared_ptr<Value> &other) const
             return sub(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return sub(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return sub(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return sub(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for subtraction
     }
@@ -95,6 +104,10 @@ shared_ptr<Value> Value::mul(const shared_ptr<Value> &other) const
             return mul(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return mul(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return mul(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return mul(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for multiplication
     }
@@ -116,6 +129,10 @@ shared_ptr<Value> Value::div(const shared_ptr<Value> &other) const
             return div(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return div(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return div(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return div(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for division
     }
@@ -137,6 +154,10 @@ shared_ptr<Value> Value::mod(const shared_ptr<Value> &other) const
             return mod(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return mod(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return mod(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return mod(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for modulo
     }
@@ -158,6 +179,10 @@ shared_ptr<Value> Value::eq(const shared_ptr<Value> &other) const
             return eq(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return eq(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return eq(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return eq(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for equality check
     }
@@ -179,6 +204,10 @@ shared_ptr<Value> Value::ne(const shared_ptr<Value> &other) const
             return ne(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return ne(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return ne(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return ne(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for inequality check
     }
@@ -200,6 +229,10 @@ shared_ptr<Value> Value::lt(const shared_ptr<Value> &other) const
             return lt(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return lt(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return lt(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return lt(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for less than check
     }
@@ -221,6 +254,10 @@ shared_ptr<Value> Value::le(const shared_ptr<Value> &other) const
             return le(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return le(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return le(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return le(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for less than or equal check
     }
@@ -242,6 +279,10 @@ shared_ptr<Value> Value::gt(const shared_ptr<Value> &other) const
             return gt(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return gt(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return gt(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return gt(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for greater than check
     }
@@ -263,6 +304,10 @@ shared_ptr<Value> Value::ge(const shared_ptr<Value> &other) const
             return ge(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return ge(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return ge(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return ge(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for greater than or equal check
     }
@@ -284,6 +329,10 @@ shared_ptr<Value> Value::logicalAnd(const shared_ptr<Value> &other) const
             return logicalAnd(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return logicalAnd(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return logicalAnd(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return logicalAnd(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for logical AND
     }
@@ -305,6 +354,10 @@ shared_ptr<Value> Value::logicalOr(const shared_ptr<Value> &other) const
             return logicalOr(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return logicalOr(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return logicalOr(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return logicalOr(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for logical OR
     }
@@ -326,6 +379,10 @@ shared_ptr<Value> Value::comma(const shared_ptr<Value> &other) const
             return comma(static_pointer_cast<BooleanValue>(other));
         case Type::function:
             return comma(static_pointer_cast<FunctionValue>(other));
+        case Type::builtin:
+            return comma(static_pointer_cast<BuiltinFunctionValue>(other));
+        case Type::array:
+            return comma(static_pointer_cast<ArrayValue>(other));
         default:
             return nullptr; // Unsupported type for comma operation
     }

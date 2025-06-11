@@ -1,3 +1,6 @@
+import <io>
+import <math>
+
 println(PI);
 println(E);
 println(true);

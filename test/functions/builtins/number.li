@@ -1,0 +1,7 @@
+import <io>
+
+let validNumber = "123.456";
+let invalidNumber = "abc";
+
+println(number(validNumber));
+println(number(invalidNumber));

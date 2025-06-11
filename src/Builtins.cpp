@@ -173,3 +173,78 @@ shared_ptr<Value> Builtins::input(const vector<shared_ptr<Value>> &args, shared_
 
     return make_shared<StringValue>(userInput, range);
 }
+
+shared_ptr<Value> Builtins::len(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 1)
+    {
+        error("len() expects exactly 1 argument, but got " + std::to_string(args.size()), range);
+        return nullptr;
+    }
+
+    const auto &arg = args[0];
+    if (!arg)
+    {
+        return make_shared<NullValue>(range);
+    }
+
+    switch (arg->getType())
+    {
+        case Value::Type::string:
+            return make_shared<NumberValue>(dynamic_pointer_cast<StringValue>(arg)->length(), range);
+        case Value::Type::array:
+            return make_shared<NumberValue>(dynamic_pointer_cast<ArrayValue>(arg)->getElementCount(), range);
+        default:
+            error("len() expects a string or an array, but got " + arg->typeAsString(), arg->getRange());
+            return nullptr;
+    }
+}
+
+// attemtps to conver the first argument to a number if it fails it returns NullValue, but not nullptr
+shared_ptr<Value> Builtins::toNumber(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 1)
+    {
+        error("toNumber() expects exactly 1 argument, but got " + std::to_string(args.size()), range);
+        return make_shared<NullValue>(range);
+    }
+
+    const auto &arg = args[0];
+    if (!arg)
+    {
+        return make_shared<NullValue>(range);
+    }
+
+    if (arg->getType() == Value::Type::number)
+    {
+        return arg; // already a number
+    }
+
+    try
+    {
+        double value = std::stod(arg->toString());
+        return make_shared<NumberValue>(value, range);
+    }
+    catch (const std::invalid_argument &)
+    {
+        return make_shared<NullValue>(range); // conversion failed
+    }
+}
+
+// this should function like random() in c
+shared_ptr<Value> Builtins::randomNumber(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 0)
+    {
+        error("randomNumber() expects no arguments, but got " + std::to_string(args.size()), range);
+        return nullptr;
+    }
+
+    return make_shared<NumberValue>(static_cast<double>(random()), range);
+}

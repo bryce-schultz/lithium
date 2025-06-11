@@ -20,4 +20,8 @@ namespace Builtins
     shared_ptr<Value> exit(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> input(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> len(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> toNumber(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> toString(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> toBoolean(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> randomNumber(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
 }

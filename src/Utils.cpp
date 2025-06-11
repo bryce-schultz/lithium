@@ -15,6 +15,10 @@
 #include <stdexcept>
 #include <iterator>
 #include <iostream>
+#include <algorithm>
+#include <filesystem>
+#include <vector>
+#include <cstdlib>
 
 using std::ifstream;
 using std::string;
@@ -22,9 +26,13 @@ using std::istreambuf_iterator;
 using std::ios;
 using std::cout;
 using std::cin;
+using std::endl;
 using std::getline;
 using std::max;
 using std::runtime_error;
+using std::vector;
+
+namespace fs = std::filesystem;
 
 string Utils::readWholeFile(const string &filename)
 {
@@ -135,4 +143,60 @@ string Utils::formatString(const string &format, const vector<string> &args)
     }
 
     return result;
+}
+
+string Utils::getModulePath(const string &moduleName, const string &basePath)
+{
+    //for debugging purposes, print the module name and base path and the current working directory
+    // cout << "getModulePath called with moduleName: " << moduleName << ", basePath: " << basePath << "current working directory: " << getCurrentDirectory() << endl;
+
+    string home = getHomeDirectory();
+    if (moduleName.empty())
+    {
+        return string();
+    }
+
+    vector<string> searchPaths = {
+        basePath.empty() ? "./" : basePath,
+        "./modules/"
+    };
+
+    if (!home.empty())
+    {
+        searchPaths.push_back(home + "/modules/");
+    }
+
+    for (const auto &path : searchPaths)
+    {
+        string fullPath = path + moduleName + getLithiumFileExtension();
+        if (fileExists(fullPath))
+        {
+            return fullPath;
+        }
+    }
+
+    return "";
+}
+
+string Utils::getHomeDirectory()
+{
+    const char *home = getenv("HOME");
+    if (home)
+    {
+        return string(home);
+    }
+    else
+    {
+        return "";
+    }
+}
+
+string Utils::getLithiumFileExtension()
+{
+    return ".li";
+}
+
+string Utils::getCurrentDirectory()
+{
+    return fs::current_path().string();
 }

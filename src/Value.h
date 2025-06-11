@@ -2,6 +2,8 @@
 
 #include <string>
 #include <memory>
+#include <vector>
+#include <iostream>
 
 #include "StatementsNode.h"
 #include "Environment.h"
@@ -11,7 +13,10 @@
 
 using std::string;
 using std::static_pointer_cast;
+using std::shared_ptr;
+using std::make_shared;
 
+// forward declarations of the Value subclasses
 class NullValue;
 class NumberValue;
 class StringValue;
@@ -42,7 +47,7 @@ public:
     Range getRange() const;
 
     virtual string toString() const = 0; // makes this class abstract
-    virtual bool toBoolean() const; // Default implementation for converting to boolean
+    virtual bool toBoolean() const;
 public:
     // dispatchers
     shared_ptr<Value> add(const shared_ptr<Value> &other) const;

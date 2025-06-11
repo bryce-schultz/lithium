@@ -46,6 +46,10 @@ using std::fmod;
     errorAtToken("failed to load module '" + token.getValue() + "'", token, range); \
     return false
 
+#define couldNotFindModule(token, range) \
+    errorAtToken("could not find module '" + token.getValue() + "'", token, range); \
+    return false
+
 Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env):
     isInteractive(isInteractive),
     returnValue(nullptr)
@@ -73,12 +77,10 @@ void Interpreter::setupEnvironment()
 
 void Interpreter::setupBuiltInFunctions()
 {
-    env->declare("print", make_shared<BuiltinFunctionValue>(Builtins::print), true);
-    env->declare("println", make_shared<BuiltinFunctionValue>(Builtins::println), true);
-    env->declare("printf", make_shared<BuiltinFunctionValue>(Builtins::printf), true);
     env->declare("type", make_shared<BuiltinFunctionValue>(Builtins::type), true);
     env->declare("exit", make_shared<BuiltinFunctionValue>(Builtins::exit), true);
-    env->declare("input", make_shared<BuiltinFunctionValue>(Builtins::input), true);
+    env->declare("len", make_shared<BuiltinFunctionValue>(Builtins::len), true);
+    env->declare("number", make_shared<BuiltinFunctionValue>(Builtins::toNumber), true);
 }
 
 void Interpreter::setupRuntimeValues()
@@ -87,24 +89,41 @@ void Interpreter::setupRuntimeValues()
     env->declare("null", make_shared<NullValue>(), true);
     env->declare("true", make_shared<BooleanValue>(true), true);
     env->declare("false", make_shared<BooleanValue>(false), true);
-    env->declare("PI", make_shared<NumberValue>(M_PI), true);
-    env->declare("E", make_shared<NumberValue>(M_E), true);
     env->declare("VERSION", make_shared<StringValue>(INTERPRETER_VERSION), true);
 }
 
 bool Interpreter::import(const Token& moduleName, const Range &range)
 {
-    const string modulePath = "modules/" + moduleName.getValue() + ".li";
-    if (!Utils::fileExists(modulePath))
+    string modulePath = Utils::getModulePath(moduleName.getValue());
+
+    if (modulePath.empty())
     {
-        errorAt("module '" + moduleName.getValue() + "' not found", moduleName.getRange().getStart(), range);
-        return false;
+        // check if its an interpreter internal module (io, math, etc.)
+        if (moduleName.getValue() == "io")
+        {
+            env->declare("print", make_shared<BuiltinFunctionValue>(Builtins::print), true);
+            env->declare("println", make_shared<BuiltinFunctionValue>(Builtins::println), true);
+            env->declare("printf", make_shared<BuiltinFunctionValue>(Builtins::printf), true);
+            return true;
+        }
+        else if (moduleName.getValue() == "math")
+        {
+            env->declare("PI", make_shared<NumberValue>(M_PI), true);
+            env->declare("E", make_shared<NumberValue>(M_E), true);
+            return true;
+        }
+        else if (moduleName.getValue() == "random")
+        {
+            env->declare("random", make_shared<BuiltinFunctionValue>(Builtins::randomNumber), true);
+        }
+
+        couldNotFindModule(moduleName, range);
     }
 
     const string moduleContent = Utils::readWholeFile(modulePath);
     if (moduleContent.empty())
     {
-        // empty modules are fine, just return true
+        // empty modules are fine, just return true, TODO: maybe add a warning later.
         return true;
     }
 

@@ -57,52 +57,62 @@ bool StringValue::toBoolean() const
 
 shared_ptr<Value> StringValue::add(const shared_ptr<NumberValue> &other) const
 {
-    return make_shared<StringValue>(value + other->toString());
+    return make_shared<StringValue>(value + other->toString(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::add(const shared_ptr<StringValue> &other) const
 {
-    return make_shared<StringValue>(value + other->getValue());
+    return make_shared<StringValue>(value + other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::add(const shared_ptr<BooleanValue> &other) const
 {
-    return make_shared<StringValue>(value + (other->getValue() ? "true" : "false"));
+    return make_shared<StringValue>(value + (other->getValue() ? "true" : "false"), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::add(const shared_ptr<NullValue> &other) const
 {
-    return make_shared<StringValue>(value + other->toString());
+    return make_shared<StringValue>(value + other->toString(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::eq(const shared_ptr<StringValue> &other) const
 {
-    return make_shared<BooleanValue>(value == other->getValue());
+    return make_shared<BooleanValue>(value == other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> StringValue::eq(const shared_ptr<NullValue> &other) const
+{
+    return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::ne(const shared_ptr<StringValue> &other) const
 {
-    return make_shared<BooleanValue>(value != other->getValue());
+    return make_shared<BooleanValue>(value != other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> StringValue::ne(const shared_ptr<NullValue> &other) const
+{
+    return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::lt(const shared_ptr<StringValue> &other) const
 {
-    return make_shared<BooleanValue>(value < other->getValue());
+    return make_shared<BooleanValue>(value < other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::le(const shared_ptr<StringValue> &other) const
 {
-    return make_shared<BooleanValue>(value <= other->getValue());
+    return make_shared<BooleanValue>(value <= other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::gt(const shared_ptr<StringValue> &other) const
 {
-    return make_shared<BooleanValue>(value > other->getValue());
+    return make_shared<BooleanValue>(value > other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::ge(const shared_ptr<StringValue> &other) const
 {
-    return make_shared<BooleanValue>(value >= other->getValue());
+    return make_shared<BooleanValue>(value >= other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 void StringValue::replaceEscapeSequences()

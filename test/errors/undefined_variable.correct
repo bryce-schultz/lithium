@@ -1,4 +1,4 @@
-error: undefined_variable.li:1:7: 'undefined_variable' is not defined
-│  print(undefined_variable);
-│        ~~~~~~~~~~~~~~~~~~
-│        ^
+error: undefined_variable.li:3:7: 'undefined_variable' is not defined
+│ print(undefined_variable);
+│       ~~~~~~~~~~~~~~~~~~
+│       ^

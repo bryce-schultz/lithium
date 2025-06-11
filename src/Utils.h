@@ -35,4 +35,12 @@ namespace Utils
     string truncate(const string &str, size_t maxLength, const string &suffix = "...");
 
     string formatString(const string &format, const vector<string> &args);
+
+    string getModulePath(const string &moduleName, const string &basePath = "");
+
+    string getHomeDirectory();
+
+    string getLithiumFileExtension();
+
+    string getCurrentDirectory();
 }

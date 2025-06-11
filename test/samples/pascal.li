@@ -1,3 +1,5 @@
+import <io>
+
 fn pascal_triangle(rows) {
     for (let i = 0; i < rows; i++) {
         let num = 1;

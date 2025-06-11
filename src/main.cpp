@@ -7,6 +7,9 @@
 // Handles interactive mode and file execution.
 //**************************************************
 
+#include <iostream>
+#include <random>
+
 #include "Utils.h"
 #include "Parser.h"
 #include "Interpreter.h"
@@ -20,6 +23,8 @@ int runFileMode(const std::string &filename);
 
 int main(int argc, char **argv)
 {
+    srandom(time(nullptr));
+
     // if a file is specified, run in file mode
     if (argc == 2)
     {

@@ -90,9 +90,19 @@ shared_ptr<Value> NumberValue::eq(const shared_ptr<NumberValue> &other) const
     return make_shared<BooleanValue>(value == other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
+shared_ptr<Value> NumberValue::eq(const shared_ptr<NullValue> &other) const
+{
+    return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
 shared_ptr<Value> NumberValue::ne(const shared_ptr<NumberValue> &other) const
 {
     return make_shared<BooleanValue>(value != other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> NumberValue::ne(const shared_ptr<NullValue> &other) const
+{
+    return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> NumberValue::lt(const shared_ptr<NumberValue> &other) const

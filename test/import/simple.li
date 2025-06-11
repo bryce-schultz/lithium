@@ -1,5 +1,6 @@
 import <mod>
 import <io.getfile>
+import <io>
 
 println(add(1, 2));
 
