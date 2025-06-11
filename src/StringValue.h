@@ -5,10 +5,15 @@
 class StringValue : public Value
 {
 public:
+    StringValue(char c, Range range = {});
     StringValue(const string &value, Range range = {});
 
     const string &getValue() const;
     void setValue(const string &value);
+
+    char getCharAt(int index) const;
+    size_t length() const;
+    bool isEmpty() const;
 
     string toString() const override;
     bool toBoolean() const override; // Override toBoolean for string values

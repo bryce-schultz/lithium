@@ -935,44 +935,84 @@ void Interpreter::visit(ArrayAccessNode *node)
         return;
     }
 
-    if (returnValue->getType() != Value::Type::array)
+    if (returnValue->getType() == Value::Type::array)
     {
-        error("left-hand side of array access is not an array", node->getArray()->getRange());
+        auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
+        if (!arrayValue)
+        {
+            error("left-hand side of array access could not be cast to ArrayValue", node->getArray()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        node->getIndex()->visit(this);
+        if (!returnValue)
+        {
+            error("array access index evaluated to null", node->getIndex()->getRange());
+            return;
+        }
+
+        if (returnValue->getType() != Value::Type::number)
+        {
+            error("array access index must be a number", node->getIndex()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        auto indexValue = dynamic_pointer_cast<NumberValue>(returnValue);
+        int index = static_cast<int>(indexValue->getValue());
+
+        if (index < 0 || index >= arrayValue->getElementCount())
+        {
+            error("array index out of bounds: " + std::to_string(index), node->getIndex()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        returnValue = arrayValue->getElement(index);
+        return;
+    }
+
+    if (returnValue->getType() == Value::Type::string)
+    {
+        auto stringValue = dynamic_pointer_cast<StringValue>(returnValue);
+        if (!stringValue)
+        {
+            error("left-hand side of array access could not be cast to StringValue", node->getArray()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        node->getIndex()->visit(this);
+        if (!returnValue)
+        {
+            error("array access index evaluated to null", node->getIndex()->getRange());
+            return;
+        }
+
+        if (returnValue->getType() != Value::Type::number)
+        {
+            error("array access index must be a number", node->getIndex()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        auto indexValue = dynamic_pointer_cast<NumberValue>(returnValue);
+        int index = static_cast<int>(indexValue->getValue());
+
+        if (index < 0 || index >= static_cast<int>(stringValue->length()))
+        {
+            error("string index out of bounds: " + std::to_string(index), node->getIndex()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        returnValue = make_shared<StringValue>(stringValue->getCharAt(index));
+        return;
+    }
+    else
+    {
+        error("left-hand side of array access is not an array or string", node->getArray()->getRange());
         returnValue = nullptr;
-        return;
     }
-
-    auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
-    if (!arrayValue)
-    {
-        error("left-hand side of array access could not be cast to ArrayValue", node->getArray()->getRange());
-        returnValue = nullptr;
-        return;
-    }
-
-    node->getIndex()->visit(this);
-    if (!returnValue)
-    {
-        error("array access index evaluated to null", node->getIndex()->getRange());
-        return;
-    }
-
-    if (returnValue->getType() != Value::Type::number)
-    {
-        error("array access index must be a number", node->getIndex()->getRange());
-        returnValue = nullptr;
-        return;
-    }
-
-    auto indexValue = dynamic_pointer_cast<NumberValue>(returnValue);
-    int index = static_cast<int>(indexValue->getValue());
-
-    if (index < 0 || index >= arrayValue->getElementCount())
-    {
-        error("array index out of bounds: " + std::to_string(index), node->getIndex()->getRange());
-        returnValue = nullptr;
-        return;
-    }
-
-    returnValue = arrayValue->getElement(index);
 }
