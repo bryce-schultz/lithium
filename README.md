@@ -15,6 +15,7 @@ Lithium is a lightweight, interpreted programming language designed for clarity,
 - **Built-in constants**: `true`, `false`, `null`, `PI`, `E`, `VERSION`, `FILE`, `LINE`
 - **Interactive REPL** and script execution
 - **Clear error messages** with source locations
+- **Modular imports** for builtins and user modules
 
 ---
 
@@ -41,6 +42,49 @@ lithium v0.1. type 'exit' to quit.
 ```
 
 Type code and see results immediately.
+
+---
+
+## Imports and Builtins
+
+There are a few always-available built-in modules in Lithium, which do not require imports.
+These include:
+- `FILE` — The current file being executed
+- `LINE` — The current line number in the file
+- `VERSION` — The version of the Lithium interpreter
+- `true`, `false`, `null` — Boolean and null values
+
+Lithium uses an explicit import system for built-in functions and constants. To use standard IO builtins, add this at the top of your file:
+
+```lithium
+import <io>
+```
+
+This makes the following available:
+- `print(...)` — Print values to stdout (space-separated, no newline)
+- `println(...)` — Print values to stdout (space-separated, with newline)
+- `printf(format, ...)` — Print formatted string (C-style)
+- `input([prompt])` — Read a line from stdin
+
+> **Note:** If you do not import `<io>`, these builtins will not be available in your script.
+
+To use the built-in math constants, you can import the math module:
+
+```lithium
+import <math>
+```
+
+This makes the following available:
+- `E`, `PI` — Mathematical constants
+
+> **Note:** If you do not import `<math>`, these builtins will not be available in your script.
+
+### Import Search Order
+When you write `import <name>`, Lithium searches for modules in the following order:
+1. The directory of the current file (if importing a user module)
+2. `./modules/` directory
+3. `./lib/` directory
+4. Built-in modules (e.g., `<io>`, `<math>`, etc.)
 
 ---
 
@@ -120,17 +164,6 @@ class Point {
     }
 }
 ```
-
----
-
-## Built-in Functions
-
-- `print(...)` — Print values to stdout (space-separated, no newline)
-- `println(...)` — Print values to stdout (space-separated, with newline)
-- `printf(format, ...)` — Print formatted string (% is for all types, no format specifiers)
-- `input([prompt])` — Read a line from stdin
-- `type(x)` — Get the type of a value as a string
-- `exit([code])` — Exit the interpreter
 
 ---
 
