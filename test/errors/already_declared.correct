@@ -1,4 +1,4 @@
-error: already_declared.li:8:1: 'test' is already defined
+error: already_declared.li:8:4: 'test' is already defined
 │ fn test()
 │ ~~~~~~~~~
 │    ^

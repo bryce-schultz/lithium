@@ -1,0 +1,4 @@
+error: call_non_function.li:2:1: cannot call non-function value: number
+│ x();
+│ ~~~
+│ ^

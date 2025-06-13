@@ -53,6 +53,7 @@ These include:
 - `LINE` — The current line number in the file
 - `VERSION` — The version of the Lithium interpreter
 - `true`, `false`, `null` — Boolean and null values
+- `print`, `println` - Functions for printing to stdout
 
 Lithium uses an explicit import system for built-in functions and constants. To use standard IO builtins, add this at the top of your file:
 
@@ -61,8 +62,6 @@ import <io>
 ```
 
 This makes the following available:
-- `print(...)` — Print values to stdout (space-separated, no newline)
-- `println(...)` — Print values to stdout (space-separated, with newline)
 - `printf(format, ...)` — Print formatted string (C-style)
 - `input([prompt])` — Read a line from stdin
 
@@ -83,8 +82,7 @@ This makes the following available:
 When you write `import <name>`, Lithium searches for modules in the following order:
 1. The directory of the current file (if importing a user module)
 2. `./modules/` directory
-3. `./lib/` directory
-4. Built-in modules (e.g., `<io>`, `<math>`, etc.)
+3. Built-in modules (e.g., `<io>`, `<math>`, etc.)
 
 ---
 

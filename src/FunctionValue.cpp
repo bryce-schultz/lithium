@@ -1,6 +1,9 @@
 #include "FunctionValue.h"
-
 #include "Values.h"
+#include "Utils.h"
+#include "ParamListNode.h"
+#include "StatementNode.h"
+#include "Environment.h"
 
 FunctionValue::FunctionValue(const std::string &name,
     std::shared_ptr<ParamListNode> params,
@@ -39,6 +42,36 @@ string FunctionValue::toString() const
     return "<function " + name + ">";
 }
 
+shared_ptr<Value> FunctionValue::eq(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other)
+    {
+        return make_shared<NullValue>();
+    }
+    return make_shared<BooleanValue>(this == other.get());
+}
+
+shared_ptr<Value> FunctionValue::eq(const shared_ptr<NullValue> &other) const
+{
+    UNUSED(other);
+    return make_shared<BooleanValue>(false);
+}
+
+shared_ptr<Value> FunctionValue::ne(const shared_ptr<FunctionValue> &other) const
+{
+    if (!other)
+    {
+        return make_shared<NullValue>();
+    }
+    return make_shared<BooleanValue>(this != other.get());
+}
+
+shared_ptr<Value> FunctionValue::ne(const shared_ptr<NullValue> &other) const
+{
+    UNUSED(other);
+    return make_shared<BooleanValue>(true);
+}
+
 BuiltinFunctionValue::BuiltinFunctionValue(BuiltinFunction func, Range range):
     Value(Type::builtin, range), // set the type to builtin
     func(func)
@@ -58,5 +91,3 @@ string BuiltinFunctionValue::toString() const
 {
     return "<builtin function>";
 }
-
-

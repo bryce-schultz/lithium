@@ -1,0 +1,4 @@
+error: return_outside_function.li:1:1: 'return' used outside of a function
+│ return 42;
+│ ~~~~~~~~~
+│ ^

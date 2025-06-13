@@ -17,3 +17,7 @@ ExitException::ExitException(int code, Range range):
     BaseException(range),
     exitCode(code)
 { }
+
+ContinueException::ContinueException(Range range):
+    BaseException(range)
+{ }

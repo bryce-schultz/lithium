@@ -15,6 +15,7 @@
 #include "Exceptions.h"
 #include "Parser.h"
 #include "SemanticErrorVisitor.h"
+#include "ArrayBuilder.h"
 
 using std::shared_ptr;
 using std::string;
@@ -50,9 +51,12 @@ using std::fmod;
     errorAtToken("could not find module '" + token.getValue() + "'", token, range); \
     return false
 
-Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env):
+Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const std::vector<string> &args):
     isInteractive(isInteractive),
-    returnValue(nullptr)
+    returnValue(nullptr),
+    moduleParser(),
+    importedModules(),
+    args(args)
 {
     if (!env)
     {
@@ -81,6 +85,8 @@ void Interpreter::setupBuiltInFunctions()
     env->declare("exit", make_shared<BuiltinFunctionValue>(Builtins::exit), true);
     env->declare("len", make_shared<BuiltinFunctionValue>(Builtins::len), true);
     env->declare("number", make_shared<BuiltinFunctionValue>(Builtins::toNumber), true);
+    env->declare("print", make_shared<BuiltinFunctionValue>(Builtins::print), true);
+    env->declare("println", make_shared<BuiltinFunctionValue>(Builtins::println), true);
 }
 
 void Interpreter::setupRuntimeValues()
@@ -94,28 +100,74 @@ void Interpreter::setupRuntimeValues()
 
 bool Interpreter::import(const Token& moduleName, const Range &range)
 {
-    string modulePath = Utils::getModulePath(moduleName.getValue());
+    string module = moduleName.getValue();
+    string modulePath = Utils::getModulePath(module);
+
+    // check if the module is already imported in the interpreter
+    if (importedModules.find(module) != importedModules.end())
+    {
+        return false;
+    }
 
     if (modulePath.empty())
     {
         // check if its an interpreter internal module (io, math, etc.)
-        if (moduleName.getValue() == "io")
+        if (module == "args")
         {
-            env->declare("print", make_shared<BuiltinFunctionValue>(Builtins::print), true);
-            env->declare("println", make_shared<BuiltinFunctionValue>(Builtins::println), true);
-            env->declare("printf", make_shared<BuiltinFunctionValue>(Builtins::printf), true);
+            ArrayBuilder builder;
+
+            for (const string &arg : args)
+            {
+                builder.add(arg);
+            }
+
+            env->declare("args", builder.build(), true);
+            imported(module);
             return true;
         }
-        else if (moduleName.getValue() == "math")
+        if (module == "io")
+        {
+            env->declare("printf", make_shared<BuiltinFunctionValue>(Builtins::printf), true);
+            env->declare("input", make_shared<BuiltinFunctionValue>(Builtins::input), true);
+            imported(module);
+            return true;
+        }
+        else if (module == "math")
         {
             env->declare("PI", make_shared<NumberValue>(M_PI), true);
             env->declare("E", make_shared<NumberValue>(M_E), true);
+            imported(module);
             return true;
         }
-        else if (moduleName.getValue() == "random")
+        else if (module == "random")
         {
             env->declare("random", make_shared<BuiltinFunctionValue>(Builtins::randomNumber), true);
+            imported(module);
+            return true;
         }
+        else if (module == "os")
+        {
+            env->declare("open", make_shared<BuiltinFunctionValue>(Builtins::openFile), true);
+            env->declare("close", make_shared<BuiltinFunctionValue>(Builtins::closeFd), true);
+            env->declare("read", make_shared<BuiltinFunctionValue>(Builtins::readFd), true);
+            env->declare("write", make_shared<BuiltinFunctionValue>(Builtins::writeFd), true);
+            env->declare("shell", make_shared<BuiltinFunctionValue>(Builtins::runShellCommand), true);
+            imported(module);
+            return true;
+        }
+        /*else if (module == "socket") // TODO: finish the socket internal module
+        {
+            env->declare("socket", make_shared<BuiltinFunctionValue>(Builtins::openSocket), true);
+            env->declare("listen", make_shared<BuiltinFunctionValue>(Builtins::listenSocket), true);
+            env->declare("accept", make_shared<BuiltinFunctionValue>(Builtins::acceptSocket), true);
+            env->declare("connect", make_shared<BuiltinFunctionValue>(Builtins::connectSocket), true);
+            env->declare("send", make_shared<BuiltinFunctionValue>(Builtins::sendSocket), true);
+            env->declare("receive", make_shared<BuiltinFunctionValue>(Builtins::receiveSocket), true);
+            env->declare("sock_addr", make_shared<BuiltinFunctionValue>(Builtins::getSocketAddress), true);
+            env->declare("sock_port", make_shared<BuiltinFunctionValue>(Builtins::getSocketPort), true);
+            imported(module);
+            return true;
+        }*/
 
         couldNotFindModule(moduleName, range);
     }
@@ -124,13 +176,13 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
     if (moduleContent.empty())
     {
         // empty modules are fine, just return true, TODO: maybe add a warning later.
+        imported(module);
         return true;
     }
 
     try
     {
-        Parser parser;
-        auto moduleNode = parser.parse(moduleContent, modulePath);
+        auto moduleNode = moduleParser.parse(moduleContent, modulePath);
         if (!moduleNode.status)
         {
             failedToLoadModule(moduleName, range);
@@ -144,8 +196,10 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
             failedToLoadModule(moduleName, range);
         }
 
-        Interpreter interpreter(isInteractive, env);
-        interpreter.visitAllChildren(moduleNode.value.get());
+        // to import the module we simply visit it as though it was a node in the current ast.
+        visitAllChildren(moduleNode.value.get());
+
+        imported(module);
     }
     catch (const exception &e)
     {
@@ -153,7 +207,13 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
         return false;
     }
 
+    imported(module);
     return true;
+}
+
+void Interpreter::imported(const string &module)
+{
+    importedModules.insert(module);
 }
 
 void Interpreter::visitAllChildren(Node *node)
@@ -380,7 +440,7 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
         return nullptr;
     }
 
-    error("unsupported unary operation on " + value->typeAsString() + " and ", opNode->getRange());
+    error("unsupported unary operation on " + value->typeAsString(), opNode->getRange());
     return nullptr;
 }
 
@@ -521,7 +581,7 @@ void Interpreter::visit(CallNode *node)
     }
     else
     {
-        error("cannot call non-function value: " + callee->typeAsString(), calleeNode->getRange());
+        error("cannot call non-function value: " + callee->typeAsString(), node->getRange());
         returnValue = nullptr;
     }
 }
@@ -731,6 +791,60 @@ void Interpreter::visit(AssignNode *node)
         returnValue = value;
         return;
     }
+    shared_ptr<MemberAccessNode> memberAccess = dynamic_pointer_cast<MemberAccessNode>(node->getAsignee());
+    if (memberAccess)
+    {
+        memberAccess->getExpression()->visit(this);
+        if (!returnValue)
+        {
+            error("member access left-hand side evaluated to null", memberAccess->getExpression()->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        const string &memberName = memberAccess->getIdentifier().getValue();
+        if (returnValue->getMember(memberName) == nullptr)
+        {
+            errorAtToken("member '" + memberName + "' does not exist in the object", memberAccess->getIdentifier(), node->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        switch (node->getOp())
+        {
+            case '=':
+                // No additional operation, just assign the value
+                break;
+            case Token::PLUS_EQUAL:
+                value = returnValue->getMember(memberName)->add(value);
+                break;
+            case Token::MINUS_EQUAL:
+                value = returnValue->getMember(memberName)->sub(value);
+                break;
+            case Token::MUL_EQUAL:
+                value = returnValue->getMember(memberName)->mul(value);
+                break;
+            case Token::DIV_EQUAL:
+                value = returnValue->getMember(memberName)->div(value);
+                break;
+            case Token::MOD_EQUAL:
+                value = returnValue->getMember(memberName)->mod(value);
+                break;
+            default:
+                error("invalid assignment operator", node->getRange());
+                returnValue = nullptr;
+                return;
+        }
+
+        // assign the value to the specified member
+        Result<Value> result = returnValue->setMember(memberName, value);
+        if (result.status == Value::MEMBER_IS_CONSTANT)
+        {
+            errorAtToken("cannot assign to constant member '" + memberName + "'", memberAccess->getIdentifier(), node->getRange());
+            returnValue = nullptr;
+            return;
+        }
+    }
 
     error("invalid assignment target", node->getAsignee()->getRange());
     returnValue = nullptr;
@@ -829,6 +943,11 @@ void Interpreter::visit(WhileNode *node)
                 // handle break statement
                 break;
             }
+            catch (const ContinueException &)
+            {
+                // handle continue statement
+                continue;
+            }
         }
     }
 
@@ -879,6 +998,11 @@ void Interpreter::visit(ForStatementNode *node)
                 // handle break statement
                 break;
             }
+            catch (const ContinueException &)
+            {
+                // handle continue statement
+                continue;
+            }
         }
 
         if (node->getIncrement())
@@ -906,22 +1030,10 @@ void Interpreter::visit(BreakNode *node)
 
 void Interpreter::visit(ImportNode *node)
 {
-    if (!node)
-    {
-        error("ImportNode is null", node->getRange());
-        return;
-    }
-
     const string &moduleName = node->getToken().getValue();
     if (moduleName.empty())
     {
         error("imported module name is empty", node->getToken().getRange());
-        return;
-    }
-
-    // check if the module is already imported in the interpreter
-    if (importedModules.find(moduleName) != importedModules.end())
-    {
         return;
     }
 
@@ -1034,4 +1146,27 @@ void Interpreter::visit(ArrayAccessNode *node)
         error("left-hand side of array access is not an array or string", node->getArray()->getRange());
         returnValue = nullptr;
     }
+}
+
+void Interpreter::visit(MemberAccessNode *node)
+{
+    node->getExpression()->visit(this);
+    if (!returnValue)
+    {
+        error("member access left-hand side evaluated to null", node->getExpression()->getRange());
+        return;
+    }
+
+    returnValue = returnValue->getMember(node->getIdentifier().getValue());
+    if (!returnValue)
+    {
+        error("member '" + node->getIdentifier().getValue() + "' not found in " + returnValue->typeAsString(), node->getRange());
+        return;
+    }
+}
+
+void Interpreter::visit(ContinueNode *node)
+{
+    UNUSED(node);
+    throw ContinueException(node->getRange());
 }

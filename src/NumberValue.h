@@ -8,6 +8,8 @@
 class NumberValue : public Value
 {
 public:
+    NumberValue(int value, Range range = {});
+    NumberValue(unsigned long value, Range range = {});
     NumberValue(double value, Range range = {});
 
     double getValue() const;
@@ -48,6 +50,8 @@ public:
     virtual shared_ptr<Value> logicalOr(const shared_ptr<NumberValue> &other) const override;
 
     virtual shared_ptr<Value> unaryMinus() const override;
+
+    virtual shared_ptr<Value> unaryNot() const override;
 private:
     double value;
 };

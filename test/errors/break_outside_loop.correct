@@ -1,0 +1,4 @@
+error: break_outside_loop.li:1:1: 'break' used outside of a loop
+│ break;
+│ ~~~~~
+│ ^

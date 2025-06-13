@@ -67,6 +67,7 @@ void Parser::initFirstSets()
     funcDeclFirsts = { Token::FN };
     returnStmtFirsts = { Token::RETURN };
     breakStmtFirsts = { Token::BREAK };
+    continueStmtFirsts = { Token::CONTINUE };
     letStmtFirsts = { Token::LET };
     constStmtFirsts = { Token::CONST };
     exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', '-', '+', '!' };
@@ -183,6 +184,10 @@ Result<StatementNode> Parser::parseStmt()
     else if (isInFirstSet(token, breakStmtFirsts))
     {
         acceptNode(parseBreakStmt());
+    }
+    else if (isInFirstSet(token, continueStmtFirsts))
+    {
+        acceptNode(parseContinueStmt());
     }
     else if (isInFirstSet(token, importFirsts))
     {
@@ -482,7 +487,6 @@ Result<ReturnStatementNode> Parser::parseReturnStmt()
 
     auto returnStmt = make_shared<ReturnStatementNode>(exprResult.value);
     returnStmt->setRangeStart(returnToken.getRange().getStart());
-    returnStmt->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(returnStmt);
 }
@@ -494,10 +498,22 @@ Result<BreakNode> Parser::parseBreakStmt()
     Token semicolonToken = expectToken(';');
 
     auto breakNode = make_shared<BreakNode>(breakToken);
-    breakNode->setRangeStart(breakToken.getRange().getStart());
-    breakNode->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(breakNode);
+}
+
+// continueStmt -> CONTINUE ;
+Result<ContinueNode> Parser::parseContinueStmt()
+{
+    Token continueToken = expectToken(Token::CONTINUE);
+
+    Token semicolonToken = expectToken(';');
+
+    auto continueNode = make_shared<ContinueNode>(continueToken);
+    continueNode->setRangeStart(continueToken.getRange().getStart());
+    continueNode->setRangeEnd(semicolonToken.getRange().getEnd());
+
+    accept(continueNode);
 }
 
 // importStmt -> IMPORT < moduleName >
@@ -572,7 +588,6 @@ Result<VarDeclNode> Parser::parseLetStmt()
     // Create a variable declaration node with the identifier and the expression
     auto varDecl = make_shared<VarDeclNode>(identifier, exprResult.value);
     varDecl->setRangeStart(letToken.getRange().getStart());
-    varDecl->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(varDecl);
 }
@@ -597,7 +612,6 @@ Result<VarDeclNode> Parser::parseConstStmt()
     // Create a variable declaration node with the identifier and the expression
     auto varDecl = make_shared<VarDeclNode>(identifier, exprResult.value, true);
     varDecl->setRangeStart(constToken.getRange().getStart());
-    varDecl->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(varDecl);
 }

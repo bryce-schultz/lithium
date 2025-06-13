@@ -187,7 +187,7 @@ void tokenRangeError(const string &msg, const Token &token, const Range &range, 
     }
 
     stringstream ss;
-    ss << red << "error" << reset << ": " << range.getStart().toString() << ": " << msg << "\n"
+    ss << red << "error" << reset << ": " << token.getRange().getStart().toString() << ": " << msg << "\n"
     << getErrorLineLocationSquiggles(token.getRange().getStart(), range);
 
     if (includeCppFileAndLine && !cppFile.empty() && cppLine > 0)

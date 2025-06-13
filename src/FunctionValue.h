@@ -31,6 +31,12 @@ public:
     shared_ptr<Environment> getEnvironment() const;
 
     string toString() const override;
+public:
+    virtual shared_ptr<Value> eq(const shared_ptr<FunctionValue> &other) const;
+    virtual shared_ptr<Value> eq(const shared_ptr<NullValue> &other) const;
+
+    virtual shared_ptr<Value> ne(const shared_ptr<FunctionValue> &other) const;
+    virtual shared_ptr<Value> ne(const shared_ptr<NullValue> &other) const;
 private:
     string name;
     shared_ptr<ParamListNode> params;
@@ -46,6 +52,7 @@ public:
     shared_ptr<Value> call(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range = {}) const;
 
     string toString() const override;
+public:
 private:
     BuiltinFunction func;
 };

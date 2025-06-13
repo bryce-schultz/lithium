@@ -6,6 +6,7 @@ StringValue::StringValue(char c, Range range):
     Value(Type::string, range), // set the type to string
     value(1, c)
 {
+    constants.insert("length");
     replaceEscapeSequences();
 }
 
@@ -13,6 +14,7 @@ StringValue::StringValue(const string &value, Range range):
     Value(Type::string, range),
     value(value)
 {
+    constants.insert("length");
     replaceEscapeSequences();
 }
 
@@ -24,6 +26,7 @@ const string &StringValue::getValue() const
 void StringValue::setValue(const string &value)
 {
     this->value = value;
+    replaceEscapeSequences();
 }
 
 char StringValue::getCharAt(int index) const
@@ -53,6 +56,15 @@ string StringValue::toString() const
 bool StringValue::toBoolean() const
 {
     return !value.empty();
+}
+
+shared_ptr<Value> StringValue::getMember(const string &name) const
+{
+    if (name == "length")
+    {
+        return make_shared<NumberValue>(static_cast<double>(value.length()), Range(getRange().getStart(), getRange().getEnd()));
+    }
+    return Value::getMember(name);
 }
 
 shared_ptr<Value> StringValue::add(const shared_ptr<NumberValue> &other) const

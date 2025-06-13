@@ -1,0 +1,8 @@
+import <io>
+
+println("Hello" + " World");
+println("Number: " + 10);
+println("Number: " + 10 + " and " + 20);
+println("Number: " + (10 + 20));
+println("Number: " + (10 + 20) + " and " + 30);
+println("Number: " + 10 + 20);

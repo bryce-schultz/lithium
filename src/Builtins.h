@@ -24,4 +24,17 @@ namespace Builtins
     shared_ptr<Value> toString(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> toBoolean(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> randomNumber(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> readFd(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> writeFd(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> closeFd(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> openFile(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> openSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> listenSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> acceptSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> connectSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> sendSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> receiveSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> getSocketAddress(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> getSocketPort(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> runShellCommand(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
 }

@@ -1,0 +1,4 @@
+error: assign_to_constant_member.li:3:5: cannot assign to constant member 'length'
+│ str.length = 13;
+│ ~~~~~~~~~~~~~~~
+│     ^

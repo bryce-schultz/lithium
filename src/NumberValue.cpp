@@ -7,6 +7,16 @@
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
 
+NumberValue::NumberValue(int value, Range range):
+    Value(Type::number, range),
+    value(static_cast<double>(value))
+{ }
+
+NumberValue::NumberValue(unsigned long value, Range range):
+    Value(Type::number, range),
+    value(static_cast<double>(value))
+{ }
+
 NumberValue::NumberValue(double value, Range range):
     Value(Type::number, range),
     value(value)
@@ -138,4 +148,9 @@ shared_ptr<Value> NumberValue::logicalOr(const shared_ptr<NumberValue> &other) c
 shared_ptr<Value> NumberValue::unaryMinus() const
 {
     return make_shared<NumberValue>(-value, getRange());
+}
+
+shared_ptr<Value> NumberValue::unaryNot() const
+{
+    return make_shared<BooleanValue>(!toBoolean(), getRange());
 }

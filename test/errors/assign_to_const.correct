@@ -1,0 +1,4 @@
+error: assign_to_const.li:4:1: cannot assign to constant variable 'y'
+│ y = 20;
+│ ~~~~~~
+│ ^

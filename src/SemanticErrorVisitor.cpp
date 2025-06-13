@@ -35,7 +35,7 @@ void SemanticErrorVisitor::visit(ReturnStatementNode *node)
 {
     if (functionDepth == 0)
     {
-        error("return statement outside of a function", node->getRange());
+        error("'return' used outside of a function", node->getRange());
     }
 }
 
@@ -79,6 +79,6 @@ void SemanticErrorVisitor::visit(BreakNode *node)
 {
     if (loopDepth == 0)
     {
-        error("break statement outside of a loop", node->getRange());
+        error("'break' used outside of a loop", node->getRange());
     }
 }

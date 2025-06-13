@@ -39,3 +39,4 @@
 #include "BreakNode.h"
 #include "ImportNode.h"
 #include "ClassNode.h"
+#include "ContinueNode.h"

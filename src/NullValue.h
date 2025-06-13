@@ -32,4 +32,6 @@ public:
 
     virtual shared_ptr<Value> eq(const shared_ptr<ArrayValue> &other) const override;
     virtual shared_ptr<Value> ne(const shared_ptr<ArrayValue> &other) const override;
+
+    virtual shared_ptr<Value> unaryNot() const override;
 };

@@ -23,6 +23,9 @@ Value::Value(Type type, Range range):
     range(range)
 { }
 
+Value::~Value()
+{ }
+
 Value::Type Value::getType() const
 {
     return type;
@@ -36,6 +39,62 @@ Range Value::getRange() const
 bool Value::toBoolean() const
 {
     return type != Type::null;
+}
+
+shared_ptr<Value> Value::getMember(const string &name) const
+{
+    // default implementation just returns whatever is in the properties map
+    // subclasses can override this to provide specific behavior for example strings
+    // intercept the length property to return the dynamic length of the string
+    auto it = members.find(name);
+    if (it != members.end())
+    {
+        return it->second;
+    }
+    // if the property is not found, return nullptr
+    return nullptr;
+}
+
+bool Value::addMember(const string &name, const shared_ptr<Value> &value, bool isConst)
+{
+    // check if the member already exists
+    if (members.find(name) != members.end())
+    {
+        return false; // member already exists
+    }
+
+    // add the member to the map
+    members[name] = value;
+
+    // if it's a constant, we can track it separately if needed
+    // (for dynamic properties that aren't in the map)
+    if (isConst)
+    {
+        constants.insert(name);
+    }
+
+    return true;
+}
+
+Result<Value> Value::setMember(const string &name, const shared_ptr<Value> &value)
+{
+    // check if the member is constant first since we can't gaurentee that the member
+    // is stored in the property map.
+    if (constants.find(name) != constants.end())
+    {
+        return { ResultStatus::MEMBER_IS_CONSTANT, nullptr }; // member is constant
+    }
+
+    // check if the member exists
+    auto it = members.find(name);
+    if (it == members.end())
+    {
+        return { ResultStatus::MEMBER_NOT_FOUND, nullptr }; // member not found
+    }
+
+    // set the member value
+    it->second = value;
+    return { ResultStatus::SUCCESS, value };
 }
 
 shared_ptr<Value> Value::add(const shared_ptr<Value> &other) const

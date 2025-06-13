@@ -248,3 +248,8 @@ void Visitor::visit(ArrayNode *node)
         }
     }
 }
+
+void Visitor::visit(ContinueNode *node)
+{
+    UNUSED(node);
+}

@@ -27,6 +27,8 @@ public:
 
     const Token &getIdentifier() const;
 
+    virtual bool isLval() const override;
+
     void visit(Visitor *visitor) override;
 private:
     shared_ptr<ExpressionNode> expression;

@@ -1,0 +1,8 @@
+error: redeclare_variable.li:2:5: 'x' is already defined
+│ let x = 2;
+│ ~~~~~~~~~
+│     ^
+error: redeclare_variable.li:4:7: 'y' is already defined
+│ const y = 4;
+│ ~~~~~~~~~~~
+│       ^

@@ -9,6 +9,7 @@
 #include "Environment.h"
 #include "Nodes.h"
 #include "Value.h"
+#include "Parser.h"
 
 using std::string;
 using std::cout;
@@ -22,7 +23,7 @@ constexpr const char *INTERPRETER_VERSION = "1.0";
 class Interpreter : public Visitor
 {
 public:
-    Interpreter(bool isInteractive, std::shared_ptr<Environment> env = nullptr);
+    Interpreter(bool isInteractive, std::shared_ptr<Environment> env = nullptr, const std::vector<std::string> &args = {});
     virtual void visitAllChildren(Node *node) override;
 public:
     // Override visit methods for different node types
@@ -46,6 +47,8 @@ public:
     virtual void visit(ImportNode *node) override;
     virtual void visit(ArrayNode *node) override;
     virtual void visit(ArrayAccessNode *node) override;
+    virtual void visit(MemberAccessNode *node) override;
+    virtual void visit(ContinueNode *node) override;
 private:
     shared_ptr<Value> evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right);
 
@@ -57,9 +60,12 @@ private:
     void setupRuntimeValues();
 
     bool import(const Token &moduleName, const Range &range = {});
+    void imported(const string &module);
 private:
     bool isInteractive;
     shared_ptr<Environment> env;
     shared_ptr<Value> returnValue;
+    Parser moduleParser;
     set<string> importedModules; // to avoid re-importing the same module
+    std::vector<std::string> args; // command line arguments passed to the interpreter
 };

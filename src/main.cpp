@@ -18,29 +18,44 @@
 #include "Values.h"
 #include "Error.h"
 
-int runInteractiveMode();
-int runFileMode(const std::string &filename);
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::string;
+using std::shared_ptr;
+using std::make_shared;
+using std::exception;
+
+int runInteractiveMode(const vector<string> &args);
+int runFileMode(const vector<string> &args);
 
 int main(int argc, char **argv)
 {
     srandom(time(nullptr));
 
-    // if a file is specified, run in file mode
-    if (argc == 2)
+    vector<string> args;
+    if (argc > 1)
     {
-        return runFileMode(argv[1]);
+        args = vector<string>(argv + 1, argv + argc);
+        Utils::removePrefix(args[0], "./");
     }
 
-    // if no file is specified, run in interactive mode
-    std::cout << "lithium v0.1. type 'exit' to quit." << std::endl;
-    return runInteractiveMode();
+    // if no file is specified, or args[0] is not a file, run interactive mode
+    if (argc == 1 || !Utils::fileExists(args[0]))
+    {
+        cout << "lithium v0.1. type 'exit' to quit." << endl;
+        return runInteractiveMode(args);
+    }
+
+    return runFileMode(args);
 }
 
-int runInteractiveMode()
+int runInteractiveMode(const vector<string> &args)
 {
     Parser parser;
     shared_ptr<Environment> env = make_shared<Environment>();
     env->declare("FILE", make_shared<StringValue>("cin"), true);
+    // Optionally, you can use args in the interactive environment if needed
 
     string line;
     while ((line = Utils::getInputLine()) != "exit")
@@ -58,7 +73,7 @@ int runInteractiveMode()
             continue;
         }
 
-        Interpreter interpreter(true, env); // Use the shared environment
+        Interpreter interpreter(true, env, args); // Pass args to interpreter
         interpreter.visitAllChildren(result.value.get());
         line.clear();
         clearErrorLocations();
@@ -67,19 +82,18 @@ int runInteractiveMode()
     return 0;
 }
 
-int runFileMode(const string &filename)
+int runFileMode(const vector<string> &args)
 {
     string input;
-    shared_ptr<Environment> env = make_shared<Environment>();
-    env->declare("FILE", make_shared<StringValue>(filename), true);
+    string filename = args[0];
 
     try
     {
         input = Utils::readWholeFile(filename);
     }
-    catch (const std::exception &e)
+    catch (const exception &e)
     {
-        std::cerr << e.what() << std::endl;
+        cerr << e.what() << endl;
         return 1;
     }
 
@@ -97,8 +111,10 @@ int runFileMode(const string &filename)
         return 1;
     }
 
-    Interpreter interpreter(false, env); // Create a new environment for file execution
+    shared_ptr<Environment> env = make_shared<Environment>();
+    env->declare("FILE", make_shared<StringValue>(filename), true);
 
+    Interpreter interpreter(false, env, args);
     interpreter.visitAllChildren(result.value.get());
 
     return 0;

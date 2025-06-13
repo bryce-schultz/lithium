@@ -101,3 +101,8 @@ shared_ptr<Value> NullValue::ne(const shared_ptr<ArrayValue> &other) const
     if (!other) return nullptr;
     return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
 }
+
+shared_ptr<Value> NullValue::unaryNot() const
+{
+    return make_shared<BooleanValue>(true, getRange());
+}

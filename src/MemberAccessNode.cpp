@@ -12,8 +12,9 @@
 
 #include "MemberAccessNode.h"
 
-MemberAccessNode::MemberAccessNode(shared_ptr<ExpressionNode> expression, const Token &identifier): 
-    expression(expression), identifier(identifier)
+MemberAccessNode::MemberAccessNode(shared_ptr<ExpressionNode> expression, const Token &identifier):
+    expression(expression),
+    identifier(identifier)
 {
     if (this->expression)
     {
@@ -30,6 +31,11 @@ shared_ptr<ExpressionNode> MemberAccessNode::getExpression() const
 const Token &MemberAccessNode::getIdentifier() const
 {
     return identifier;
+}
+
+bool MemberAccessNode::isLval() const
+{
+    return true;
 }
 
 void MemberAccessNode::visit(Visitor *visitor)

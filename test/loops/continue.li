@@ -1,0 +1,13 @@
+import <io>
+
+let i = 10;
+
+while (i > 0)
+{
+    i--;
+    if (i == 5)
+    {
+        continue;
+    }
+    println(i);
+}

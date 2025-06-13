@@ -20,6 +20,8 @@
 #include <vector>
 #include <cstdlib>
 
+#include <fcntl.h> // platform specific for file open modes
+
 using std::ifstream;
 using std::string;
 using std::istreambuf_iterator;
@@ -199,4 +201,44 @@ string Utils::getLithiumFileExtension()
 string Utils::getCurrentDirectory()
 {
     return fs::current_path().string();
+}
+
+mode_t Utils::parseOpenMode(const string &mode)
+{
+    if (mode == "r")
+        return O_RDONLY;
+    else if (mode == "w")
+        return O_WRONLY | O_CREAT | O_TRUNC;
+    else if (mode == "a")
+        return O_WRONLY | O_CREAT | O_APPEND;
+    else if (mode == "r+")
+        return O_RDWR;
+    else if (mode == "w+")
+        return O_RDWR | O_CREAT | O_TRUNC;
+    else if (mode == "a+")
+        return O_RDWR | O_CREAT | O_APPEND;
+
+    throw std::invalid_argument("Invalid file open mode: " + mode);
+}
+
+void Utils::printArgs(int argc, char **argv)
+{
+    cout << "Command line arguments: ";
+    for (int i = 0; i < argc; ++i)
+    {
+        cout << argv[i];
+        if (i < argc - 1)
+        {
+            cout << ", ";
+        }
+    }
+    cout << endl;
+}
+
+void Utils::removePrefix(string &str, const string &prefix)
+{
+    if (str.find(prefix) == 0)
+    {
+        str.erase(0, prefix.length());
+    }
 }

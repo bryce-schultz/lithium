@@ -33,6 +33,7 @@ public:
         FN,
         RETURN,
         BREAK,
+        CONTINUE,
         CLASS,
         IMPORT,
         EQ,

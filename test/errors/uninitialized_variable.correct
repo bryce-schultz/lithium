@@ -1,0 +1,4 @@
+error: uninitialized_variable.li:1:6: expected '=' but found ';'
+│ let x;
+│      ~
+│      ^

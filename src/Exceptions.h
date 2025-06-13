@@ -33,3 +33,8 @@ struct ExitException : public BaseException
     int exitCode;
     ExitException(int code = 0, Range = {});
 };
+
+struct ContinueException : public BaseException
+{
+    ContinueException(Range range = {});
+};

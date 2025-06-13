@@ -48,6 +48,7 @@ private:
     //       | classDecl    - firsts: CLASS
     //       | returnStmt   - firsts: RETURN
     //       | breakStmt    - firsts: BREAK
+    //       | continueStmt - firsts: CONTINUE
     //       | importStmt   - firsts: IMPORT
     Result<StatementNode> parseStmt();
 
@@ -104,6 +105,9 @@ private:
 
     // breakStmt -> BREAK ;
     Result<BreakNode> parseBreakStmt();
+
+    // continueStmt -> CONTINUE ;
+    Result<ContinueNode> parseContinueStmt();
 
     // importStmt -> IMPORT < moduleName > ;
     Result<ImportNode> parseImportStmt();
@@ -233,6 +237,7 @@ private:
     set<int> funcDeclFirsts;
     set<int> returnStmtFirsts;
     set<int> breakStmtFirsts;
+    set<int> continueStmtFirsts;
     set<int> letStmtFirsts;
     set<int> constStmtFirsts;
     set<int> printStmtFirsts;

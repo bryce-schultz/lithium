@@ -1,2 +1,2 @@
-CXXFLAGS += -g -O0 -Wall -Wextra -Wpedantic
+CXXFLAGS += -O3 #0 -g -Wall -Wextra -Wpedantic
 MAIN_EXE = li

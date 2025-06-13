@@ -36,6 +36,7 @@ class BreakNode;
 class ImportNode;
 class ClassNode;
 class ArrayNode;
+class ContinueNode;
 
 class Visitor
 {
@@ -73,4 +74,5 @@ public:
     virtual void visit(ImportNode *node);
     virtual void visit(ClassNode *node);
     virtual void visit(ArrayNode *node);
+    virtual void visit(ContinueNode *node);
 };

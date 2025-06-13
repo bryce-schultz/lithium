@@ -43,4 +43,10 @@ namespace Utils
     string getLithiumFileExtension();
 
     string getCurrentDirectory();
+
+    mode_t parseOpenMode(const string &mode);
+
+    void printArgs(int argc, char **argv);
+
+    void removePrefix(string &str, const string &prefix);
 }

@@ -17,6 +17,8 @@ public:
 
     string toString() const override;
     bool toBoolean() const override; // Override toBoolean for string values
+
+    virtual shared_ptr<Value> getMember(const string &name) const override;
 public:
     virtual shared_ptr<Value> add(const shared_ptr<NumberValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<StringValue> &other) const override;
