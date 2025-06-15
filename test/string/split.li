@@ -1,0 +1,8 @@
+println("This is a test of string split functionality.".split());
+
+let a = "This is a test of string split functionality.".split(" ");
+println(a);
+println(a[0]);
+
+let b = "This is a test of string split functionality.";
+println(b.split(" "));

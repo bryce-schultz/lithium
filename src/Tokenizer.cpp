@@ -234,8 +234,26 @@ Token Tokenizer::lex()
         string str;
         while (peek() != '"' && peek() != '\0')
         {
-            str += peek();
-            advance();
+            if (peek() == '\\') // handle escapes
+            {
+                advance();
+                char next = peek();
+                switch (next)
+                {
+                    case '"': str += '"'; break;
+                    case '\\': str += '\\'; break;
+                    case 'n': str += '\n'; break;
+                    case 't': str += '\t'; break;
+                    // add more escapes as needed
+                    default: str += next; break; // unknown escape, just add the char
+                }
+                advance();
+            }
+            else
+            {
+                str += peek();
+                advance();
+            }
         }
         if (peek() == '"')
         {

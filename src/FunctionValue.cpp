@@ -87,6 +87,18 @@ shared_ptr<Value> BuiltinFunctionValue::call(const vector<shared_ptr<Value>> &ar
     return func(args, env, range);
 }
 
+shared_ptr<Value> BuiltinFunctionValue::bind(const shared_ptr<Value> &thisPtr)
+{
+    if (!thisPtr || thisPtr->getType() == Type::null)
+    {
+        return make_shared<NullValue>(getRange());
+    }
+
+    auto boundFunction = make_shared<BuiltinFunctionValue>(func, getRange());
+    boundFunction->thisPtr = thisPtr;
+    return boundFunction;
+}
+
 string BuiltinFunctionValue::toString() const
 {
     return "<builtin function>";

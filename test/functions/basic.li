@@ -1,5 +1,3 @@
-import <io>
-
 fn test()
 {
     println(10);

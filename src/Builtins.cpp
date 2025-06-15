@@ -213,6 +213,8 @@ shared_ptr<Value> Builtins::len(const vector<shared_ptr<Value>> &args, shared_pt
             return make_shared<NumberValue>(dynamic_pointer_cast<StringValue>(arg)->length(), range);
         case Value::Type::array:
             return make_shared<NumberValue>(dynamic_pointer_cast<ArrayValue>(arg)->getElementCount(), range);
+        case Value::Type::null:
+            return make_shared<NumberValue>(0, range);
         default:
             error("len() expects a string or an array, but got " + arg->typeAsString(), arg->getRange());
             return nullptr;
@@ -455,6 +457,15 @@ shared_ptr<Value> Builtins::openSocket(const vector<shared_ptr<Value>> &args, sh
         return nullptr;
     }
 
+    // set SO_REUSEADDR
+    int optval = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
+    {
+        error("failed to set SO_REUSEADDR on socket", range);
+        close(sockfd);
+        return nullptr;
+    }
+
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(port);
@@ -465,12 +476,28 @@ shared_ptr<Value> Builtins::openSocket(const vector<shared_ptr<Value>> &args, sh
         return nullptr;
     }
 
-    if (connect(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
+    // bind the socket to the address and port
+    if (bind(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
     {
-        error("failed to connect to " + address + ":" + std::to_string(port), range);
+        error("failed to bind socket to " + address + ":" + std::to_string(port), range);
         close(sockfd);
         return nullptr;
     }
+
+    /*// set the socket to non-blocking mode
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags < 0)
+    {
+        error("failed to get socket flags", range);
+        close(sockfd);
+        return nullptr;
+    }
+    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0)
+    {
+        error("failed to set socket to non-blocking mode", range);
+        close(sockfd);
+        return nullptr;
+    }*/
 
     return make_shared<NumberValue>(static_cast<double>(sockfd), range);
 }
@@ -509,6 +536,189 @@ shared_ptr<Value> Builtins::listenSocket(const vector<shared_ptr<Value>> &args, 
         return nullptr;
     }
     return make_shared<BooleanValue>(true, range);
+}
+
+// int accept(socket) - accepts a connection on the socket and returns a new socket file descriptor
+shared_ptr<Value> Builtins::acceptSocket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 1)
+    {
+        error("expected exactly 1 argument, but got " + std::to_string(args.size()), range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::number)
+    {
+        error("expected a number for the socket, but got " + args[0]->typeAsString(), range);
+        return nullptr;
+    }
+
+    auto socketValue = dynamic_pointer_cast<NumberValue>(args[0]);
+    int sockfd = static_cast<int>(socketValue->getValue());
+    if (sockfd < 0)
+    {
+        error("invalid socket file descriptor", range);
+        return nullptr;
+    }
+
+    struct sockaddr_in clientAddr;
+    socklen_t addrLen = sizeof(clientAddr);
+    int clientSockfd = accept(sockfd, (struct sockaddr *)&clientAddr, &addrLen);
+    if (clientSockfd < 0)
+    {
+        error("failed to accept connection on socket " + std::to_string(sockfd), range);
+        return nullptr;
+    }
+
+    // create a new NumberValue for the client socket
+    return make_shared<NumberValue>(static_cast<double>(clientSockfd), range);
+}
+
+// int connectSocket(socket, address, port) - connects to a server socket
+shared_ptr<Value> Builtins::connectSocket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 3)
+    {
+        error("expected exactly 3 arguments, but got " + std::to_string(args.size()), range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::number)
+    {
+        error("expected a number for the socket, but got " + args[0]->typeAsString(), range);
+        return nullptr;
+    }
+
+    auto socketValue = dynamic_pointer_cast<NumberValue>(args[0]);
+    int sockfd = static_cast<int>(socketValue->getValue());
+    if (sockfd < 0)
+    {
+        error("invalid socket file descriptor", range);
+        return nullptr;
+    }
+
+    if (args[1]->getType() != Value::Type::string)
+    {
+        error("expected a string for the address, but got " + args[1]->typeAsString(), range);
+        return nullptr;
+    }
+
+    if (args[2]->getType() != Value::Type::number)
+    {
+        error("expected a number for the port, but got " + args[2]->typeAsString(), range);
+        return nullptr;
+    }
+
+    const auto &address = dynamic_pointer_cast<StringValue>(args[1])->getValue();
+    int port = static_cast<int>(dynamic_pointer_cast<NumberValue>(args[2])->getValue());
+
+    struct sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    if (inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr) <= 0)
+    {
+        error("invalid address: " + address, range);
+        return nullptr;
+    }
+
+    if (connect(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
+    {
+        error("failed to connect to " + address + ":" + std::to_string(port), range);
+        close(sockfd);
+        return nullptr;
+    }
+
+    return make_shared<NumberValue>(static_cast<double>(sockfd), range);
+}
+
+// sendSocket(socket, data) - sends data to the socket
+shared_ptr<Value> Builtins::sendSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range & range)
+{
+    UNUSED(env);
+
+    if (args.size() != 2)
+    {
+        error("expected exactly 2 arguments, but got " + std::to_string(args.size()), range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::number)
+    {
+        error("expected a number for the socket, but got " + args[0]->typeAsString(), range);
+        return nullptr;
+    }
+
+    if (args[1]->getType() != Value::Type::string)
+    {
+        error("expected a string for the data, but got " + args[1]->typeAsString(), range);
+        return nullptr;
+    }
+
+    auto socketValue = dynamic_pointer_cast<NumberValue>(args[0]);
+    int sockfd = static_cast<int>(socketValue->getValue());
+    if (sockfd < 0)
+    {
+        error("invalid socket file descriptor", range);
+        return nullptr;
+    }
+
+    const auto &data = dynamic_pointer_cast<StringValue>(args[1])->getValue();
+    ssize_t bytesSent = send(sockfd, data.c_str(), data.size(), 0);
+    if (bytesSent < 0)
+    {
+        error("failed to send data on socket " + std::to_string(sockfd), range);
+        return nullptr;
+    }
+
+    return make_shared<NumberValue>(static_cast<double>(bytesSent), range);
+}
+
+// receiveSocket(socket, size) - receives data from the socket and returns it as a string
+shared_ptr<Value> Builtins::receiveSocket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 2)
+    {
+        error("expected exactly 2 arguments, but got " + std::to_string(args.size()), range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::number)
+    {
+        error("expected a number for the socket, but got " + args[0]->typeAsString(), range);
+        return nullptr;
+    }
+
+    if (args[1]->getType() != Value::Type::number)
+    {
+        error("expected a number for the size, but got " + args[1]->typeAsString(), range);
+        return nullptr;
+    }
+
+    auto socketValue = dynamic_pointer_cast<NumberValue>(args[0]);
+    int sockfd = static_cast<int>(socketValue->getValue());
+    if (sockfd < 0)
+    {
+        error("invalid socket file descriptor", range);
+        return nullptr;
+    }
+
+    int size = static_cast<int>(dynamic_pointer_cast<NumberValue>(args[1])->getValue());
+    char *buffer = new char[size];
+    ssize_t bytesReceived = recv(sockfd, buffer, size, 0);
+    if (bytesReceived < 0)
+    {
+        error("failed to receive data on socket " + std::to_string(sockfd), range);
+        delete[] buffer;
+        return nullptr;
+    }
+
+    return make_shared<StringValue>(string(buffer, bytesReceived), range);
 }
 
 shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
@@ -558,9 +768,24 @@ shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &arg
         close(pipefd[1]); // close write end of the pipe after duplicating
 
         // split command into argv format
-        char *const argv[] = {const_cast<char *>(command.c_str()), nullptr};
+        vector<char*> argv;
+        string commandCopy = command;
+        size_t pos = 0;
+        while ((pos = commandCopy.find(' ')) != string::npos)
+        {
+            string token = commandCopy.substr(0, pos);
+            argv.push_back(const_cast<char*>(token.c_str()));
+            commandCopy.erase(0, pos + 1);
+        }
+        argv.push_back(const_cast<char*>(commandCopy.c_str())); // last token
+        argv.push_back(nullptr); // null-terminate the argv array
+        if (argv.empty() || argv[0] == nullptr)
+        {
+            error("command cannot be empty", range);
+            ::exit(EXIT_FAILURE);
+        }
 
-        execvp(argv[0], argv);
+        execvp(argv[0], argv.data());
         perror("execvp failed"); // execvp only returns on error
         ::exit(EXIT_FAILURE);
     }

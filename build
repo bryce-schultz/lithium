@@ -103,12 +103,15 @@ do_builds()
     }
 
     if [ $build_failed -eq 1 ]; then
+        echo -e "\n${red}╭────────────────────────────────────────────╮${nc}"
+        echo -e   "${red}│               ${bold_red}Builds Failed                │${nc}"
+        echo -e  "${red}╰────────────────────────────────────────────╯${nc}"
         exit 1
     fi
 
     echo -e "\n${green}╭────────────────────────────────────────────╮${nc}"
     echo -e   "${green}│              ${bold_green}Builds Succeeded              │${nc}"
-    echo -en  "${green}╰────────────────────────────────────────────╯${nc}"
+    echo -e   "${green}╰────────────────────────────────────────────╯${nc}"
 }
 
 do_tests()
@@ -123,7 +126,6 @@ do_tests()
 main()
 {
     do_builds
-    echo ""
     do_tests
 }
 

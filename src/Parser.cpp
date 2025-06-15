@@ -477,6 +477,16 @@ Result<ReturnStatementNode> Parser::parseReturnStmt()
 {
     Token returnToken = expectToken(Token::RETURN);
 
+    Token token = peekToken();
+    if (token == ';')
+    {
+        advanceToken(); // consume ';'
+
+        auto returnStmt = make_shared<ReturnStatementNode>();
+        returnStmt->setRangeStart(returnToken.getRange().getStart());
+        accept(returnStmt);
+    }
+
     auto exprResult = parseExpr();
     if (!exprResult.status)
     {

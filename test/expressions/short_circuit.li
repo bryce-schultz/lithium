@@ -1,5 +1,3 @@
-import <io>
-
 fn fail()
 {
     print("fail");

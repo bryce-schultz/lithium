@@ -1,5 +1,3 @@
-import <io>
-
 fn test()
 {
     return null;

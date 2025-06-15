@@ -50,9 +50,11 @@ public:
     BuiltinFunctionValue(BuiltinFunction func, Range range = {});
 
     shared_ptr<Value> call(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range = {}) const;
+    shared_ptr<Value> bind(const shared_ptr<Value> &thisPtr);
 
     string toString() const override;
 public:
 private:
     BuiltinFunction func;
+    shared_ptr<Value> thisPtr; // allows function to be bound to an object.
 };

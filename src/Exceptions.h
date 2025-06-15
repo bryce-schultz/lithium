@@ -38,3 +38,8 @@ struct ContinueException : public BaseException
 {
     ContinueException(Range range = {});
 };
+
+struct ErrorException : public BaseException
+{
+    ErrorException(const std::string &message, Range range = {});
+};

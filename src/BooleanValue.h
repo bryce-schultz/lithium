@@ -16,9 +16,11 @@ public:
     bool toBoolean() const override;
 public:
     virtual shared_ptr<Value> eq(const shared_ptr<BooleanValue> &other) const override;
+    virtual shared_ptr<Value> eq(const shared_ptr<NumberValue> &other) const override;
     virtual shared_ptr<Value> eq(const shared_ptr<NullValue> &other) const override;
 
     virtual shared_ptr<Value> ne(const shared_ptr<BooleanValue> &other) const override;
+    virtual shared_ptr<Value> ne(const shared_ptr<NumberValue> &other) const override;
     virtual shared_ptr<Value> ne(const shared_ptr<NullValue> &other) const override;
 
     virtual shared_ptr<Value> lt(const shared_ptr<BooleanValue> &other) const override;

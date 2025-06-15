@@ -1,4 +1,5 @@
 #include "Exceptions.h"
+#include "Utils.h"
 
 BaseException::BaseException(Range range):
     range(range)
@@ -21,3 +22,9 @@ ExitException::ExitException(int code, Range range):
 ContinueException::ContinueException(Range range):
     BaseException(range)
 { }
+
+ErrorException::ErrorException(const std::string &message, Range range):
+    BaseException(range)
+{
+    UNUSED(message);
+}

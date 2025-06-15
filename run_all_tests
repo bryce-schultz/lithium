@@ -33,22 +33,33 @@ echo -e "${blue}│               ${bold_blue}Running Tests                │${
 echo -e "${blue}╰────────────────────────────────────────────╯${nc}"
 
 did_fail=0
+fail_count=0
 for test_file in "${test_files[@]}"; do
   test_name="${test_file%.li}"
   "$run_test" "$test_name"
   if [[ $? -ne 0 ]]; then
     did_fail=1
+    fail_count=$((fail_count + 1))
   fi
 done
 
-if [[ $did_fail -eq 1 ]]; then
-    echo -e "${red}╭────────────────────────────────────────────╮${nc}"
-    echo -e "${red}│             ${bold_red}Some tests failed              │${nc}"
-    echo -e "${red}╰────────────────────────────────────────────╯${nc}"
-    exit 1
+if [[ $did_fail -eq 0 ]]; then
+    summary="${#test_files[@]}/${#test_files[@]} passed."
+    total_width=44
+    summary_len=${#summary}
+    pad=$(( (total_width - summary_len) / 2 ))
+    pad_right=$(( total_width - summary_len - pad ))
+    printf "${green}╭────────────────────────────────────────────╮${nc}\n"
+    printf "${green}│${bold_green}%*s%s%*s${nc}${green}│${nc}\n" $pad "" "$summary" $pad_right ""
+    printf "${green}╰────────────────────────────────────────────╯${nc}\n"
 else
-    echo -e "${green}╭────────────────────────────────────────────╮${nc}"
-    echo -e "${green}│             ${bold_greeen}All tests passed!              │${nc}"
-    echo -e "${green}╰────────────────────────────────────────────╯${nc}"
-    exit 0
+    passed_count=$(( ${#test_files[@]} - fail_count ))
+    summary="${passed_count}/${#test_files[@]} passed, ${fail_count}/${#test_files[@]} failed."
+    total_width=44
+    summary_len=${#summary}
+    pad=$(( (total_width - summary_len) / 2 ))
+    pad_right=$(( total_width - summary_len - pad ))
+    printf "${red}╭────────────────────────────────────────────╮${nc}\n"
+    printf "${red}│${bold_red}%*s%s%*s${nc}${red}│${nc}\n" $pad "" "$summary" $pad_right ""
+    printf "${red}╰────────────────────────────────────────────╯${nc}\n"
 fi

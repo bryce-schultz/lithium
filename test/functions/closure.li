@@ -1,5 +1,3 @@
-import <io>
-
 fn make_counter(start_value)
 {
     let count = start_value;

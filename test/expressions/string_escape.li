@@ -1,0 +1,4 @@
+println("He said, \"Hello!\"");
+println("C:\\Program Files\\");
+println("Line1\nLine2");
+println("Tab\tSeparated");

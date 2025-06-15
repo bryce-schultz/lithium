@@ -1,5 +1,0 @@
-import <io>
-
-print(); # this will print nothing, not even a newline
-print(10, 20, 30, 40, 50, "\n");
-print("Hello", "World", "from", "Lithium", "\n");

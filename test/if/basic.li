@@ -1,5 +1,3 @@
-import <io>
-
 if (1);
 
 if (true)

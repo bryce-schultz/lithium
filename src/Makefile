@@ -130,8 +130,8 @@ clean:
 StringValue.o: StringValue.cpp StringValue.h Value.h StatementsNode.h \
  Node.h Range.h Location.h Visitor.h StatementNode.h Environment.h \
  Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
- ExpressionNode.h Values.h NullValue.h NumberValue.h BooleanValue.h \
- FunctionValue.h ArrayValue.h
+ ExpressionNode.h Error.h Color.h Values.h NullValue.h NumberValue.h \
+ BooleanValue.h FunctionValue.h ArrayValue.h Utils.h
 ArrayAccessNode.o: ArrayAccessNode.cpp ArrayAccessNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h Token.h
 Node.o: Node.cpp Node.h Range.h Location.h Visitor.h
@@ -290,7 +290,7 @@ Exceptions.o: Exceptions.cpp Exceptions.h Range.h Location.h Values.h \
  Value.h StatementsNode.h Node.h Visitor.h StatementNode.h Environment.h \
  Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
  ExpressionNode.h NullValue.h NumberValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ArrayValue.h
+ FunctionValue.h ArrayValue.h Utils.h
 SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  Visitor.h Nodes.h Node.h Range.h Location.h ExpressionNode.h \
  StatementNode.h NumberNode.h Token.h StringNode.h VarExprNode.h OpNode.h \
@@ -302,6 +302,6 @@ SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  Error.h Color.h
 
 # Options from .mk file:
-CXXFLAGS += -O3 #0 -g -Wall -Wextra -Wpedantic
+CXXFLAGS += -O3#0 -g -Wall -Wextra -Wpedantic
 MAIN_EXE = li
 

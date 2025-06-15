@@ -1,5 +1,3 @@
-import <io>
-
 class pair
 {
     let x = 0;

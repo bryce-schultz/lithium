@@ -29,13 +29,16 @@ using std::fmod;
 #define MAX_PEEK 25
 
 #define error(msg, range) \
-    rangeError(msg, range, __FILE__, __LINE__)
+    rangeError(msg, range, __FILE__, __LINE__); \
+    throw ErrorException(msg, range)
 
 #define errorAt(msg, location, range) \
-    locationRangeError(msg, location, range, __FILE__, __LINE__)
+    locationRangeError(msg, location, range, __FILE__, __LINE__); \
+    throw ErrorException(msg, range)
 
 #define errorAtToken(msg, token, range) \
-    tokenRangeError(msg, token, range, __FILE__, __LINE__)
+    tokenRangeError(msg, token, range, __FILE__, __LINE__); \
+    throw ErrorException(msg, range)
 
 #define alreadyDefined(node) \
     errorAtToken("'" + Utils::truncate(node->getName(), MAX_PEEK) + "' is already defined", node->getToken(), node->getRange())
@@ -155,19 +158,20 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
             imported(module);
             return true;
         }
-        /*else if (module == "socket") // TODO: finish the socket internal module
+        else if (module == "socket")
         {
             env->declare("socket", make_shared<BuiltinFunctionValue>(Builtins::openSocket), true);
+            env->declare("close", make_shared<BuiltinFunctionValue>(Builtins::closeFd), true);
             env->declare("listen", make_shared<BuiltinFunctionValue>(Builtins::listenSocket), true);
             env->declare("accept", make_shared<BuiltinFunctionValue>(Builtins::acceptSocket), true);
             env->declare("connect", make_shared<BuiltinFunctionValue>(Builtins::connectSocket), true);
             env->declare("send", make_shared<BuiltinFunctionValue>(Builtins::sendSocket), true);
             env->declare("receive", make_shared<BuiltinFunctionValue>(Builtins::receiveSocket), true);
-            env->declare("sock_addr", make_shared<BuiltinFunctionValue>(Builtins::getSocketAddress), true);
-            env->declare("sock_port", make_shared<BuiltinFunctionValue>(Builtins::getSocketPort), true);
+            //env->declare("sock_addr", make_shared<BuiltinFunctionValue>(Builtins::getSocketAddress), true);
+            //env->declare("sock_port", make_shared<BuiltinFunctionValue>(Builtins::getSocketPort), true);
             imported(module);
             return true;
-        }*/
+        }
 
         couldNotFindModule(moduleName, range);
     }
@@ -222,9 +226,13 @@ void Interpreter::visitAllChildren(Node *node)
     {
         node->visit(this);
     }
-    catch (const ExitException & e)
+    catch (const ExitException &e)
     {
         exit(e.exitCode);
+    }
+    catch (const ErrorException &e)
+    {
+        // do nothing
     }
 }
 
@@ -1157,10 +1165,27 @@ void Interpreter::visit(MemberAccessNode *node)
         return;
     }
 
-    returnValue = returnValue->getMember(node->getIdentifier().getValue());
+    auto lhs = returnValue;
+    auto member = returnValue->getMember(node->getIdentifier().getValue());
+    if (member && member->getType() == Value::Type::builtin)
+    {
+        // if the member is a builtin function, we need to bind it to the left-hand side so it can access the object it belongs to.
+        auto builtin = dynamic_pointer_cast<BuiltinFunctionValue>(member);
+        if (!builtin)
+        {
+            returnValue = nullptr;
+            return;
+        }
+
+        returnValue = builtin->bind(lhs);
+        return;
+    }
+
+    returnValue = member;
+
     if (!returnValue)
     {
-        error("member '" + node->getIdentifier().getValue() + "' not found in " + returnValue->typeAsString(), node->getRange());
+        errorAtToken("member '" + node->getIdentifier().getValue() + "' not found", node->getIdentifier(), node->getRange());
         return;
     }
 }

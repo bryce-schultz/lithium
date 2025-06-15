@@ -1,5 +1,3 @@
-import <io>
-
 println(10 + 20);
 println(10 - 20);
 println(10 * 20);

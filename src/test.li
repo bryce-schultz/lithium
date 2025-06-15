@@ -1,1 +1,11 @@
-print("Hello,
+let a = "Hello World".split(" ");
+let b = "Hello World".split(" ");
+
+print(a);
+print(b);
+
+if (a == b) {
+    print("a and b are equal");
+} else {
+    print("a and b are not equal");
+}

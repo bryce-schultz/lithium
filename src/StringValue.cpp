@@ -1,13 +1,20 @@
-#include "StringValue.h"
+#include <string>
+#include <vector>
 
+#include "StringValue.h"
+#include "Error.h"
 #include "Values.h"
+#include "Environment.h"
+#include "Utils.h"
+
+#define error(msg, range) \
+    rangeError(msg, range, __FILE__, __LINE__)
 
 StringValue::StringValue(char c, Range range):
     Value(Type::string, range), // set the type to string
     value(1, c)
 {
     constants.insert("length");
-    replaceEscapeSequences();
 }
 
 StringValue::StringValue(const string &value, Range range):
@@ -15,7 +22,39 @@ StringValue::StringValue(const string &value, Range range):
     value(value)
 {
     constants.insert("length");
-    replaceEscapeSequences();
+
+    addMember("split", make_shared<BuiltinFunctionValue>(
+        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(env);
+            string delimiter = " "; // default delimiter is space
+            if (args.size() > 1)
+            {
+                error("split() expects at most 1 argument, but got " + std::to_string(args.size()), range);
+                return nullptr;
+            }
+            if (args.size() == 1)
+            {
+                if (args[0]->getType() != Value::Type::string)
+                {
+                    error("split() expects a string argument, but got " + args[0]->typeAsString(), range);
+                    return nullptr;
+                }
+
+                delimiter = static_pointer_cast<StringValue>(args[0])->getValue();
+            }
+            vector<shared_ptr<Value>> parts;
+            size_t pos = 0, found;
+            while ((found = this->value.find(delimiter, pos)) != string::npos)
+            {
+                parts.push_back(make_shared<StringValue>(this->value.substr(pos, found - pos), range));
+                pos = found + delimiter.length();
+            }
+            parts.push_back(make_shared<StringValue>(this->value.substr(pos), range));
+            return make_shared<ArrayValue>(parts, range);
+        },
+        getRange()
+    ), true);
 }
 
 const string &StringValue::getValue() const
@@ -26,7 +65,6 @@ const string &StringValue::getValue() const
 void StringValue::setValue(const string &value)
 {
     this->value = value;
-    replaceEscapeSequences();
 }
 
 char StringValue::getCharAt(int index) const
@@ -125,36 +163,4 @@ shared_ptr<Value> StringValue::gt(const shared_ptr<StringValue> &other) const
 shared_ptr<Value> StringValue::ge(const shared_ptr<StringValue> &other) const
 {
     return make_shared<BooleanValue>(value >= other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
-}
-
-void StringValue::replaceEscapeSequences()
-{
-    std::string result;
-    result.reserve(value.size());
-    for (size_t i = 0; i < value.size(); ++i)
-    {
-        if (value[i] == '\\' && i + 1 < value.size())
-        {
-            char next = value[i + 1];
-            switch (next) {
-                case 'n': result += '\n'; break;
-                case 't': result += '\t'; break;
-                case 'r': result += '\r'; break;
-                case '"': result += '"'; break;
-                case '\'': result += '\''; break;
-                case '\\': result += '\\'; break;
-                case 'b': result += '\b'; break;
-                case 'f': result += '\f'; break;
-                case 'v': result += '\v'; break;
-                default: result += next; break;
-            }
-            ++i; // skip the next character
-        }
-        else
-        {
-            result += value[i];
-        }
-    }
-    this->value = result;
-    type = Type::string;
 }

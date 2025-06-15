@@ -1,8 +1,8 @@
-error: div_zero.li:3:11: cannot divide by zero
+error: div_zero.li:1:11: cannot divide by zero
 │ print(1 / 0);
 │           ~
 │           ^
-error: div_zero.li:4:11: cannot divide by zero
+error: div_zero.li:2:11: cannot divide by zero
 │ print(1 % 0);
 │           ~
 │           ^

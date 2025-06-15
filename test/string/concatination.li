@@ -1,5 +1,3 @@
-import <io>
-
 println("Hello" + " World");
 println("Number: " + 10);
 println("Number: " + 10 + " and " + 20);

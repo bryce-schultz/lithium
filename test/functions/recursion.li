@@ -1,5 +1,3 @@
-import <io>
-
 fn fib(n)
 {
     if (n <= 1)
