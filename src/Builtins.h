@@ -37,4 +37,5 @@ namespace Builtins
     shared_ptr<Value> getSocketAddress(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> getSocketPort(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> runShellCommand(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> dumpEnv(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
 }

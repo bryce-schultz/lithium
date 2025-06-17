@@ -26,6 +26,8 @@ public:
 public:
     AssignNode(shared_ptr<ExpressionNode> asignee, const Token &opToken, shared_ptr<ExpressionNode> expr = nullptr);
 
+    const Token &getToken() const;
+
     virtual bool isLval() const override;
 
     shared_ptr<ExpressionNode> getAsignee() const;

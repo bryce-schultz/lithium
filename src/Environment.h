@@ -37,8 +37,10 @@ public:
     shared_ptr<Environment> resolve(const string &name) const;
     shared_ptr<Environment> getParent() const;
 
+    const map<string, shared_ptr<Value>>& getMembers() const; // returns all variables and constants in this environment
+
     void dump() const; // for debugging purposes, prints all variables and constants
-private:
+
     bool hasVariable(const string &name) const;
     bool hasConstant(const string &name) const;
 private:

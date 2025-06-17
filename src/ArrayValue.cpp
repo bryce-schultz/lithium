@@ -1,5 +1,11 @@
+#include <vector>
+
 #include "ArrayValue.h"
 #include "Values.h"
+
+using std::shared_ptr;
+using std::vector;
+using std::make_shared;
 
 ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, Range range)
     : Value(Type::array, range), elements(arr) {}
@@ -109,4 +115,55 @@ shared_ptr<Value> ArrayValue::ne(const shared_ptr<ArrayValue> &other) const
 shared_ptr<Value> ArrayValue::ne(const shared_ptr<NullValue> &other) const
 {
     return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::add(const shared_ptr<NumberValue> &other) const
+{
+    vector<shared_ptr<Value>> newElements = elements;
+    newElements.push_back(other);
+    return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::add(const shared_ptr<StringValue> &other) const
+{
+    vector<shared_ptr<Value>> newElements = elements;
+    newElements.push_back(other);
+    return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::add(const shared_ptr<BooleanValue> &other) const
+{
+    vector<shared_ptr<Value>> newElements = elements;
+    newElements.push_back(other);
+    return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::add(const shared_ptr<ArrayValue> &other) const
+{
+    vector<shared_ptr<Value>> newElements = elements;
+    //newElements.push_back(other); // uncomment this for the += to do nesting arrays ( [1, 2] += [3, 4] would result in [1, 2, [3, 4]] )
+    // if you want to flatten the array, use the line below instead ( [1, 2] += [3, 4] would result in [1, 2, 3, 4] )
+    newElements.insert(newElements.end(), other->getElements().begin(), other->getElements().end());
+    return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::add(const shared_ptr<FunctionValue> &other) const
+{
+    vector<shared_ptr<Value>> newElements = elements;
+    newElements.push_back(other);
+    return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::add(const shared_ptr<BuiltinFunctionValue> &other) const
+{
+    vector<shared_ptr<Value>> newElements = elements;
+    newElements.push_back(other);
+    return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> ArrayValue::add(const shared_ptr<NullValue> &other) const
+{
+    vector<shared_ptr<Value>> newElements = elements;
+    newElements.push_back(other);
+    return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
 }

@@ -819,3 +819,22 @@ shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &arg
     }
     return make_shared<StringValue>(output, range);
 }
+
+shared_ptr<Value> Builtins::dumpEnv(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(args);
+    UNUSED(env);
+    UNUSED(range);
+
+    // this function is for debugging purposes, it dumps the environment variables
+    // to the standard output, so we don't need to return anything
+    if (env)
+    {
+        env->dump();
+    }
+    else
+    {
+        cout << "No environment available." << endl;
+    }
+    return nullptr;
+}

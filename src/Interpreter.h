@@ -49,6 +49,7 @@ public:
     virtual void visit(ArrayAccessNode *node) override;
     virtual void visit(MemberAccessNode *node) override;
     virtual void visit(ContinueNode *node) override;
+    virtual void visit(ClassNode *node) override;
 private:
     shared_ptr<Value> evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right);
 

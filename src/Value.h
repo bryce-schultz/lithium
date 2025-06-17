@@ -41,6 +41,8 @@ public:
         array,
         function,
         builtin,
+        class_,
+        object // for instances of classes
     };
 
     string typeAsString() const;

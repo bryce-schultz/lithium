@@ -90,6 +90,7 @@ void Interpreter::setupBuiltInFunctions()
     env->declare("number", make_shared<BuiltinFunctionValue>(Builtins::toNumber), true);
     env->declare("print", make_shared<BuiltinFunctionValue>(Builtins::print), true);
     env->declare("println", make_shared<BuiltinFunctionValue>(Builtins::println), true);
+    env->declare("dumpenv", make_shared<BuiltinFunctionValue>(Builtins::dumpEnv), true);
 }
 
 void Interpreter::setupRuntimeValues()
@@ -587,6 +588,97 @@ void Interpreter::visit(CallNode *node)
 
         returnValue = builtin->call(args, env, node->getRange());
     }
+    else if (callee->getType() == Value::Type::class_)
+    {
+        shared_ptr<ClassValue> classValue = dynamic_pointer_cast<ClassValue>(callee);
+        if (!classValue)
+        {
+            error("callee could not be cast to ClassValue", calleeNode->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        // visit the declarations of the class and capture them in a new environment
+        //auto savedEnv = env;
+        env = make_shared<Environment>(env);
+        shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
+        if (!classBody)
+        {
+            error("class '" + classValue->getName() + "' has no body", calleeNode->getRange());
+            returnValue = nullptr;
+            env = env->getParent();
+            return;
+        }
+
+        // we don't want to push extra scope for class body, so we just visit the statements directly
+        classBody->getStatements()->visit(this);
+
+        // call the constructor of the class
+        auto ctor = env->lookupLocal(classValue->getName());
+
+        if (ctor)
+        {
+            if (ctor->getType() != Value::Type::function)
+            {
+                error("class '" + classValue->getName() + "' has no constructor", calleeNode->getRange());
+                returnValue = nullptr;
+                env = env->getParent();
+                return;
+            }
+
+            shared_ptr<FunctionValue> constructor = dynamic_pointer_cast<FunctionValue>(ctor);
+            if (!constructor)
+            {
+                error("class '" + classValue->getName() + "' constructor could not be cast to FunctionValue", calleeNode->getRange());
+                returnValue = nullptr;
+                env = env->getParent();
+                return;
+            }
+
+            // TODO: come back here
+            if (constructor->getParameters() && (size_t)constructor->getParameters()->getParamCount() != args.size())
+            {
+                error("function '" + constructor->getName() + "' expects " +
+                    std::to_string(constructor->getParameters()->getParamCount()) +
+                    " arguments, but got " + std::to_string(args.size()), node->getRange());
+                returnValue = nullptr;
+                return;
+            }
+            else if (!constructor->getParameters() && !args.empty())
+            {
+                error("function '" + constructor->getName() + "' does not take any arguments, but got " + std::to_string(args.size()), node->getRange());
+                returnValue = nullptr;
+                return;
+            }
+
+            shared_ptr<Environment> scope = make_shared<Environment>(constructor->getEnvironment());
+            for (size_t i = 0; i < args.size(); ++i)
+            {
+                scope->declare(constructor->getParameters()->getParam(i)->getName(), args[i]);
+            }
+            auto previousEnv = env;
+            env = scope;
+            try
+            {
+                constructor->getBody()->visit(this);
+            }
+            catch (const ReturnException& e)
+            {
+                if (e.value && e.value->getType() != Value::Type::null)
+                {
+                    error("constructor of class '" + classValue->getName() + "' returned a value, which is not allowed", node->getRange());
+                }
+            }
+            env = previousEnv;
+        }
+
+        // create a new instance of the class
+        auto instance = make_shared<ObjectValue>(classValue->getName(), env);
+
+        env = env->getParent();
+        returnValue = instance;
+        return;
+    }
     else
     {
         error("cannot call non-function value: " + callee->typeAsString(), node->getRange());
@@ -695,7 +787,7 @@ void Interpreter::visit(AssignNode *node)
 
         if (!value)
         {
-            error("invalid operators in assignment", node->getRange());
+            errorAtToken("invalid operators in assignment", node->getToken(), node->getRange());
             returnValue = nullptr;
             return;
         }
@@ -852,6 +944,9 @@ void Interpreter::visit(AssignNode *node)
             returnValue = nullptr;
             return;
         }
+
+        returnValue = result.value;
+        return;
     }
 
     error("invalid assignment target", node->getAsignee()->getRange());
@@ -1194,4 +1289,18 @@ void Interpreter::visit(ContinueNode *node)
 {
     UNUSED(node);
     throw ContinueException(node->getRange());
+}
+
+void Interpreter::visit(ClassNode *node)
+{
+    // Create a new class value and declare it in the environment
+    auto classValue = make_shared<ClassValue>(node->getName(), node->getBody());
+    auto result = env->declare(node->getName(), classValue, node->isConst());
+    if (!result)
+    {
+        alreadyDefined(node);
+        return;
+    }
+
+    returnValue = nullptr; // No return value for class declaration
 }

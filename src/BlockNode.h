@@ -25,6 +25,8 @@ public:
 
     shared_ptr<StatementsNode> getStatements() const;
 
+    void addStatement(shared_ptr<StatementNode> statement);
+
     virtual void visit(Visitor *visitor) override;
 private:
     shared_ptr<StatementsNode> statements;

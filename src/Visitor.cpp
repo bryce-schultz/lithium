@@ -235,7 +235,10 @@ void Visitor::visit(ImportNode *node)
 
 void Visitor::visit(ClassNode *node)
 {
-    node->getBody()->visit(this);
+    if (node->getBody())
+    {
+        node->getBody()->visit(this);
+    }
 }
 
 void Visitor::visit(ArrayNode *node)

@@ -53,36 +53,33 @@
 Parser::Parser():
     tokenizer(),
     currentToken()
-{
-    initFirstSets();
-}
+{ }
 
-void Parser::initFirstSets()
-{
-    exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '-', '+', '!' };
-    forStmtFirsts = { Token::FOR };
-    whileStmtFirsts = { Token::WHILE };
-    ifStmtFirsts = { Token::IF };
-    blockFirsts = { '{' };
-    funcDeclFirsts = { Token::FN };
-    returnStmtFirsts = { Token::RETURN };
-    breakStmtFirsts = { Token::BREAK };
-    continueStmtFirsts = { Token::CONTINUE };
-    letStmtFirsts = { Token::LET };
-    constStmtFirsts = { Token::CONST };
-    exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', '-', '+', '!' };
-    assignFirsts = { Token::NUMBER, Token::IDENT, Token::STRING,Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '+', '!' };
-    orFirsts = { Token::OR };
-    andFirsts = { Token::AND };
-    equalityFirsts = { Token::EQ, Token::NE };
-    relationFirsts = { '>', '<', Token::LE, Token::GE };
-    additFirsts = { '+', '-' };
-    multFirsts = { '*', '/', '%' };
-    unaryFirsts = { '+', '-', '!', '~' };
-    argListFirsts = exprFirsts;
-    postPFirsts = { '(', '[', '.', Token::INC, Token::DEC };
-    importFirsts = { Token::IMPORT };
-}
+set<int> Parser::classDeclFirsts = { Token::CLASS };
+set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '-', '+', '!' };
+set<int> Parser::forStmtFirsts = { Token::FOR };
+set<int> Parser::whileStmtFirsts = { Token::WHILE };
+set<int> Parser::ifStmtFirsts = { Token::IF };
+set<int> Parser::blockFirsts = { '{' };
+set<int> Parser::funcDeclFirsts = { Token::FN };
+set<int> Parser::returnStmtFirsts = { Token::RETURN };
+set<int> Parser::breakStmtFirsts = { Token::BREAK };
+set<int> Parser::continueStmtFirsts = { Token::CONTINUE };
+set<int> Parser::letStmtFirsts = { Token::LET };
+set<int> Parser::constStmtFirsts = { Token::CONST };
+set<int> Parser::exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', '-', '+', '!' };
+set<int> Parser::assignFirsts = { Token::NUMBER, Token::IDENT, Token::STRING,Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '+', '!' };
+set<int> Parser::orFirsts = { Token::OR };
+set<int> Parser::andFirsts = { Token::AND };
+set<int> Parser::equalityFirsts = { Token::EQ, Token::NE };
+set<int> Parser::relationFirsts = { '>', '<', Token::LE, Token::GE };
+set<int> Parser::additFirsts = { '+', '-' };
+set<int> Parser::multFirsts = { '*', '/', '%' };
+set<int> Parser::unaryFirsts = { '+', '-', '!', '~' };
+set<int> Parser::argListFirsts = exprFirsts;
+set<int> Parser::postPFirsts = { '(', '[', '.', Token::INC, Token::DEC };
+set<int> Parser::importFirsts = { Token::IMPORT };
+set<int> Parser::postFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, '(', '[', '-', '+', '!' };
 
 Token Parser::peekToken() const
 {
@@ -142,6 +139,7 @@ Result<StatementsNode> Parser::parseStmts()
 //       | ifStmt       - firsts: IF
 //       | block        - firsts: {
 //       | fnDecl       - firsts: FN
+//       | classDecl    - firsts: CLASS
 //       | returnStmt   - firsts: RETURN
 //       | breakStmt    - firsts: BREAK
 //       | importStmt   - firsts: IMPORT
@@ -193,6 +191,10 @@ Result<StatementNode> Parser::parseStmt()
     {
         acceptNode(parseImportStmt());
     }
+    else if (isInFirstSet(token, classDeclFirsts))
+    {
+        acceptNode(parseClassDecl());
+    }
     else if (token == '}' && depth != 0)
     {
         reject();
@@ -201,10 +203,10 @@ Result<StatementNode> Parser::parseStmt()
     error("unexpected token");
 }
 
-// exprStmt -> expr ;                       - firsts: NUMBER, IDENT, STRING, (, [
+// exprStmt -> expr ;                  - firsts: NUMBER, IDENT, STRING, (, [, -, +, !, LET, CONST, INC, DEC
 //           | LET IDENT = expr ;      - firsts: LET
 //           | CONST IDENT = expr ;    - firsts: CONST
-//           | PRINT ( exprList ) ;         - firsts: PRINT
+//           | PRINT ( exprList ) ;    - firsts: PRINT
 //           | ;
 Result<StatementNode> Parser::parseExprStmt()
 {
@@ -420,6 +422,79 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
     //funcDecl->setRangeEnd(closeParenToken.getRange().getEnd());
 
     accept(funcDecl);
+}
+
+// classDecl -> CLASS IDENT { classBody }
+//            | CLASS IDENT { }
+Result<ClassNode> Parser::parseClassDecl()
+{
+    Token classToken = expectToken(Token::CLASS);
+
+    Token identifier = expectToken(Token::IDENT);
+
+    Token openCurlyToken = expectToken('{');
+
+    auto bodyResult = parseClassBody();
+    if (!bodyResult.status)
+    {
+        reject();
+    }
+
+    Token closeCurlyToken = expectToken('}');
+
+    auto classNode = make_shared<ClassNode>(identifier, bodyResult.value);
+    classNode->setRangeStart(classToken.getRange().getStart());
+    classNode->setRangeEnd(closeCurlyToken.getRange().getEnd());
+
+    accept(classNode);
+}
+
+// classBody -> classStmt classBody
+//            | ε
+Result<BlockNode> Parser::parseClassBody()
+{
+    auto block = make_shared<BlockNode>();
+
+    Token token = peekToken();
+    while (token != '}')
+    {
+        // parse a single class statement
+        auto result = parseClassStmt();
+        if (!result.status)
+        {
+            break;
+        }
+
+        block->addStatement(result.value);
+        token = peekToken();
+    }
+
+    accept(block);
+}
+
+// classStmt -> funcDecl
+//            | letStmt
+//            | constStmt
+Result<StatementNode> Parser::parseClassStmt()
+{
+    Token token = peekToken();
+
+    if (isInFirstSet(token, funcDeclFirsts))
+    {
+        acceptNode(parseFuncDecl());
+    }
+    else if (isInFirstSet(token, letStmtFirsts))
+    {
+        acceptNode(parseLetStmt());
+    }
+    else if (isInFirstSet(token, constStmtFirsts))
+    {
+        acceptNode(parseConstStmt());
+    }
+    else
+    {
+        error("unexpected token in class body");
+    }
 }
 
 // paramList -> IDENT paramList'

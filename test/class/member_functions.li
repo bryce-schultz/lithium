@@ -1,0 +1,41 @@
+class Pair
+{
+    let x = 0;
+    let y = 0;
+
+    fn getX()
+    {
+        return x;
+    }
+
+    fn getY()
+    {
+        return y;
+    }
+
+    fn setX(value)
+    {
+        x = value;
+    }
+
+    fn setY(value)
+    {
+        y = value;
+    }
+
+    fn toString()
+    {
+        return "Pair(" + x + ", " + y + ")";
+    }
+}
+
+let p = Pair();
+println(p.getX());
+println(p.getY());
+println(p.toString());
+
+p.setX(10);
+p.setY(20);
+println(p.toString());
+println(p.getX());
+println(p.getY());

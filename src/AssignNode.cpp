@@ -34,6 +34,11 @@ AssignNode::AssignNode(shared_ptr<ExpressionNode> asignee, const Token &opToken,
     }
 }
 
+const Token &AssignNode::getToken() const
+{
+    return opToken;
+}
+
 bool AssignNode::isLval() const
 {
     // an assignment node is an lvalue if its asignee is an lvalue

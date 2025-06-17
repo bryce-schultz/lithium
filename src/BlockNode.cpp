@@ -23,6 +23,16 @@ shared_ptr<StatementsNode> BlockNode::getStatements() const
     return statements;
 }
 
+void BlockNode::addStatement(shared_ptr<StatementNode> statement)
+{
+    if (!statements)
+    {
+        statements = std::make_shared<StatementsNode>();
+    }
+    statements->addStatement(statement);
+    setRange(statements->getRange());
+}
+
 void BlockNode::visit(Visitor *visitor)
 {
     visitor->visit(this);

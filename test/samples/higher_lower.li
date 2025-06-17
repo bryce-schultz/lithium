@@ -1,0 +1,95 @@
+# this is a simple Higher or Lower game in Lithium using objects
+
+import <random> # provides a 64-bit random integer
+import <io>     # provides the input function
+
+class HigherLower
+{
+    let maxAttempts = 0;
+    let attempts = 0;
+    let min = 0;
+    let max = 0;
+
+    let num = 0;
+
+    fn HigherLower(min_, max_, maxAttempts_)
+    {
+        maxAttempts = maxAttempts_;
+        num = rand(min_, max_);
+        println("Welcome to Higher or Lower!");
+        println("I have selected a number between " + min_ + " and " + max_ + ".");
+        println("You have " + maxAttempts + " attempts to guess it.");
+    }
+
+    fn rand(min_, max_)
+    {
+        # random gives a 64 bit random integer
+        return (random() % (max_ - min_ + 1)) + min_;
+    }
+
+    fn reset()
+    {
+        attempts = 0;
+        num = rand(min, max);
+        println("\nThe game has been reset. A new number has been selected.");
+        println("You have " + maxAttempts + " attempts to guess it.");
+    }
+
+    fn guess(n)
+    {
+        println("You guessed: " + n + "\n");
+        attempts++;
+
+        if (attempts >= maxAttempts)
+        {
+            println("Sorry, you've used all your attempts. The number was " + num + ".");
+            reset();
+            return;
+        }
+
+        if (n < num)
+        {
+            println("Higher! You have " + (maxAttempts - attempts) + " attempts left.");
+        }
+        else if (n > num)
+        {
+            println("Lower! You have " + (maxAttempts - attempts) + " attempts left.");
+        }
+        else
+        {
+            println("Congratulations! You've guessed the number " + num + " in " + attempts + " attempts.");
+            reset();
+        }
+    }
+
+    fn play()
+    {
+        while (true)
+        {
+            let in = input("Enter your guess (or type 'exit' to quit): ");
+            if (in == null)
+            {
+                println("\nThanks for playing!");
+                break;
+            }
+
+            if (in == "exit")
+            {
+                println("Thanks for playing!");
+                break;
+            }
+
+            let n = number(in);
+            if (n == null)
+            {
+                println("Please enter a valid number.");
+                continue;
+            }
+
+            guess(n);
+        }
+    }
+}
+
+let game = HigherLower(1, 100, 10);
+game.play();

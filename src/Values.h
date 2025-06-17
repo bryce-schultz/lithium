@@ -9,3 +9,5 @@
 #include "BooleanValue.h"
 #include "FunctionValue.h"
 #include "ArrayValue.h"
+#include "ClassValue.h"
+#include "ObjectValue.h"

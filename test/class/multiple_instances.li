@@ -1,0 +1,63 @@
+class Point
+{
+    let x = 0;
+    let y = 0;
+
+    fn Point(x_, y_)
+    {
+        x = x_;
+        y = y_;
+    }
+
+    fn toString()
+    {
+        return "Point(" + x + ", " + y + ")";
+    }
+
+    fn getX()
+    {
+        return x;
+    }
+
+    fn getY()
+    {
+        return y;
+    }
+
+    fn setX(value)
+    {
+        x = value;
+    }
+
+    fn setY(value)
+    {
+        y = value;
+    }
+}
+
+let p1 = Point(10, 20);
+let p2 = Point(30, 40);
+let p3 = Point(50, 60);
+println(p1);
+println(p2);
+println(p3);
+
+p1.x = 100;
+p2.y = 200;
+p3.x = 300;
+println(p1);
+println(p2);
+println(p3);
+
+p1.setX(1000);
+p2.setY(2000);
+p3.setX(3000);
+println(p1);
+println(p2);
+println(p3);
+println(p1.getX());
+println(p2.getY());
+println(p3.getX());
+println(p1.getY());
+println(p2.getX());
+println(p3.getY());

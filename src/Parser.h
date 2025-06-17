@@ -82,12 +82,9 @@ private:
 
     // classBody -> classStmt classBody
     //            | ε
-    Result<StatementsNode> parseClassBody();
+    Result<BlockNode> parseClassBody();
 
-    // classStmt -> PUB funcDecl
-    //            | PUB letStmt
-    //            | PUB constStmt
-    //            | funcDecl
+    // classStmt -> funcDecl
     //            | letStmt
     //            | constStmt
     Result<StatementNode> parseClassStmt();
@@ -228,32 +225,32 @@ private:
 
     //******************************************************************************************
 private:
-    void initFirstSets();
-    set<int> exprStmtFirsts;
-    set<int> forStmtFirsts;
-    set<int> whileStmtFirsts;
-    set<int> ifStmtFirsts;
-    set<int> blockFirsts;
-    set<int> funcDeclFirsts;
-    set<int> returnStmtFirsts;
-    set<int> breakStmtFirsts;
-    set<int> continueStmtFirsts;
-    set<int> letStmtFirsts;
-    set<int> constStmtFirsts;
-    set<int> printStmtFirsts;
-    set<int> exprFirsts;
-    set<int> assignFirsts;
-    set<int> orFirsts;
-    set<int> andFirsts;
-    set<int> equalityFirsts;
-    set<int> relationFirsts;
-    set<int> additFirsts;
-    set<int> multFirsts;
-    set<int> unaryFirsts;
-    set<int> argListFirsts;
-    set<int> postFirsts;
-    set<int> postPFirsts;
-    set<int> importFirsts;
+    static set<int> exprStmtFirsts;
+    static set<int> forStmtFirsts;
+    static set<int> whileStmtFirsts;
+    static set<int> ifStmtFirsts;
+    static set<int> blockFirsts;
+    static set<int> funcDeclFirsts;
+    static set<int> returnStmtFirsts;
+    static set<int> breakStmtFirsts;
+    static set<int> continueStmtFirsts;
+    static set<int> letStmtFirsts;
+    static set<int> constStmtFirsts;
+    static set<int> printStmtFirsts;
+    static set<int> exprFirsts;
+    static set<int> assignFirsts;
+    static set<int> orFirsts;
+    static set<int> andFirsts;
+    static set<int> equalityFirsts;
+    static set<int> relationFirsts;
+    static set<int> additFirsts;
+    static set<int> multFirsts;
+    static set<int> unaryFirsts;
+    static set<int> argListFirsts;
+    static set<int> postFirsts;
+    static set<int> postPFirsts;
+    static set<int> importFirsts;
+    static set<int> classDeclFirsts;
 private:
     Tokenizer tokenizer;
     Token currentToken;

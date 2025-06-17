@@ -102,9 +102,20 @@ std::shared_ptr<Environment> Environment::getParent() const
     return parent;
 }
 
+const map<string, shared_ptr<Value>> &Environment::getMembers() const
+{
+    return variables;
+}
+
 void Environment::dump() const
 {
-    cout << "Environment dump:\n";
+    if (parent)
+    {
+        cout << "----------------------------------------\nParent Environment\n----------------------------------------\n";
+        parent->dump();
+    }
+
+    cout << "----------------------------------------\nEnvironment\n----------------------------------------\n";
     cout << "Variables:\n";
     for (const auto &pair : variables)
     {
@@ -115,19 +126,6 @@ void Environment::dump() const
     {
         cout << "  " << name << "\n";
     }
-
-    //auto parentPtr = parent.lock();
-
-    if (parent)
-    {
-        cout << "Parent Environment:\n";
-        parent->dump();
-    }
-    else
-    {
-        cout << "No parent environment.\n";
-    }
-    cout << "End of Environment dump.\n";
 }
 
 bool Environment::hasVariable(const string &name) const

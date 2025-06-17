@@ -3,7 +3,9 @@
 #include "StatementNode.h"
 #include "DeclNode.h"
 
-ClassNode::ClassNode(const Token &token, shared_ptr<StatementNode> body)
+ClassNode::ClassNode(const Token &token, shared_ptr<StatementNode> body):
+    token(token),
+    body(body)
 {
     setRange(token.getRange());
     if (body)

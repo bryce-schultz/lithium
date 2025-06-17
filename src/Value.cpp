@@ -14,6 +14,7 @@ string Value::typeAsString() const
         case Type::function: return "function";
         case Type::builtin: return "builtin";
         case Type::array: return "array";
+        case Type::class_: return "class";
         default: return "unknown";
     }
 }
@@ -95,6 +96,11 @@ Result<Value> Value::setMember(const string &name, const shared_ptr<Value> &valu
     // set the member value
     it->second = value;
     return { ResultStatus::SUCCESS, value };
+}
+
+const std::map<string, shared_ptr<Value>>& Value::getMembers() const
+{
+    return members;
 }
 
 shared_ptr<Value> Value::add(const shared_ptr<Value> &other) const
