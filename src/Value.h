@@ -70,10 +70,10 @@ public:
     virtual shared_ptr<Value> getMember(const string &name) const;
 
     // add a member, returns false if the member already exists
-    bool addMember(const string &name, const shared_ptr<Value> &value, bool isConst);
+    virtual bool addMember(const string &name, const shared_ptr<Value> &value, bool isConst);
 
     // set a member, returns false if the member does not exist
-    Result<Value> setMember(const string &name, const shared_ptr<Value> &value);
+    virtual Result<Value> setMember(const string &name, const shared_ptr<Value> &value);
 
     const std::map<string, shared_ptr<Value>>& getMembers() const;
 public:
