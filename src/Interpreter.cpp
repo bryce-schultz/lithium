@@ -1057,6 +1057,100 @@ void Interpreter::visit(WhileNode *node)
     returnValue = nullptr; // reset return value after the loop
 }
 
+void Interpreter::visit(ForEachNode *node)
+{
+    env = make_shared<Environment>(env);
+
+    node->getIterable()->visit(this);
+
+    if (node->isArrayLike())
+    {
+        if (!returnValue || returnValue->getType() != Value::Type::array)
+        {
+            error("for-each loop iterable must be an array", node->getIterable()->getRange());
+            return;
+        }
+
+        auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
+        if (!arrayValue)
+        {
+            error("for-each loop iterable could not be cast to ArrayValue", node->getIterable()->getRange());
+            return;
+        }
+
+        for (int i = 0; i < arrayValue->getElementCount(); ++i)
+        {
+            env->redeclare(node->getKeyDecl()->getName(), arrayValue->getElement(i), node->getKeyDecl()->isConst());
+
+            try
+            {
+                node->getBody()->visit(this);
+            }
+            catch (const BreakException &)
+            {
+                break;
+            }
+            catch (const ContinueException &)
+            {
+                continue;
+            }
+        }
+
+        // Reset the environment after the loo
+    }
+    else if (node->isMapLike())
+    {
+        if (!returnValue || returnValue->getType() != Value::Type::object)
+        {
+            error("for-each loop iterable must be an object", node->getIterable()->getRange());
+            return;
+        }
+
+        auto objectValue = dynamic_pointer_cast<ObjectValue>(returnValue);
+        if (!objectValue)
+        {
+            error("for-each loop iterable could not be cast to ObjectValue", node->getIterable()->getRange());
+            return;
+        }
+
+        for (const auto &pair : objectValue->getMembers())
+        {
+            if (pair.second->getType() == Value::Type::function)
+            {
+                continue; // skip functions in the object
+            }
+
+            if (pair.first == "LINE" || pair.first == "FILE")
+            {
+                continue; // skip special variables
+            }
+
+            env->redeclare(node->getKeyDecl()->getName(), make_shared<StringValue>(pair.first), node->getKeyDecl()->isConst());
+            env->redeclare(node->getValueDecl()->getName(), pair.second, node->getValueDecl()->isConst());
+
+            try
+            {
+                node->getBody()->visit(this);
+            }
+            catch (const BreakException &)
+            {
+                break;
+            }
+            catch (const ContinueException &)
+            {
+                continue;
+            }
+        }
+    }
+    else
+    {
+        error("for-each loop iterable must be an array or an object", node->getIterable()->getRange());
+    }
+
+    env = env->getParent();
+    returnValue = nullptr;
+}
+
 void Interpreter::visit(ForStatementNode *node)
 {
     shared_ptr<Environment> forEnv = make_shared<Environment>(env);

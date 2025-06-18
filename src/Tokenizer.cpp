@@ -44,6 +44,7 @@ Token Tokenizer::lex()
     //-----------------------------------------------------------
     // one character tokens
     if (c == ';' ||
+        c == ':' ||
         c == ',' ||
         c == '(' ||
         c == ')' ||
@@ -286,6 +287,7 @@ Token Tokenizer::lex()
         if (identifier == "if") return Token(Token::IF, Range(start, location), identifier);
         if (identifier == "else") return Token(Token::ELSE, Range(start, location), identifier);
         if (identifier == "for") return Token(Token::FOR, Range(start, location), identifier);
+        if (identifier == "foreach") return Token(Token::FOREACH, Range(start, location), identifier);
         if (identifier == "while") return Token(Token::WHILE, Range(start, location), identifier);
         if (identifier == "fn") return Token(Token::FN, Range(start, location), identifier);
         if (identifier == "return") return Token(Token::RETURN, Range(start, location), identifier);

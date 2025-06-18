@@ -1,0 +1,29 @@
+let a = [1, 2, 3, 4, 5];
+foreach (num : a)
+{
+    println(num);
+}
+
+let b = ["hello", null, 0, 3.14, true];
+foreach (item : b)
+{
+    println(item);
+}
+
+class Pair
+{
+    let x = 0;
+    let y = 0;
+
+    fn Pair(x_, y_)
+    {
+        x = x_;
+        y = y_;
+    }
+}
+
+let pair = Pair(1, 2);
+foreach (key, value : pair)
+{
+    println(key + ": " + value);
+}

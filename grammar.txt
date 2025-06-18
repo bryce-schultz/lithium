@@ -24,6 +24,9 @@ stmt -> block
 
 forStmt -> FOR ( exprStmt exprStmt expr ) stmt
 
+foreachStmt -> FOREACH ( IDENT : expr ) stmt
+             | FOREACH ( IDENT , IDENT : expr ) stmt
+
 whileStmt -> WHILE ( expr ) stmt
 
 ifStmt -> IF ( expr ) stmt
@@ -43,9 +46,7 @@ paramList' -> , IDENT paramList'
 
 classDecl -> CLASS IDENT { classBody }
 
-classBody -> PUB varDecl
-           | PUB funcDecl
-           | varDecl
+classBody -> varDecl
            | funcDecl
 
 returnStmt -> RETURN expr ;

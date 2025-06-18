@@ -49,6 +49,30 @@ shared_ptr<Value> Environment::redeclare(const string &name, shared_ptr<Value> v
     return value;
 }
 
+shared_ptr<Value> Environment::remove(const string & name)
+{
+    shared_ptr<Environment> env = resolve(name);
+    if (!env)
+    {
+        return nullptr; // Variable not found
+    }
+
+    if (env->hasConstant(name))
+    {
+        return nullptr; // Cannot remove a constant
+    }
+
+    auto it = env->variables.find(name);
+    if (it != env->variables.end())
+    {
+        shared_ptr<Value> value = it->second;
+        env->variables.erase(it);
+        return value;
+    }
+
+    return nullptr; // Variable not found
+}
+
 Result<Value> Environment::assign(const string &name, shared_ptr<Value> value)
 {
     shared_ptr<Environment> env = resolve(name);

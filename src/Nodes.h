@@ -35,6 +35,7 @@
 #include "IfStatementNode.h"
 #include "WhileNode.h"
 #include "ForStatementNode.h"
+#include "ForEachNode.h"
 #include "FuncDeclNode.h"
 #include "BreakNode.h"
 #include "ImportNode.h"

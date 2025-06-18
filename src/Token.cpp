@@ -24,6 +24,7 @@ string Token::tokenTypeToString(int type)
         case IF:            return "keyword (if)";
         case ELSE:          return "keyword (else)";
         case FOR:           return "keyword (for)";
+        case FOREACH:       return "keyword (foreach)";
         case WHILE:         return "keyword (while)";
         case FN:            return "keyword (fn)";
         case RETURN:        return "keyword (return)";

@@ -29,6 +29,7 @@ public:
         IF,
         ELSE,
         FOR,
+        FOREACH,
         WHILE,
         FN,
         RETURN,

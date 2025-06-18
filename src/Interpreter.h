@@ -41,6 +41,7 @@ public:
     virtual void visit(FuncDeclNode *node) override;
     virtual void visit(WhileNode *node) override;
     virtual void visit(ReturnStatementNode *node) override;
+    virtual void visit(ForEachNode *node) override;
     virtual void visit(ForStatementNode *node) override;
     virtual void visit(NullNode *node) override;
     virtual void visit(BreakNode *node) override;

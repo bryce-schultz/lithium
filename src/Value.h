@@ -75,7 +75,7 @@ public:
     // set a member, returns false if the member does not exist
     virtual Result<Value> setMember(const string &name, const shared_ptr<Value> &value);
 
-    const std::map<string, shared_ptr<Value>>& getMembers() const;
+    virtual const std::map<string, shared_ptr<Value>>& getMembers() const;
 public:
     // dispatchers
     shared_ptr<Value> add(const shared_ptr<Value> &other) const;

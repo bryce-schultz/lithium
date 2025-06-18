@@ -58,6 +58,7 @@ Parser::Parser():
 set<int> Parser::classDeclFirsts = { Token::CLASS };
 set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '-', '+', '!' };
 set<int> Parser::forStmtFirsts = { Token::FOR };
+set<int> Parser::forEachStmtFirsts = { Token::FOREACH };
 set<int> Parser::whileStmtFirsts = { Token::WHILE };
 set<int> Parser::ifStmtFirsts = { Token::IF };
 set<int> Parser::blockFirsts = { '{' };
@@ -158,6 +159,10 @@ Result<StatementNode> Parser::parseStmt()
     else if (isInFirstSet(token, forStmtFirsts))
     {
         acceptNode(parseForStmt());
+    }
+    else if (isInFirstSet(token, forEachStmtFirsts))
+    {
+        acceptNode(parseForEachStmt());
     }
     else if (isInFirstSet(token, whileStmtFirsts))
     {
@@ -278,6 +283,49 @@ Result<ForStatementNode> Parser::parseForStmt()
     forNode->setRangeStart(forToken.getRange().getStart());
 
     accept(forNode);
+}
+
+// forEachStmt -> FOREACH ( IDENT : expr ) stmt
+//              | FOREACH ( IDENT , IDENT : expr ) stmt
+Result<ForEachNode> Parser::parseForEachStmt()
+{
+    Token forEachToken = expectToken(Token::FOREACH);
+
+    Token openParenToken = expectToken('(');
+
+    Token keyIdentifier = expectToken(Token::IDENT);
+    Token valueIdentifier;
+
+    Token token = peekToken();
+    if (token == ',')
+    {
+        advanceToken(); // consume ','
+        valueIdentifier = expectToken(Token::IDENT);
+    }
+
+    Token colonToken = expectToken(':');
+
+    auto iterableResult = parseExpr();
+    if (!iterableResult.status)
+    {
+        reject();
+    }
+
+    Token closeParenToken = expectToken(')');
+
+    auto bodyResult = parseStmt();
+    if (!bodyResult.status)
+    {
+        reject();
+    }
+
+    shared_ptr<VarDeclNode> keyDecl = make_shared<VarDeclNode>(keyIdentifier);
+    shared_ptr<VarDeclNode> valueDecl = valueIdentifier != Token::NONE ? make_shared<VarDeclNode>(valueIdentifier) : nullptr;
+
+    auto forEachNode = make_shared<ForEachNode>(keyDecl, valueDecl, iterableResult.value, bodyResult.value);
+    forEachNode->setRangeStart(forEachToken.getRange().getStart());
+
+    accept(forEachNode);
 }
 
 // whileStmt -> WHILE ( expr ) stmt

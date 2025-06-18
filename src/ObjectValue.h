@@ -33,6 +33,11 @@ public:
         return env->declare(name, value, isConst) != nullptr;
     }
 
+    virtual const std::map<string, shared_ptr<Value>> &getMembers() const override
+    {
+        return env->getMembers();
+    }
+
     virtual string toString() const override;
 private:
     string name;

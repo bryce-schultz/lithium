@@ -11,7 +11,8 @@ Lithium is a lightweight, interpreted programming language designed for clarity,
 - **First-class functions** and closures
 - **Block scoping** with `let` and `const`
 - **Array literals** and indexing
-- **Simple class system** (WIP)
+- **Simple class system** with methods and properties
+- **Control flow**: `if`, `else`, `while`, `for`, `foreach`, `break`, `continue`
 - **Built-in constants**: `true`, `false`, `null`, `PI`, `E`, `VERSION`, `FILE`, `LINE`
 - **Interactive REPL** and script execution
 - **Clear error messages** with source locations
@@ -137,31 +138,39 @@ print(add(2, 3));
 
 ```lithium
 let arr = [1, 2, 3];
-print(arr[0]); // 1
+print(arr[0]);
 arr[1] = 42;
 ```
 
-### Classes (WIP)
+### Classes
 
 ```lithium
 class Point {
     let x = 0;
     let y = 0;
 
-    pub fn move(dx, dy) {
+    # constructor (name must match class name)
+    fn Point(xIn, yIn) {
+        x = xIn;
+        y = yIn;
+    }
+
+    fn move(dx, dy) {
         x += dx;
         y += dy;
     }
 
-    pub fn getX() {
+    fn getX() {
         return x;
     }
 
-    pub fn getY() {
+    fn getY() {
         return y;
     }
 }
 ```
+
+Note: Don't use `this` keyword; class properties are accessed directly. Be careful with variable shadowing. (`this` will be added in a future version.)
 
 ---
 
@@ -169,7 +178,7 @@ class Point {
 
 - Only line comments are supported:
   ```lithium
-  # This is a comment
+  # This is a valid comment
   ```
 
 ---

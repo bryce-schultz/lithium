@@ -61,6 +61,10 @@ private:
     // forStmt -> FOR ( exprStmt exprStmt expr ) stmt
     Result<ForStatementNode> parseForStmt();
 
+    // forEachStmt -> FOREACH ( IDENT : expr ) stmt
+    //              | FOREACH ( IDENT , IDENT : expr ) stmt
+    Result<ForEachNode> parseForEachStmt();
+
     // whileStmt -> WHILE ( expr ) stmt
     Result<WhileNode> parseWhileStmt();
 
@@ -227,6 +231,7 @@ private:
 private:
     static set<int> exprStmtFirsts;
     static set<int> forStmtFirsts;
+    static set<int> forEachStmtFirsts;
     static set<int> whileStmtFirsts;
     static set<int> ifStmtFirsts;
     static set<int> blockFirsts;

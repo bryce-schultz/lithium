@@ -31,6 +31,7 @@ public:
 
     shared_ptr<Value> declare(const string &name, shared_ptr<Value> value, bool constant = false);
     shared_ptr<Value> redeclare(const string &name, shared_ptr<Value> value, bool constant = false);
+    shared_ptr<Value> remove(const string &name);
     Result<Value> assign(const string &name, shared_ptr<Value> value);
     shared_ptr<Value> lookup(const string &name) const;
     shared_ptr<Value> lookupLocal(const string &name) const;
