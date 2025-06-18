@@ -1,0 +1,8 @@
+let a = [10, 20, 30];
+println(a);
+a.push(40);
+println(a);
+a.pop();
+println(a);
+a.push(50, 60);
+println(a);

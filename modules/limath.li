@@ -1,0 +1,73 @@
+fn min(a, b)
+{
+    if (a < b)
+    {
+        return a;
+    }
+    else
+    {
+        return b;
+    }
+}
+
+fn max(a, b)
+{
+    if (a > b)
+    {
+        return a;
+    }
+    else
+    {
+        return b;
+    }
+}
+
+fn clamp(value, minValue, maxValue)
+{
+    if (value < minValue)
+    {
+        return minValue;
+    }
+    else if (value > maxValue)
+    {
+        return maxValue;
+    }
+    else
+    {
+        return value;
+    }
+}
+
+fn abs(value)
+{
+    if (value < 0)
+    {
+        return -value;
+    }
+    else
+    {
+        return value;
+    }
+}
+
+fn lerp(a, b, t)
+{
+    return a + (b - a) * t;
+}
+
+fn smoothstep(edge0, edge1, x)
+{
+    if (x <= edge0)
+    {
+        return 0.0;
+    }
+    else if (x >= edge1)
+    {
+        return 1.0;
+    }
+    else
+    {
+        let t = (x - edge0) / (edge1 - edge0);
+        return t * t * (3.0 - 2.0 * t);
+    }
+}

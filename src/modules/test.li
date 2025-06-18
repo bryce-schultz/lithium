@@ -1,6 +1,0 @@
-fn printval(msg)
-{
-    print(msg);
-    let in = input(msg);
-    return in;
-}

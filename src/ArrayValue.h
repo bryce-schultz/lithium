@@ -20,6 +20,7 @@ public:
     bool isEmpty() const;
     void clear();
     void setElement(int index, const shared_ptr<Value> &value);
+    int find(const shared_ptr<Value> &value) const;
 
     string toString() const override;
     bool toBoolean() const override;

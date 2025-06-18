@@ -1,0 +1,14 @@
+import <listring>
+import <limath>
+
+let a = String("Hello, World!");
+
+println("Length: " + a.length());
+println("Character at index 7: " + a.charAt(7));
+println("Substring from 0 to 5: " + a.substring(0, 5));
+
+println("Max of 5 and 10: " + max(5, 10)); # This should print 10
+println("Clamp 15 between 10 and 20: " + clamp(15, 10, 20)); # This should print 15
+println("Absolute value of -42: " + abs(-42)); # This should print 42
+println("Lerp between 0 and 100 at t=0.5: " + lerp(0, 100, 0.5)); # This should print 50
+println("Smoothstep from 0 to 1 at x=0.5: " + smoothstep(0, 1, 0.5)); # This should print 0.5

@@ -135,6 +135,16 @@ shared_ptr<Value> StringValue::eq(const shared_ptr<StringValue> &other) const
     return make_shared<BooleanValue>(value == other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
+shared_ptr<Value> StringValue::eq(const shared_ptr<NumberValue> &other) const
+{
+    return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> StringValue::eq(const shared_ptr<BooleanValue> &other) const
+{
+    return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
 shared_ptr<Value> StringValue::eq(const shared_ptr<NullValue> &other) const
 {
     return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
@@ -143,6 +153,16 @@ shared_ptr<Value> StringValue::eq(const shared_ptr<NullValue> &other) const
 shared_ptr<Value> StringValue::ne(const shared_ptr<StringValue> &other) const
 {
     return make_shared<BooleanValue>(value != other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> StringValue::ne(const shared_ptr<NumberValue> &other) const
+{
+    return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> StringValue::ne(const shared_ptr<BooleanValue> &other) const
+{
+    return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> StringValue::ne(const shared_ptr<NullValue> &other) const

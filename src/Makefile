@@ -257,7 +257,7 @@ ArrayValue.o: ArrayValue.cpp ArrayValue.h Value.h StatementsNode.h Node.h \
  Range.h Location.h Visitor.h StatementNode.h Environment.h Result.h \
  ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h \
  Values.h NullValue.h NumberValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ClassValue.h ObjectValue.h
+ FunctionValue.h ClassValue.h ObjectValue.h Error.h Color.h Utils.h
 FileCache.o: FileCache.cpp
 main.o: main.cpp Utils.h Parser.h Tokenizer.h Token.h Range.h Location.h \
  Nodes.h Node.h Visitor.h ExpressionNode.h StatementNode.h NumberNode.h \
@@ -324,6 +324,6 @@ SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  ContinueNode.h Error.h Color.h
 
 # Options from .mk file:
-CXXFLAGS += -O0 -g -Wall -Wextra -Wpedantic
+CXXFLAGS += -O3#0 -g -Wall -Wextra -Wpedantic
 MAIN_EXE = li
 

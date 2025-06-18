@@ -1,0 +1,24 @@
+let a = [1, 2, 3];
+println(a.length());
+a.clear();
+println(a);
+if (a.empty())
+{
+    println("Array is empty");
+}
+else
+{
+    println("Array is not empty");
+}
+
+let b = [4, 5, 6];
+println(b.get(1));
+
+b.set(1, 10);
+println(b.get(1));
+b.remove(1);
+println(b);
+
+println(b.find(6));
+println(b.contains(4));
+println(b.contains(7));
