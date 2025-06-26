@@ -8,6 +8,7 @@
 
 using std::string;
 using std::to_string;
+using std::ostream;
 
 class Color
 {
@@ -17,8 +18,8 @@ public:
     Color(const string& hex);
     static Color fromCode(const string& colorCode);
 
-    // add a ostream operator<< to use Color with std::cout and std::cerr so as not to fill files with ansi codes
-    friend std::ostream& operator<<(std::ostream& os, const Color& color);
+    // add a ostream operator<< to use Color with cout and cerr so as not to fill files with ansi codes
+    friend ostream& operator<<(ostream& os, const Color& color);
 private:
     string code;
     static bool enabled;

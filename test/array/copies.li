@@ -1,0 +1,7 @@
+let a = [0, 1, 2];
+let b = a;
+println(a);
+println(b);
+a[0] = 10;
+println(a);
+println(b);

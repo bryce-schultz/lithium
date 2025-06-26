@@ -60,6 +60,7 @@ public:
 
     Type getType() const;
     Range getRange() const;
+    void setRange(const Range &range);
 
     virtual string toString() const = 0; // makes this class abstract
     virtual bool toBoolean() const;

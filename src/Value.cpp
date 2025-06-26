@@ -37,6 +37,11 @@ Range Value::getRange() const
     return range;
 }
 
+void Value::setRange(const Range &range)
+{
+    this->range = range;
+}
+
 bool Value::toBoolean() const
 {
     return type != Type::null;

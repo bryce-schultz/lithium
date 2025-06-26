@@ -5,7 +5,7 @@
 class ClassValue : public Value
 {
 public:
-    ClassValue(const std::string &name, shared_ptr<StatementNode> body);
+    ClassValue(const string &name, shared_ptr<StatementNode> body);
 
     const string &getName() const;
     void setName(const string &name);

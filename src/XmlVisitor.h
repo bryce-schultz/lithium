@@ -18,12 +18,13 @@
 
 using std::string;
 using std::vector;
+using std::ostringstream;
 
 class XmlVisitor : public Visitor
 {
 public:
     virtual void visitAllChildren(Node *node) override;
-    std::string getOutput() const;
+    string getOutput() const;
 public:
     void visit(StatementsNode *node) override;
     void visit(ReturnStatementNode *node) override;
@@ -47,9 +48,8 @@ public:
 private:
     void openTag(const string &tagName, vector<string> attributes = {}, bool selfClosing = false);
     void closeTag(const string &tagName);
-    std::string indentString() const;
+    string indentString() const;
 private:
     int indent;
-
-    std::ostringstream outputStream;
+    ostringstream outputStream;
 };

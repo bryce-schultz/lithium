@@ -24,6 +24,10 @@ using std::cin;
 using std::endl;
 using std::string;
 using std::dynamic_pointer_cast;
+using std::to_string;
+using std::getline;
+using std::stod;
+using std::invalid_argument;
 
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
@@ -115,7 +119,7 @@ shared_ptr<Value> Builtins::type(const vector<shared_ptr<Value>> &args, shared_p
 
     if (args.size() != 1)
     {
-        error("type() expects exactly 1 argument, but got " + std::to_string(args.size()), range);
+        error("type() expects exactly 1 argument, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -134,7 +138,7 @@ shared_ptr<Value> Builtins::exit(const vector<shared_ptr<Value>> &args, shared_p
 
     if (args.size() > 1)
     {
-        error("exit() expects at most 1 argument, but got " + std::to_string(args.size()), range);
+        error("exit() expects at most 1 argument, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -158,7 +162,7 @@ shared_ptr<Value> Builtins::input(const vector<shared_ptr<Value>> &args, shared_
 
     if (args.size() > 1)
     {
-        error("input() expects at most 1 argument, but got " + std::to_string(args.size()), range);
+        error("input() expects at most 1 argument, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -177,7 +181,7 @@ shared_ptr<Value> Builtins::input(const vector<shared_ptr<Value>> &args, shared_
     cout.flush();
 
     string userInput;
-    std::getline(cin, userInput);
+    getline(cin, userInput);
 
     // check if getline was eof
     if (cin.eof())
@@ -197,7 +201,7 @@ shared_ptr<Value> Builtins::len(const vector<shared_ptr<Value>> &args, shared_pt
 
     if (args.size() != 1)
     {
-        error("len() expects exactly 1 argument, but got " + std::to_string(args.size()), range);
+        error("len() expects exactly 1 argument, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -228,7 +232,7 @@ shared_ptr<Value> Builtins::toNumber(const vector<shared_ptr<Value>> &args, shar
 
     if (args.size() != 1)
     {
-        error("expected exactly 1 argument, but got " + std::to_string(args.size()), range);
+        error("expected exactly 1 argument, but got " + to_string(args.size()), range);
         return make_shared<NullValue>(range);
     }
 
@@ -245,10 +249,10 @@ shared_ptr<Value> Builtins::toNumber(const vector<shared_ptr<Value>> &args, shar
 
     try
     {
-        double value = std::stod(arg->toString());
+        double value = stod(arg->toString());
         return make_shared<NumberValue>(value, range);
     }
-    catch (const std::invalid_argument &)
+    catch (const invalid_argument &)
     {
         return make_shared<NullValue>(range); // conversion failed
     }
@@ -261,7 +265,7 @@ shared_ptr<Value> Builtins::randomNumber(const vector<shared_ptr<Value>> &args, 
 
     if (args.size() != 0)
     {
-        error("expected no arguments, but got " + std::to_string(args.size()), range);
+        error("expected no arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -275,7 +279,7 @@ shared_ptr<Value> Builtins::readFd(const vector<shared_ptr<Value>> &args, shared
 
     if (args.size() != 2)
     {
-        error("expected exactly 2 arguments, but got " + std::to_string(args.size()), range);
+        error("expected exactly 2 arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -298,7 +302,7 @@ shared_ptr<Value> Builtins::readFd(const vector<shared_ptr<Value>> &args, shared
     ssize_t bytesRead = read(fd, &buffer[0], size);
     if (bytesRead < 0)
     {
-        error("failed to read from file descriptor " + std::to_string(fd), range);
+        error("failed to read from file descriptor " + to_string(fd), range);
         return nullptr;
     }
     buffer.resize(bytesRead); // resize the buffer to the actual number of bytes read
@@ -312,7 +316,7 @@ shared_ptr<Value> Builtins::writeFd(const vector<shared_ptr<Value>> &args, share
 
     if (args.size() != 2)
     {
-        error("expected exactly 2 arguments, but got " + std::to_string(args.size()), range);
+        error("expected exactly 2 arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -334,7 +338,7 @@ shared_ptr<Value> Builtins::writeFd(const vector<shared_ptr<Value>> &args, share
     ssize_t bytesWritten = write(fd, data.c_str(), data.size());
     if (bytesWritten < 0)
     {
-        error("failed to write to file descriptor " + std::to_string(fd), range);
+        error("failed to write to file descriptor " + to_string(fd), range);
         return nullptr;
     }
     return make_shared<NumberValue>(static_cast<double>(bytesWritten), range);
@@ -347,7 +351,7 @@ shared_ptr<Value> Builtins::closeFd(const vector<shared_ptr<Value>> &args, share
 
     if (args.size() != 1)
     {
-        error("expected exactly 1 argument, but got " + std::to_string(args.size()), range);
+        error("expected exactly 1 argument, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -366,7 +370,7 @@ shared_ptr<Value> Builtins::closeFd(const vector<shared_ptr<Value>> &args, share
 
     if (close(fd) < 0)
     {
-        error("failed to close file descriptor " + std::to_string(fd), range);
+        error("failed to close file descriptor " + to_string(fd), range);
         return nullptr;
     }
     return make_shared<BooleanValue>(true, range);
@@ -379,7 +383,7 @@ shared_ptr<Value> Builtins::openFile(const vector<shared_ptr<Value>> &args, shar
 
     if (args.size() != 2)
     {
-        error("expected exactly 2 arguments, but got " + std::to_string(args.size()), range);
+        error("expected exactly 2 arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -409,7 +413,7 @@ shared_ptr<Value> Builtins::openSocket(const vector<shared_ptr<Value>> &args, sh
 
     if (args.size() != 3)
     {
-        error("expected exactly 3 arguments, but got " + std::to_string(args.size()), range);
+        error("expected exactly 3 arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -479,7 +483,7 @@ shared_ptr<Value> Builtins::openSocket(const vector<shared_ptr<Value>> &args, sh
     // bind the socket to the address and port
     if (bind(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
     {
-        error("failed to bind socket to " + address + ":" + std::to_string(port), range);
+        error("failed to bind socket to " + address + ":" + to_string(port), range);
         close(sockfd);
         return nullptr;
     }
@@ -509,7 +513,7 @@ shared_ptr<Value> Builtins::listenSocket(const vector<shared_ptr<Value>> &args, 
 
     if (args.size() < 1 || args.size() > 2)
     {
-        error("expected 1 or 2 arguments, but got " + std::to_string(args.size()), range);
+        error("expected 1 or 2 arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -532,7 +536,7 @@ shared_ptr<Value> Builtins::listenSocket(const vector<shared_ptr<Value>> &args, 
                       : SOMAXCONN;
     if (listen(sockfd, backlog) < 0)
     {
-        error("failed to listen on socket " + std::to_string(sockfd), range);
+        error("failed to listen on socket " + to_string(sockfd), range);
         return nullptr;
     }
     return make_shared<BooleanValue>(true, range);
@@ -545,7 +549,7 @@ shared_ptr<Value> Builtins::acceptSocket(const vector<shared_ptr<Value>> &args, 
 
     if (args.size() != 1)
     {
-        error("expected exactly 1 argument, but got " + std::to_string(args.size()), range);
+        error("expected exactly 1 argument, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -568,7 +572,7 @@ shared_ptr<Value> Builtins::acceptSocket(const vector<shared_ptr<Value>> &args, 
     int clientSockfd = accept(sockfd, (struct sockaddr *)&clientAddr, &addrLen);
     if (clientSockfd < 0)
     {
-        error("failed to accept connection on socket " + std::to_string(sockfd), range);
+        error("failed to accept connection on socket " + to_string(sockfd), range);
         return nullptr;
     }
 
@@ -583,7 +587,7 @@ shared_ptr<Value> Builtins::connectSocket(const vector<shared_ptr<Value>> &args,
 
     if (args.size() != 3)
     {
-        error("expected exactly 3 arguments, but got " + std::to_string(args.size()), range);
+        error("expected exactly 3 arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -627,7 +631,7 @@ shared_ptr<Value> Builtins::connectSocket(const vector<shared_ptr<Value>> &args,
 
     if (connect(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
     {
-        error("failed to connect to " + address + ":" + std::to_string(port), range);
+        error("failed to connect to " + address + ":" + to_string(port), range);
         close(sockfd);
         return nullptr;
     }
@@ -642,7 +646,7 @@ shared_ptr<Value> Builtins::sendSocket(const vector<shared_ptr<Value>>& args, sh
 
     if (args.size() != 2)
     {
-        error("expected exactly 2 arguments, but got " + std::to_string(args.size()), range);
+        error("expected exactly 2 arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -670,7 +674,7 @@ shared_ptr<Value> Builtins::sendSocket(const vector<shared_ptr<Value>>& args, sh
     ssize_t bytesSent = send(sockfd, data.c_str(), data.size(), 0);
     if (bytesSent < 0)
     {
-        error("failed to send data on socket " + std::to_string(sockfd), range);
+        error("failed to send data on socket " + to_string(sockfd), range);
         return nullptr;
     }
 
@@ -684,7 +688,7 @@ shared_ptr<Value> Builtins::receiveSocket(const vector<shared_ptr<Value>> &args,
 
     if (args.size() != 2)
     {
-        error("expected exactly 2 arguments, but got " + std::to_string(args.size()), range);
+        error("expected exactly 2 arguments, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -713,7 +717,7 @@ shared_ptr<Value> Builtins::receiveSocket(const vector<shared_ptr<Value>> &args,
     ssize_t bytesReceived = recv(sockfd, buffer, size, 0);
     if (bytesReceived < 0)
     {
-        error("failed to receive data on socket " + std::to_string(sockfd), range);
+        error("failed to receive data on socket " + to_string(sockfd), range);
         delete[] buffer;
         return nullptr;
     }
@@ -727,7 +731,7 @@ shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &arg
 
     if (args.size() != 1)
     {
-        error("expected exactly 1 argument, but got " + std::to_string(args.size()), range);
+        error("expected exactly 1 argument, but got " + to_string(args.size()), range);
         return nullptr;
     }
 
@@ -814,7 +818,7 @@ shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &arg
     }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
     {
-        error("command execution failed with status " + std::to_string(WEXITSTATUS(status)), range);
+        error("command execution failed with status " + to_string(WEXITSTATUS(status)), range);
         return nullptr;
     }
     return make_shared<StringValue>(output, range);

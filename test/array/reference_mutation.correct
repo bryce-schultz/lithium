@@ -1,0 +1,12 @@
+Before modification:
+[1, 2, 3]
+After modification:
+[100, 200, 300]
+Before push:
+[apple, banana]
+After push:
+[apple, banana, cherry, date]
+Before push:
+[red, green]
+After push:
+[red, green, blue, yellow]

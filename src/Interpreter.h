@@ -17,13 +17,15 @@ using std::endl;
 using std::shared_ptr;
 using std::make_shared;
 using std::set;
+using std::vector;
 
-constexpr const char *INTERPRETER_VERSION = "1.0";
+constexpr const char *INTERPRETER_VERSION = "1.1";
 
 class Interpreter : public Visitor
 {
 public:
-    Interpreter(bool isInteractive, std::shared_ptr<Environment> env = nullptr, const std::vector<std::string> &args = {});
+    Interpreter(bool isInteractive, shared_ptr<Environment> env = nullptr, const vector<string> &args = {});
+    ~Interpreter(); // Add destructor for cleanup
     virtual void visitAllChildren(Node *node) override;
 public:
     // Override visit methods for different node types
@@ -69,5 +71,5 @@ private:
     shared_ptr<Value> returnValue;
     Parser moduleParser;
     set<string> importedModules; // to avoid re-importing the same module
-    std::vector<std::string> args; // command line arguments passed to the interpreter
+    vector<string> args; // command line arguments passed to the interpreter
 };

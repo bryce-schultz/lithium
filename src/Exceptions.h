@@ -41,5 +41,5 @@ struct ContinueException : public BaseException
 
 struct ErrorException : public BaseException
 {
-    ErrorException(const std::string &message, Range range = {});
+    ErrorException(const string &message, Range range = {});
 };

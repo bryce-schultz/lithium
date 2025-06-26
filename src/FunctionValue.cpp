@@ -5,10 +5,13 @@
 #include "StatementNode.h"
 #include "Environment.h"
 
-FunctionValue::FunctionValue(const std::string &name,
-    std::shared_ptr<ParamListNode> params,
-    std::shared_ptr<StatementNode> body,
-    std::shared_ptr<Environment> closureEnv,
+using std::string;
+using std::shared_ptr;
+
+FunctionValue::FunctionValue(const string &name,
+    shared_ptr<ParamListNode> params,
+    shared_ptr<StatementNode> body,
+    shared_ptr<Environment> closureEnv,
     Range range):
     Value(Type::function, range), // set the type to function
     name(name),
@@ -22,19 +25,24 @@ const string &FunctionValue::getName() const
     return name;
 }
 
-std::shared_ptr<ParamListNode> FunctionValue::getParameters() const
+shared_ptr<ParamListNode> FunctionValue::getParameters() const
 {
     return params;
 }
 
-std::shared_ptr<StatementNode> FunctionValue::getBody() const
+shared_ptr<StatementNode> FunctionValue::getBody() const
 {
     return body;
 }
 
-std::shared_ptr<Environment> FunctionValue::getEnvironment() const
+shared_ptr<Environment> FunctionValue::getEnvironment() const
 {
     return closureEnv;
+}
+
+void FunctionValue::clearClosureEnv()
+{
+    closureEnv.reset();
 }
 
 string FunctionValue::toString() const

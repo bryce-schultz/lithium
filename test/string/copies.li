@@ -1,0 +1,7 @@
+let a = "hello world";
+let b = a;
+println(a);
+println(b);
+a = "goodbye world";
+println(a);
+println(b);

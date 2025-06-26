@@ -39,11 +39,24 @@ void clearErrorLocations()
     errorLocations.clear();
 }
 
+static string ltrim(const string &str)
+{
+    size_t start = str.find_first_not_of(" \t");
+    if (start == string::npos) return ""; // string is all whitespace
+    size_t end = str.find_last_not_of(" \t");
+    return str.substr(start, end - start + 1);
+}
+
+
 string getErrorLineSquiggles(const Range &range)
 {
-    string line = range.getStart().getSourceLine();
+    string line = ltrim(range.getStart().getSourceLine());
+    size_t amountTrimmed = range.getStart().getSourceLine().length() - line.length();
     size_t start = range.getStart().getColumn() - 1; // Convert to 0-based index
     size_t end = range.getEnd().getColumn() - 1; // Convert to 0-based index
+
+    start -= amountTrimmed; // Adjust start position based on trimmed length
+    end -= amountTrimmed; // Adjust end position based on trimmed length
 
     size_t startLine = range.getStart().getLine() - 1; // Convert to 0-based index
     size_t endLine = range.getEnd().getLine() - 1; // Convert to 0-based index
@@ -78,10 +91,16 @@ string getErrorLineSquiggles(const Range &range)
 
 string getErrorLineLocationSquiggles(const Location &location, const Range &range)
 {
-    string line = range.getStart().getSourceLine();
+    string line = ltrim(range.getStart().getSourceLine());
+    size_t amountTrimmed = range.getStart().getSourceLine().length() - line.length();
+
     size_t start = range.getStart().getColumn() - 1; // Convert to 0-based index
     size_t end = range.getEnd().getColumn() - 1; // Convert to 0-based index
     size_t tokenStart = location.getColumn() - 1; // Convert to 0-based index
+
+    start -= amountTrimmed; // Adjust start position based on trimmed length
+    end -= amountTrimmed; // Adjust end position based on trimmed length
+    tokenStart -= amountTrimmed; // Adjust token start position based on trimmed length
 
     size_t startLine = range.getStart().getLine() - 1; // Convert to 0-based index
     size_t endLine = range.getEnd().getLine() - 1; // Convert to 0-based index

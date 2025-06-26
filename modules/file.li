@@ -1,0 +1,8 @@
+println(FILE);
+println(LINE);
+
+fn test()
+{
+    println(FILE);
+    println(LINE);
+}

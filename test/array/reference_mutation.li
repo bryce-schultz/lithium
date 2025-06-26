@@ -1,0 +1,37 @@
+import <io>
+
+fn modifyArray(arr)
+{
+    arr[0] = 100;
+    arr[1] = 200;
+    arr[2] = 300;
+}
+
+fn pushToArray(arr, value1, value2)
+{
+    arr.push(value1, value2);
+}
+
+let numbers = [1, 2, 3];
+println("Before modification:");
+println(numbers);
+
+modifyArray(numbers);
+println("After modification:");
+println(numbers);
+
+let fruits = ["apple", "banana"];
+println("Before push:");
+println(fruits);
+
+pushToArray(fruits, "cherry", "date");
+println("After push:");
+println(fruits);
+
+let colors = ["red", "green"];
+println("Before push:");
+println(colors);
+
+pushToArray(colors, "blue", "yellow");
+println("After push:");
+println(colors);

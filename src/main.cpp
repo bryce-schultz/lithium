@@ -25,6 +25,7 @@ using std::string;
 using std::shared_ptr;
 using std::make_shared;
 using std::exception;
+using std::vector;
 
 int runInteractiveMode(const vector<string> &args);
 int runFileMode(const vector<string> &args);
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
     // if no file is specified, or args[0] is not a file, run interactive mode
     if (argc == 1 || !Utils::fileExists(args[0]))
     {
-        cout << "lithium v0.1. type 'exit' to quit." << endl;
+        cout << "lithium v" << INTERPRETER_VERSION << " type 'exit' to quit." << endl;
         return runInteractiveMode(args);
     }
 
@@ -54,8 +55,7 @@ int runInteractiveMode(const vector<string> &args)
 {
     Parser parser;
     shared_ptr<Environment> env = make_shared<Environment>();
-    env->declare("FILE", make_shared<StringValue>("cin"), true);
-    // Optionally, you can use args in the interactive environment if needed
+    Interpreter interpreter(true, env, args); // Create interpreter once, reuse it
 
     string line;
     while ((line = Utils::getInputLine()) != "exit")
@@ -73,8 +73,7 @@ int runInteractiveMode(const vector<string> &args)
             continue;
         }
 
-        Interpreter interpreter(true, env, args); // Pass args to interpreter
-        interpreter.visitAllChildren(result.value.get());
+        interpreter.visitAllChildren(result.value.get()); // Reuse the same interpreter
         line.clear();
         clearErrorLocations();
     }
@@ -112,7 +111,6 @@ int runFileMode(const vector<string> &args)
     }
 
     shared_ptr<Environment> env = make_shared<Environment>();
-    env->declare("FILE", make_shared<StringValue>(filename), true);
 
     Interpreter interpreter(false, env, args);
     interpreter.visitAllChildren(result.value.get());

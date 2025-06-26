@@ -12,6 +12,10 @@
 #include "Location.h"
 
 using std::stringstream;
+using std::shared_ptr;
+using std::string;
+using std::to_string;
+using std::pair;
 
 Location::Location():
     pos(0),
@@ -142,14 +146,14 @@ bool Location::operator>=(const Location& other) const
 
 string Location::toString() const
 {
-    std::string result;
+    string result;
     if (filename)
     {
         result += *filename + ":";
     }
 
     auto lineColumn = calculateLineAndColumn();
-    result += std::to_string(lineColumn.first) + ":" + std::to_string(lineColumn.second);
+    result += to_string(lineColumn.first) + ":" + to_string(lineColumn.second);
 
     return result;
 }

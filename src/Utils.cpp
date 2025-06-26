@@ -33,6 +33,8 @@ using std::getline;
 using std::max;
 using std::runtime_error;
 using std::vector;
+using std::invalid_argument;
+using std::make_shared;
 
 namespace fs = std::filesystem;
 
@@ -77,7 +79,7 @@ string Utils::getInputLine()
         for (char c : part)
         {
             if (c == '{') indent++;
-            if (c == '}') indent = std::max(0, indent - 1);
+            if (c == '}') indent = max(0, indent - 1);
         }
 
         line += part + "\n";
@@ -218,7 +220,7 @@ mode_t Utils::parseOpenMode(const string &mode)
     else if (mode == "a+")
         return O_RDWR | O_CREAT | O_APPEND;
 
-    throw std::invalid_argument("Invalid file open mode: " + mode);
+    throw invalid_argument("Invalid file open mode: " + mode);
 }
 
 void Utils::printArgs(int argc, char **argv)

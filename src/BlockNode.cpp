@@ -27,7 +27,7 @@ void BlockNode::addStatement(shared_ptr<StatementNode> statement)
 {
     if (!statements)
     {
-        statements = std::make_shared<StatementsNode>();
+        statements = make_shared<StatementsNode>();
     }
     statements->addStatement(statement);
     setRange(statements->getRange());

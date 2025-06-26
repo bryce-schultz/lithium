@@ -40,12 +40,13 @@ public:
 
     const map<string, shared_ptr<Value>>& getMembers() const; // returns all variables and constants in this environment
 
+    void clear(); // clear all variables and break cycles
     void dump() const; // for debugging purposes, prints all variables and constants
 
     bool hasVariable(const string &name) const;
     bool hasConstant(const string &name) const;
 private:
-    shared_ptr<Environment> parent; // changed from shared_ptr to weak_ptr
+    shared_ptr<Environment> parent; // keep as shared_ptr for proper scoping
     map<string, shared_ptr<Value>> variables; // runtime variables
     set<string> constants; // constants
 };

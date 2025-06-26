@@ -1,0 +1,23 @@
+class Pair
+{
+    let x = 0;
+    let y = 0;
+
+    fn Pair(x_, y_)
+    {
+        x = x_;
+        y = y_;
+    }
+
+    fn assignToOther(other)
+    {
+        other.x = x;
+        other.y = y;
+    }
+}
+
+let p1 = Pair(1, 2);
+let p2 = Pair(0, 0);
+p1.assignToOther(p2);
+println(p1);
+println(p2);

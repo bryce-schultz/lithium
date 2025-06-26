@@ -25,6 +25,8 @@ using std::exception;
 using std::dynamic_pointer_cast;
 using std::make_shared;
 using std::fmod;
+using std::vector;
+using std::to_string;
 
 #define MAX_PEEK 25
 
@@ -54,7 +56,7 @@ using std::fmod;
     errorAtToken("could not find module '" + token.getValue() + "'", token, range); \
     return false
 
-Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const std::vector<string> &args):
+Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const vector<string> &args):
     isInteractive(isInteractive),
     returnValue(nullptr),
     moduleParser(),
@@ -70,10 +72,18 @@ Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const 
         this->env = env; // Use the provided environment
     }
 
-    this->env->declare("LINE", make_shared<NumberValue>(1), true);
-
     // runtime values defined in all environments
     setupEnvironment();
+}
+
+Interpreter::~Interpreter()
+{
+    // Break circular references by clearing environment
+    if (env) {
+        env->clear();
+    }
+    env.reset();
+    returnValue.reset();
 }
 
 void Interpreter::setupEnvironment()
@@ -187,7 +197,11 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
 
     try
     {
-        auto moduleNode = moduleParser.parse(moduleContent, modulePath);
+        // Normalize the module path by removing ./ prefix
+        string normalizedModulePath = modulePath;
+        Utils::removePrefix(normalizedModulePath, "./");
+        
+        auto moduleNode = moduleParser.parse(moduleContent, normalizedModulePath);
         if (!moduleNode.status)
         {
             failedToLoadModule(moduleName, range);
@@ -242,7 +256,7 @@ void Interpreter::visit(StatementsNode *node)
     // First pass: hoist all function declarations
     for (auto &statement : node->getStatements())
     {
-        if (auto funcDecl = std::dynamic_pointer_cast<FuncDeclNode>(statement))
+        if (auto funcDecl = dynamic_pointer_cast<FuncDeclNode>(statement))
         {
             shared_ptr<Value> value = env->lookupLocal(funcDecl->getName());
             // Only declare if not already declared (to avoid redeclaration error)
@@ -267,7 +281,6 @@ void Interpreter::visit(StatementsNode *node)
     {
         if (!statement) continue;
         returnValue = nullptr;
-        env->redeclare("LINE", make_shared<NumberValue>(statement->getRange().getStart().getLine()), true);
         statement->visit(this);
         if (returnValue && isInteractive)
         {
@@ -546,14 +559,14 @@ void Interpreter::visit(CallNode *node)
         if (function->getParameters() && (size_t)function->getParameters()->getParamCount() != args.size())
         {
             error("function '" + function->getName() + "' expects " +
-                std::to_string(function->getParameters()->getParamCount()) +
-                " arguments, but got " + std::to_string(args.size()), node->getRange());
+                to_string(function->getParameters()->getParamCount()) +
+                " arguments, but got " + to_string(args.size()), node->getRange());
             returnValue = nullptr;
             return;
         }
         else if (!function->getParameters() && !args.empty())
         {
-            error("function '" + function->getName() + "' does not take any arguments, but got " + std::to_string(args.size()), node->getRange());
+            errorAt("function '" + function->getName() + "' does not take any arguments, but got " + to_string(args.size()), args[0]->getRange().getStart(), node->getRange());
             returnValue = nullptr;
             return;
         }
@@ -639,14 +652,14 @@ void Interpreter::visit(CallNode *node)
             if (constructor->getParameters() && (size_t)constructor->getParameters()->getParamCount() != args.size())
             {
                 error("function '" + constructor->getName() + "' expects " +
-                    std::to_string(constructor->getParameters()->getParamCount()) +
-                    " arguments, but got " + std::to_string(args.size()), node->getRange());
+                    to_string(constructor->getParameters()->getParamCount()) +
+                    " arguments, but got " + to_string(args.size()), node->getRange());
                 returnValue = nullptr;
                 return;
             }
             else if (!constructor->getParameters() && !args.empty())
             {
-                error("function '" + constructor->getName() + "' does not take any arguments, but got " + std::to_string(args.size()), node->getRange());
+                error("function '" + constructor->getName() + "' does not take any arguments, but got " + to_string(args.size()), node->getRange());
                 returnValue = nullptr;
                 return;
             }
@@ -733,12 +746,30 @@ void Interpreter::visit(VarDeclNode *node)
 
 void Interpreter::visit(VarExprNode *node)
 {
+    // Intercept special variables
+    if (node->getName() == "FILE")
+    {
+        returnValue = make_shared<StringValue>(node->getRange().getStart().getFilename());
+        returnValue->setRange(node->getRange());
+        return;
+    }
+    
+    if (node->getName() == "LINE")
+    {
+        returnValue = make_shared<NumberValue>(node->getRange().getStart().getLine());
+        returnValue->setRange(node->getRange());
+        return;
+    }
+    
     returnValue = env->lookup(node->getName());
     if (!returnValue)
     {
         notDefined(node);
         returnValue = nullptr;
+        return;
     }
+
+    returnValue->setRange(node->getRange());
 }
 
 void Interpreter::visit(AssignNode *node)
@@ -855,7 +886,7 @@ void Interpreter::visit(AssignNode *node)
 
         if (index < 0 || index >= arrayValue->getElementCount())
         {
-            error("array index out of bounds: " + std::to_string(index), access->getIndex()->getRange());
+            error("array index out of bounds: " + to_string(index), access->getIndex()->getRange());
             returnValue = nullptr;
             return;
         }
@@ -1292,7 +1323,7 @@ void Interpreter::visit(ArrayAccessNode *node)
 
         if (index < 0 || index >= arrayValue->getElementCount())
         {
-            error("array index out of bounds: " + std::to_string(index), node->getIndex()->getRange());
+            error("array index out of bounds: " + to_string(index), node->getIndex()->getRange());
             returnValue = nullptr;
             return;
         }
@@ -1330,7 +1361,7 @@ void Interpreter::visit(ArrayAccessNode *node)
 
         if (index < 0 || index >= static_cast<int>(stringValue->length()))
         {
-            error("string index out of bounds: " + std::to_string(index), node->getIndex()->getRange());
+            error("string index out of bounds: " + to_string(index), node->getIndex()->getRange());
             returnValue = nullptr;
             return;
         }

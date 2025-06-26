@@ -2,6 +2,7 @@
 
 #include "Environment.h"
 #include "Value.h"
+#include "FunctionValue.h"
 #include "Error.h"
 
 using std::cout;
@@ -121,7 +122,7 @@ shared_ptr<Environment> Environment::resolve(const string &name) const
     return parent->resolve(name);
 }
 
-std::shared_ptr<Environment> Environment::getParent() const
+shared_ptr<Environment> Environment::getParent() const
 {
     return parent;
 }
@@ -129,6 +130,24 @@ std::shared_ptr<Environment> Environment::getParent() const
 const map<string, shared_ptr<Value>> &Environment::getMembers() const
 {
     return variables;
+}
+
+void Environment::clear()
+{
+    // First, clear closure environments in functions to break cycles
+    for (auto& pair : variables) {
+        if (pair.second && pair.second->getType() == Value::Type::function) {
+            auto func = dynamic_pointer_cast<FunctionValue>(pair.second);
+            if (func) {
+                func->clearClosureEnv();
+            }
+        }
+    }
+    
+    // Clear all variables to break potential cycles
+    variables.clear();
+    constants.clear();
+    // Don't clear parent - let it be cleaned up naturally
 }
 
 void Environment::dump() const

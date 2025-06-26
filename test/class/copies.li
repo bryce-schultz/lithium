@@ -1,0 +1,25 @@
+class Test {
+    let a = 0;
+    let b = 0;
+    let c = 0;
+
+    fn Test(a_, b_, c_)
+    {
+        a = a_;
+        b = b_;
+        c = c_;
+    }
+}
+
+let t1 = Test([1, 2, 3], 4, "hello");
+
+println(t1);
+
+let t2 = t1;
+
+println(t2);
+
+t1.a = 10;
+
+println(t1);
+println(t2);

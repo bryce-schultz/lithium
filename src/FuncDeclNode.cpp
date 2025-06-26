@@ -12,9 +12,11 @@
 
 #include "FuncDeclNode.h"
 
+using std::shared_ptr;
+
 FuncDeclNode::FuncDeclNode(const Token &token,
-    std::shared_ptr<ParamListNode> params,
-    std::shared_ptr<StatementNode> body):
+    shared_ptr<ParamListNode> params,
+    shared_ptr<StatementNode> body):
     token(token),
     params(params),
     body(body)
@@ -42,22 +44,22 @@ const string &FuncDeclNode::getName() const
     return token.getValue();
 }
 
-std::shared_ptr<ParamListNode> FuncDeclNode::getParams() const
+shared_ptr<ParamListNode> FuncDeclNode::getParams() const
 {
     return params;
 }
 
-std::shared_ptr<StatementNode> FuncDeclNode::getBody() const
+shared_ptr<StatementNode> FuncDeclNode::getBody() const
 {
     return body;
 }
 
-void FuncDeclNode::setParams(std::shared_ptr<ParamListNode> p)
+void FuncDeclNode::setParams(shared_ptr<ParamListNode> p)
 {
     params = p;
 }
 
-void FuncDeclNode::setBody(std::shared_ptr<StatementNode> b)
+void FuncDeclNode::setBody(shared_ptr<StatementNode> b)
 {
     body = b;
 }

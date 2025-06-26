@@ -13,7 +13,7 @@
 
 #include "ParamListNode.h"
 
-ParamListNode::ParamListNode(std::shared_ptr<VarDeclNode> param)
+ParamListNode::ParamListNode(shared_ptr<VarDeclNode> param)
 {
     if (param)
     {

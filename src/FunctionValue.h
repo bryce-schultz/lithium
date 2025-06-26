@@ -19,7 +19,7 @@ typedef function<shared_ptr<Value>(const vector<shared_ptr<Value>> &args, shared
 class FunctionValue : public Value
 {
 public:
-    FunctionValue(const std::string &name,
+    FunctionValue(const string &name,
         shared_ptr<ParamListNode> params,
         shared_ptr<StatementNode> body,
         shared_ptr<Environment> closureEnv,
@@ -30,6 +30,7 @@ public:
     shared_ptr<StatementNode> getBody() const;
     shared_ptr<Environment> getEnvironment() const;
 
+    void clearClosureEnv(); // clear closure environment to break cycles
     string toString() const override;
 public:
     virtual shared_ptr<Value> eq(const shared_ptr<FunctionValue> &other) const;

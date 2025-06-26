@@ -1,5 +1,10 @@
 #include "Color.h"
 
+using std::string;
+using std::to_string;
+using std::stoi;
+using std::ostream;
+
 const Color red = Color::fromCode("31");
 const Color green = Color::fromCode("32");
 const Color blue = Color::fromCode("34");
@@ -41,17 +46,17 @@ Color::Color():
 { }
 
 Color::Color(int r, int g, int b):
-    code("\033[38;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" + std::to_string(b) + "m")
+    code("\033[38;2;" + to_string(r) + ";" + to_string(g) + ";" + to_string(b) + "m")
 { }
 
-Color::Color(const std::string& hex)
+Color::Color(const string& hex)
 {
     if (hex.size() == 7 && hex[0] == '#')
     {
-        int r = std::stoi(hex.substr(1, 2), nullptr, 16);
-        int g = std::stoi(hex.substr(3, 2), nullptr, 16);
-        int b = std::stoi(hex.substr(5, 2), nullptr, 16);
-        code = "\033[38;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" + std::to_string(b) + "m";
+        int r = stoi(hex.substr(1, 2), nullptr, 16);
+        int g = stoi(hex.substr(3, 2), nullptr, 16);
+        int b = stoi(hex.substr(5, 2), nullptr, 16);
+        code = "\033[38;2;" + to_string(r) + ";" + to_string(g) + ";" + to_string(b) + "m";
     }
     else
     {
@@ -59,14 +64,14 @@ Color::Color(const std::string& hex)
     }
 }
 
-Color Color::fromCode(const std::string& colorCode)
+Color Color::fromCode(const string& colorCode)
 {
     Color color(0, 0, 0); // Default color
     color.code = "\033[" + colorCode + "m";
     return color;
 }
 
-std::ostream& operator<<(std::ostream& os, const Color& color)
+ostream& operator<<(ostream& os, const Color& color)
 {
     if (!Color::enabled)
     {
