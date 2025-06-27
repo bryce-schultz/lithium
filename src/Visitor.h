@@ -12,6 +12,7 @@
 class ArgListNode;
 class ArrayAccessNode;
 class ArrayNode;
+class AssertNode;
 class AssignNode;
 class BinaryExprNode;
 class BlockNode;
@@ -51,6 +52,7 @@ public:
     virtual void visit(ArgListNode *node);
     virtual void visit(ArrayAccessNode *node);
     virtual void visit(ArrayNode *node);
+    virtual void visit(AssertNode *node);
     virtual void visit(AssignNode *node);
     virtual void visit(BinaryExprNode *node);
     virtual void visit(BlockNode *node);

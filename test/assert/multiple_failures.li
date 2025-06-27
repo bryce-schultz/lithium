@@ -1,0 +1,4 @@
+# Test multiple failed assertions
+assert 1 > 2;
+assert "hello" == "goodbye";
+assert false, "This will definitely fail";

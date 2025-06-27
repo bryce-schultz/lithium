@@ -55,32 +55,33 @@ Parser::Parser():
     currentToken()
 { }
 
-set<int> Parser::classDeclFirsts = { Token::CLASS };
-set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '-', '+', '!' };
-set<int> Parser::forStmtFirsts = { Token::FOR };
-set<int> Parser::forEachStmtFirsts = { Token::FOREACH };
-set<int> Parser::whileStmtFirsts = { Token::WHILE };
-set<int> Parser::ifStmtFirsts = { Token::IF };
-set<int> Parser::blockFirsts = { '{' };
-set<int> Parser::funcDeclFirsts = { Token::FN };
-set<int> Parser::returnStmtFirsts = { Token::RETURN };
-set<int> Parser::breakStmtFirsts = { Token::BREAK };
-set<int> Parser::continueStmtFirsts = { Token::CONTINUE };
-set<int> Parser::letStmtFirsts = { Token::LET };
-set<int> Parser::constStmtFirsts = { Token::CONST };
-set<int> Parser::exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', '-', '+', '!' };
-set<int> Parser::assignFirsts = { Token::NUMBER, Token::IDENT, Token::STRING,Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '+', '!' };
-set<int> Parser::orFirsts = { Token::OR };
-set<int> Parser::andFirsts = { Token::AND };
-set<int> Parser::equalityFirsts = { Token::EQ, Token::NE };
-set<int> Parser::relationFirsts = { '>', '<', Token::LE, Token::GE };
 set<int> Parser::additFirsts = { '+', '-' };
-set<int> Parser::multFirsts = { '*', '/', '%' };
-set<int> Parser::unaryFirsts = { '+', '-', '!', '~' };
+set<int> Parser::andFirsts = { Token::AND };
 set<int> Parser::argListFirsts = exprFirsts;
-set<int> Parser::postPFirsts = { '(', '[', '.', Token::INC, Token::DEC };
+set<int> Parser::assertFirsts = { Token::ASSERT };
+set<int> Parser::assignFirsts = { Token::NUMBER, Token::IDENT, Token::STRING,Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '+', '!' };
+set<int> Parser::blockFirsts = { '{' };
+set<int> Parser::breakStmtFirsts = { Token::BREAK };
+set<int> Parser::classDeclFirsts = { Token::CLASS };
+set<int> Parser::constStmtFirsts = { Token::CONST };
+set<int> Parser::continueStmtFirsts = { Token::CONTINUE };
+set<int> Parser::equalityFirsts = { Token::EQ, Token::NE };
+set<int> Parser::exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', '-', '+', '!' };
+set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '-', '+', '!' };
+set<int> Parser::forEachStmtFirsts = { Token::FOREACH };
+set<int> Parser::forStmtFirsts = { Token::FOR };
+set<int> Parser::funcDeclFirsts = { Token::FN };
+set<int> Parser::ifStmtFirsts = { Token::IF };
 set<int> Parser::importFirsts = { Token::IMPORT };
+set<int> Parser::letStmtFirsts = { Token::LET };
+set<int> Parser::multFirsts = { '*', '/', '%' };
+set<int> Parser::orFirsts = { Token::OR };
 set<int> Parser::postFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, '(', '[', '-', '+', '!' };
+set<int> Parser::postPFirsts = { '(', '[', '.', Token::INC, Token::DEC };
+set<int> Parser::relationFirsts = { '>', '<', Token::LE, Token::GE };
+set<int> Parser::returnStmtFirsts = { Token::RETURN };
+set<int> Parser::unaryFirsts = { '+', '-', '!', '~' };
+set<int> Parser::whileStmtFirsts = { Token::WHILE };
 
 Token Parser::peekToken() const
 {
@@ -152,6 +153,10 @@ Result<StatementNode> Parser::parseStmt()
     {
         accept(nullptr); // No more statements to parse
     }
+    else if (isInFirstSet(token, assertFirsts))
+    {
+        acceptNode(parseAssert());
+    }
     else if (isInFirstSet(token, exprStmtFirsts))
     {
         acceptNode(parseExprStmt());
@@ -206,6 +211,39 @@ Result<StatementNode> Parser::parseStmt()
     }
 
     error("unexpected token");
+}
+
+// assertStmt -> ASSERT expr ;
+//             | ASSERT expr , expr ;
+Result<AssertNode> Parser::parseAssert()
+{
+    Token assertToken = expectToken(Token::ASSERT);
+
+    auto exprResult = parseAssign();
+    if (!exprResult.status)
+    {
+        reject();
+    }
+
+    shared_ptr<ExpressionNode> message = nullptr;
+    Token token = peekToken();
+    if (token == ',')
+    {
+        advanceToken(); // consume ','
+        auto messageResult = parseExpr();
+        if (!messageResult.status)
+        {
+            reject();
+        }
+        message = messageResult.value;
+    }
+
+    Token semiColonToken = expectToken(';');
+
+    shared_ptr<AssertNode> assertNode = make_shared<AssertNode>(exprResult.value, message);
+    assertNode->setRangeStart(assertToken.getRange().getStart());
+
+    accept(assertNode);
 }
 
 // exprStmt -> expr ;                  - firsts: NUMBER, IDENT, STRING, (, [, -, +, !, LET, CONST, INC, DEC

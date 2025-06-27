@@ -282,19 +282,20 @@ Token Tokenizer::lex()
 
         //-----------------------------------------------------------
         // keywords
-        if (identifier == "let") return Token(Token::LET, Range(start, location), identifier);
+        if (identifier == "assert") return Token(Token::ASSERT, Range(start, location), identifier);
+        if (identifier == "break") return Token(Token::BREAK, Range(start, location), identifier);
+        if (identifier == "class") return Token(Token::CLASS, Range(start, location), identifier);
         if (identifier == "const") return Token(Token::CONST, Range(start, location), identifier);
-        if (identifier == "if") return Token(Token::IF, Range(start, location), identifier);
+        if (identifier == "continue") return Token(Token::CONTINUE, Range(start, location), identifier);
         if (identifier == "else") return Token(Token::ELSE, Range(start, location), identifier);
+        if (identifier == "fn") return Token(Token::FN, Range(start, location), identifier);
         if (identifier == "for") return Token(Token::FOR, Range(start, location), identifier);
         if (identifier == "foreach") return Token(Token::FOREACH, Range(start, location), identifier);
-        if (identifier == "while") return Token(Token::WHILE, Range(start, location), identifier);
-        if (identifier == "fn") return Token(Token::FN, Range(start, location), identifier);
-        if (identifier == "return") return Token(Token::RETURN, Range(start, location), identifier);
-        if (identifier == "break") return Token(Token::BREAK, Range(start, location), identifier);
-        if (identifier == "continue") return Token(Token::CONTINUE, Range(start, location), identifier);
-        if (identifier == "class") return Token(Token::CLASS, Range(start, location), identifier);
+        if (identifier == "if") return Token(Token::IF, Range(start, location), identifier);
         if (identifier == "import") return Token(Token::IMPORT, Range(start, location), identifier);
+        if (identifier == "let") return Token(Token::LET, Range(start, location), identifier);
+        if (identifier == "return") return Token(Token::RETURN, Range(start, location), identifier);
+        if (identifier == "while") return Token(Token::WHILE, Range(start, location), identifier);
 
         //-----------------------------------------------------------
         // identifiers

@@ -39,7 +39,8 @@ private:
     //        | ε
     Result<StatementsNode> parseStmts();
 
-    // stmt -> exprStmt     - firsts: NUMBER, IDENT, STRING, (, [, PRINT, LET, CONST
+    // stmt -> assertStmt   - firsts: ASSERT
+    //       | exprStmt     - firsts: NUMBER, IDENT, STRING, (, [, PRINT, LET, CONST
     //       | forStmt      - firsts: FOR
     //       | whileStmt    - firsts: WHILE
     //       | ifStmt       - firsts: IF
@@ -51,6 +52,10 @@ private:
     //       | continueStmt - firsts: CONTINUE
     //       | importStmt   - firsts: IMPORT
     Result<StatementNode> parseStmt();
+
+    // assertStmt -> ASSERT expr ;
+    //             | ASSERT expr , expr ;
+    Result<AssertNode> parseAssert();
 
     // exprStmt -> expr ;
     //           | letStmt
@@ -229,33 +234,34 @@ private:
 
     //******************************************************************************************
 private:
-    static set<int> exprStmtFirsts;
-    static set<int> forStmtFirsts;
-    static set<int> forEachStmtFirsts;
-    static set<int> whileStmtFirsts;
-    static set<int> ifStmtFirsts;
-    static set<int> blockFirsts;
-    static set<int> funcDeclFirsts;
-    static set<int> returnStmtFirsts;
-    static set<int> breakStmtFirsts;
-    static set<int> continueStmtFirsts;
-    static set<int> letStmtFirsts;
-    static set<int> constStmtFirsts;
-    static set<int> printStmtFirsts;
-    static set<int> exprFirsts;
-    static set<int> assignFirsts;
-    static set<int> orFirsts;
-    static set<int> andFirsts;
-    static set<int> equalityFirsts;
-    static set<int> relationFirsts;
     static set<int> additFirsts;
-    static set<int> multFirsts;
-    static set<int> unaryFirsts;
+    static set<int> andFirsts;
     static set<int> argListFirsts;
+    static set<int> assertFirsts;
+    static set<int> assignFirsts;
+    static set<int> blockFirsts;
+    static set<int> breakStmtFirsts;
+    static set<int> classDeclFirsts;
+    static set<int> constStmtFirsts;
+    static set<int> continueStmtFirsts;
+    static set<int> equalityFirsts;
+    static set<int> exprFirsts;
+    static set<int> exprStmtFirsts;
+    static set<int> forEachStmtFirsts;
+    static set<int> forStmtFirsts;
+    static set<int> funcDeclFirsts;
+    static set<int> ifStmtFirsts;
+    static set<int> importFirsts;
+    static set<int> letStmtFirsts;
+    static set<int> multFirsts;
+    static set<int> orFirsts;
     static set<int> postFirsts;
     static set<int> postPFirsts;
-    static set<int> importFirsts;
-    static set<int> classDeclFirsts;
+    static set<int> printStmtFirsts;
+    static set<int> relationFirsts;
+    static set<int> returnStmtFirsts;
+    static set<int> unaryFirsts;
+    static set<int> whileStmtFirsts;
 private:
     Tokenizer tokenizer;
     Token currentToken;

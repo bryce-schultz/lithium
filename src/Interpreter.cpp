@@ -1285,6 +1285,43 @@ void Interpreter::visit(ArrayNode *node)
     returnValue = make_shared<ArrayValue>(elements, node->getRange());
 }
 
+void Interpreter::visit(AssertNode *node)
+{
+    node->getCondition()->visit(this);
+    if (!returnValue)
+    {
+        error("assertion condition evaluated to null", node->getCondition()->getRange());
+        return;
+    }
+
+    auto condition = returnValue;
+
+    if (condition->getType() != Value::Type::boolean &&
+        condition->getType() != Value::Type::number &&
+        condition->getType() != Value::Type::string)
+    {
+        error("assertion condition must be a boolean expression", node->getCondition()->getRange());
+        return;
+    }
+
+    auto message = node->getMessage();
+    string messageStr = "";
+    if (message)
+    {
+        message->visit(this);
+        if (returnValue)
+        {
+            messageStr = returnValue->toString();
+        }
+    }
+
+    bool conditionValue = condition->toBoolean();
+    if (!conditionValue)
+    {
+        error("assertion failed: " + messageStr, node->getRange());
+    }
+}
+
 void Interpreter::visit(ArrayAccessNode *node)
 {
     node->getArray()->visit(this);

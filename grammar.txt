@@ -19,6 +19,7 @@ stmt -> block
       | classDecl
       | returnStmt
       | breakStmt
+      | assertStmt
       | exprStmt
       | importStmt
 
@@ -53,6 +54,9 @@ returnStmt -> RETURN expr ;
             | RETURN ;
 
 breakStmt -> BREAK ;
+
+assertStmt -> ASSERT expr ;
+            | ASSERT expr , expr ;
 
 exprStmt -> expr ;
           | varDecl

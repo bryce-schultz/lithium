@@ -45,6 +45,18 @@ void Visitor::visit(ArrayNode *node)
     }
 }
 
+void Visitor::visit(AssertNode *node)
+{
+    if (node->getCondition())
+    {
+        node->getCondition()->visit(this);
+    }
+    if (node->getMessage())
+    {
+        node->getMessage()->visit(this);
+    }
+}
+
 void Visitor::visit(AssignNode *node)
 {
     if (node->getAsignee())

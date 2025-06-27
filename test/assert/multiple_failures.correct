@@ -1,0 +1,4 @@
+error: multiple_failures.li:2:1: assertion failed:
+│ assert 1 > 2;
+│ ~~~~~~~~~~~~
+│ ^

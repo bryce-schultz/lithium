@@ -29,30 +29,31 @@ public:
     virtual void visitAllChildren(Node *node) override;
 public:
     // Override visit methods for different node types
-    virtual void visit(StatementsNode *node) override;
-    virtual void visit(NumberNode *node) override;
-    virtual void visit(StringNode *node) override;
-    virtual void visit(BinaryExprNode *node) override;
-    virtual void visit(UnaryExprNode *node) override;
-    virtual void visit(CallNode *node) override;
-    virtual void visit(VarDeclNode *node) override;
-    virtual void visit(VarExprNode *node) override;
+    virtual void visit(ArrayAccessNode *node) override;
+    virtual void visit(ArrayNode *node) override;
+    virtual void visit(AssertNode *node) override;
     virtual void visit(AssignNode *node) override;
+    virtual void visit(BinaryExprNode *node) override;
     virtual void visit(BlockNode *node) override;
-    virtual void visit(IfStatementNode *node) override;
-    virtual void visit(FuncDeclNode *node) override;
-    virtual void visit(WhileNode *node) override;
-    virtual void visit(ReturnStatementNode *node) override;
+    virtual void visit(BreakNode *node) override;
+    virtual void visit(CallNode *node) override;
+    virtual void visit(ClassNode *node) override;
+    virtual void visit(ContinueNode *node) override;
     virtual void visit(ForEachNode *node) override;
     virtual void visit(ForStatementNode *node) override;
-    virtual void visit(NullNode *node) override;
-    virtual void visit(BreakNode *node) override;
+    virtual void visit(FuncDeclNode *node) override;
+    virtual void visit(IfStatementNode *node) override;
     virtual void visit(ImportNode *node) override;
-    virtual void visit(ArrayNode *node) override;
-    virtual void visit(ArrayAccessNode *node) override;
     virtual void visit(MemberAccessNode *node) override;
-    virtual void visit(ContinueNode *node) override;
-    virtual void visit(ClassNode *node) override;
+    virtual void visit(NullNode *node) override;
+    virtual void visit(NumberNode *node) override;
+    virtual void visit(ReturnStatementNode *node) override;
+    virtual void visit(StatementsNode *node) override;
+    virtual void visit(StringNode *node) override;
+    virtual void visit(UnaryExprNode *node) override;
+    virtual void visit(VarDeclNode *node) override;
+    virtual void visit(VarExprNode *node) override;
+    virtual void visit(WhileNode *node) override;
 private:
     shared_ptr<Value> evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right);
 

@@ -1,0 +1,4 @@
+error: syntax_error.li:2:12: unexpected end of file, expected ';'
+│ assert true
+│            ~
+│            ^

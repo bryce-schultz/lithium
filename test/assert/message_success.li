@@ -1,0 +1,7 @@
+# Test assertions with custom messages that should pass
+assert true, "This should pass";
+assert 1 + 1 == 2, "Basic math works";
+assert 10 > 5, "Ten is greater than five";
+assert "hello" != "world", "Different strings are not equal";
+
+println("All assertions with messages passed!");

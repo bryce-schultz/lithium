@@ -1,0 +1,5 @@
+# Test edge cases for assertions
+assert null == null;
+assert !(null);
+
+println("Edge case tests completed!");

@@ -1,0 +1,2 @@
+# Test assertion with custom message that should fail
+assert 1 == 2, "One should not equal two";

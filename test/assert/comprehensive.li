@@ -1,0 +1,14 @@
+# Comprehensive test demonstrating both assertion forms
+println("Testing assertions without messages:");
+assert true;
+assert 1 + 1 == 2;
+assert "hello" != "world";
+println("Basic assertions passed");
+
+println("Testing assertions with messages:");
+assert 5 > 3, "Five is greater than three";
+assert "test".length == 4, "Test string has correct length";
+assert !(false), "Negation of false should be true";
+println("Message assertions passed");
+
+println("All assertion tests completed successfully!");

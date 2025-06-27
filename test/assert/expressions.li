@@ -1,0 +1,8 @@
+# Test various expressions in assertions
+assert 0 == 0;
+assert 5 * 2 == 10;
+assert "hello" + " world" == "hello world";
+assert !(3 > 5);
+assert 2.5 > 2.0;
+
+println("Complex expression assertions passed!");

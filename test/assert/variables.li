@@ -1,0 +1,15 @@
+# Test assertions with variables
+let x = 10;
+let y = 20;
+const name = "lithium";
+
+assert x < y, "x should be less than y";
+assert name == "lithium", "Name should match";
+
+const isTrue = true;
+assert isTrue;
+
+let calculation = x + y;
+assert calculation == 30, "10 + 20 should equal 30";
+
+println("Variable assertion tests passed!");

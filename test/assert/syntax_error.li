@@ -1,0 +1,2 @@
+# Test malformed assert statement (missing semicolon)
+assert true

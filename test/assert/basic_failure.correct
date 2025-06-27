@@ -1,0 +1,4 @@
+error: basic_failure.li:2:1: assertion failed:
+│ assert false;
+│ ~~~~~~~~~~~~
+│ ^

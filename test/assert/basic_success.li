@@ -1,0 +1,10 @@
+# Test basic assertions that should pass
+assert true;
+assert 1;
+assert "hello";
+assert 42;
+assert 1 + 1 == 2;
+assert 5 > 3;
+assert "test" == "test";
+
+println("All basic assertions passed!");
