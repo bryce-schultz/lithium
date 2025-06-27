@@ -26,6 +26,9 @@ class Interpreter : public Visitor
 public:
     Interpreter(bool isInteractive, shared_ptr<Environment> env = nullptr, const vector<string> &args = {});
     ~Interpreter(); // Add destructor for cleanup
+
+    bool interpret(Node *node);
+
     virtual void visitAllChildren(Node *node) override;
 public:
     // Override visit methods for different node types
@@ -68,6 +71,7 @@ private:
     void imported(const string &module);
 private:
     bool isInteractive;
+    bool hadError;
     shared_ptr<Environment> env;
     shared_ptr<Value> returnValue;
     Parser moduleParser;

@@ -1,0 +1,128 @@
+# Test nested closures with multiple levels and memory leak scenarios
+fn createNestedClosures() {
+    let outerVar = "outer";
+    let sharedCounter = 0;
+    
+    fn levelOne() {
+        let level1Var = "level1";
+        sharedCounter = sharedCounter + 1;
+        
+        fn levelTwo() {
+            let level2Var = "level2";
+            sharedCounter = sharedCounter + 10;
+            
+            fn levelThree() {
+                let level3Var = "level3";
+                sharedCounter = sharedCounter + 100;
+                return outerVar + "-" + level1Var + "-" + level2Var + "-" + level3Var + ":" + sharedCounter;
+            }
+            
+            return levelThree;
+        }
+        
+        return levelTwo;
+    }
+    
+    return levelOne;
+}
+
+# Test 1: Basic nested closure execution
+let nested = createNestedClosures();
+let level2 = nested();
+let level3 = level2();
+println(level3());
+
+# Test 2: Multiple instances should have separate state
+let nested2 = createNestedClosures();
+let level2_2 = nested2();
+let level3_2 = level2_2();
+println(level3_2());
+
+# Test 3: Complex closure with arrays and shared state
+fn createArrayClosure() {
+    let arr = [1, 2, 3];
+    let multiplier = 1;
+    
+    fn getAdder() {
+        fn addToArray(value) {
+            arr[0] = arr[0] + value * multiplier;
+            multiplier = multiplier + 1;
+            return arr[0];
+        }
+        return addToArray;
+    }
+    
+    fn getMultiplier() {
+        fn multiplyArray(value) {
+            arr[1] = arr[1] * value * multiplier;
+            multiplier = multiplier + 1;
+            return arr[1];
+        }
+        return multiplyArray;
+    }
+    
+    return [getAdder, getMultiplier, arr];
+}
+
+let arrayClosures = createArrayClosure();
+let adder = arrayClosures[0]();
+let multiplier = arrayClosures[1]();
+let sharedArray = arrayClosures[2];
+
+println(adder(5));
+println(multiplier(3));
+println(sharedArray[0]);
+println(sharedArray[1]);
+
+# Test 4: Recursive closure with nested functions
+fn createRecursiveNested() {
+    let depth = 0;
+    
+    fn createCounter() {
+        let localDepth = depth;
+        depth = depth + 1;
+        
+        fn countdown(n) {
+            if (n <= 0) {
+                return "depth-" + localDepth + "-done";
+            }
+            return "depth-" + localDepth + "-" + n + "," + countdown(n - 1);
+        }
+        
+        return countdown;
+    }
+    
+    return createCounter;
+}
+
+let recursiveFactory = createRecursiveNested();
+let counter1 = recursiveFactory();
+let counter2 = recursiveFactory();
+
+println(counter1(3));
+println(counter2(2));
+
+# Test 5: Closure with assertion inside nested function for memory leak test
+fn createAssertingNestedClosure() {
+    let baseValue = 42;
+    
+    fn outerAssert() {
+        let multipliedValue = baseValue * 2;
+        
+        fn innerAssert() {
+            assert multipliedValue == 84, "Multiplied value should be 84";
+            assert baseValue == 42, "Base value should be 42";
+            return multipliedValue + baseValue;
+        }
+        
+        return innerAssert;
+    }
+    
+    return outerAssert;
+}
+
+let assertClosure = createAssertingNestedClosure();
+let innerAssert = assertClosure();
+println(innerAssert());
+
+println("All nested closure tests completed!");

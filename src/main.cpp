@@ -73,9 +73,21 @@ int runInteractiveMode(const vector<string> &args)
             continue;
         }
 
-        interpreter.visitAllChildren(result.value.get()); // Reuse the same interpreter
+        try
+        {
+            interpreter.interpret(result.value.get()); // Reuse the same interpreter
+        }
+        catch (const exception &e)
+        {
+            // Exception caught during interpretation, ensure cleanup
+            // The shared_ptr in result.value will automatically clean up when result goes out of scope
+        }
+        
         line.clear();
         clearErrorLocations();
+        
+        // Explicitly reset the result to ensure immediate cleanup
+        result.value.reset();
     }
 
     return 0;
@@ -112,8 +124,19 @@ int runFileMode(const vector<string> &args)
 
     shared_ptr<Environment> env = make_shared<Environment>();
 
-    Interpreter interpreter(false, env, args);
-    interpreter.visitAllChildren(result.value.get());
+    {
+        Interpreter interpreter(false, env, args);
+        if (!interpreter.interpret(result.value.get()))
+        {
+            return 1;
+        }
+    } // interpreter destructor called here
+
+    // Clear the environment after interpreter is destroyed
+    if (env)
+    {
+        env->clear();
+    }
 
     return 0;
 }

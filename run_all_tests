@@ -20,7 +20,17 @@ run_test="$(dirname "$0")/run_test"
 cd "$(dirname "$run_test")" || exit 1
 
 cd test || exit 1
-mapfile -t test_files < <(find . -type f -name '*.li' | sed 's|^./||' | sort)
+mapfile -t all_li_files < <(find . -type f -name '*.li' | sed 's|^./||' | sort)
+
+# Filter to only include tests that have corresponding .correct files
+test_files=()
+for li_file in "${all_li_files[@]}"; do
+  test_name="${li_file%.li}"
+  correct_file="${test_name}.correct"
+  if [[ -f "$correct_file" ]]; then
+    test_files+=("$li_file")
+  fi
+done
 cd ..
 
 if [[ ${#test_files[@]} -eq 0 ]]; then

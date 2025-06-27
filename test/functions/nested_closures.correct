@@ -1,0 +1,10 @@
+outer-level1-level2-level3:111
+outer-level1-level2-level3:111
+6
+12
+6
+12
+depth-0-3,depth-0-2,depth-0-1,depth-0-done
+depth-1-2,depth-1-1,depth-1-done
+126
+All nested closure tests completed!

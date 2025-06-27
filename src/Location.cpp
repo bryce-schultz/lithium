@@ -60,7 +60,7 @@ string Location::getSourceLine() const
 
     for (size_t i = 0; i < input->length(); ++i)
     {
-        if ((*input)[i] == '\n')
+        if (input->at(i) == '\n')
         {
             if (currentLine == lineColumn.first)
             {
@@ -94,15 +94,15 @@ string Location::getFilename() const
 {
     if (filename)
     {
-        return *filename; // return the filename if it exists
+        return *filename;
     }
 
-    return ""; // return empty string if no filename is available
+    return "";
 }
 
 void Location::move(int offset)
 {
-    pos += offset; // if no input, just adjust position
+    pos += offset;
 }
 
 bool Location::operator==(const Location &other) const
@@ -119,14 +119,14 @@ bool Location::operator<(const Location& other) const
 {
     if (pos < other.pos)
     {
-        return true; // this location is before the other
+        return true;
     }
     if (pos > other.pos)
     {
-        return false; // this location is after the other
+        return false;
     }
 
-    return false; // equal positions
+    return false;
 }
 
 bool Location::operator<=(const Location& other) const

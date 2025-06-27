@@ -32,14 +32,17 @@ using std::to_string;
 
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__); \
+    hadError = true; \
     throw ErrorException(msg, range)
 
 #define errorAt(msg, location, range) \
     locationRangeError(msg, location, range, __FILE__, __LINE__); \
+    hadError = true; \
     throw ErrorException(msg, range)
 
 #define errorAtToken(msg, token, range) \
     tokenRangeError(msg, token, range, __FILE__, __LINE__); \
+    hadError = true; \
     throw ErrorException(msg, range)
 
 #define alreadyDefined(node) \
@@ -80,10 +83,32 @@ Interpreter::~Interpreter()
 {
     // Break circular references by clearing environment
     if (env) {
-        env->clear();
+        // Clear all environments in the chain to break cycles
+        auto current = env;
+        while (current) {
+            auto parent = current->getParent();
+            current->clear();
+            current = parent;
+        }
     }
     env.reset();
     returnValue.reset();
+}
+
+bool Interpreter::interpret(Node *node)
+{
+    if (!node)
+    {
+        return false; // Nothing to interpret
+    }
+
+    // Reset the return value for each interpretation
+    returnValue.reset();
+
+    // Visit the node to interpret it
+    visitAllChildren(node);
+
+    return !hadError;
 }
 
 void Interpreter::setupEnvironment()
@@ -587,6 +612,12 @@ void Interpreter::visit(CallNode *node)
         {
             returnValue = e.value;
         }
+        catch (...)
+        {
+            // Ensure environment is restored even on other exceptions (like ErrorException)
+            env = previousEnv;
+            throw; // Re-throw the exception
+        }
         env = previousEnv;
     }
     else if (callee->getType() == Value::Type::builtin)
@@ -681,6 +712,12 @@ void Interpreter::visit(CallNode *node)
                 {
                     error("constructor of class '" + classValue->getName() + "' returned a value, which is not allowed", node->getRange());
                 }
+            }
+            catch (...)
+            {
+                // Ensure environment is restored even on other exceptions (like ErrorException)
+                env = previousEnv;
+                throw; // Re-throw the exception
             }
             env = previousEnv;
         }
@@ -993,7 +1030,16 @@ void Interpreter::visit(BlockNode *node)
     }
 
     env = make_shared<Environment>(env); // push a new environment for the block
-    node->getStatements()->visit(this);
+    try
+    {
+        node->getStatements()->visit(this);
+    }
+    catch (...)
+    {
+        // Ensure environment is restored even on exceptions
+        env = env->getParent();
+        throw; // Re-throw the exception
+    }
     env = env->getParent(); // pop the environment after visiting the block
 
     returnValue = nullptr;

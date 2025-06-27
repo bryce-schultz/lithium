@@ -3,6 +3,7 @@
 #include "Environment.h"
 #include "Value.h"
 #include "FunctionValue.h"
+#include "ArrayValue.h"
 #include "Error.h"
 
 using std::cout;
@@ -134,12 +135,27 @@ const map<string, shared_ptr<Value>> &Environment::getMembers() const
 
 void Environment::clear()
 {
-    // First, clear closure environments in functions to break cycles
+    // First, clear closure environments in functions and arrays to break cycles
     for (auto& pair : variables) {
         if (pair.second && pair.second->getType() == Value::Type::function) {
             auto func = dynamic_pointer_cast<FunctionValue>(pair.second);
             if (func) {
                 func->clearClosureEnv();
+            }
+        }
+        else if (pair.second && pair.second->getType() == Value::Type::array) {
+            auto array = dynamic_pointer_cast<ArrayValue>(pair.second);
+            if (array) {
+                // Clear function closures in the array elements to break cycles
+                for (int i = 0; i < array->getElementCount(); ++i) {
+                    auto element = array->getElement(i);
+                    if (element && element->getType() == Value::Type::function) {
+                        auto func = dynamic_pointer_cast<FunctionValue>(element);
+                        if (func) {
+                            func->clearClosureEnv();
+                        }
+                    }
+                }
             }
         }
     }
