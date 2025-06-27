@@ -14,6 +14,7 @@ blue='\033[34m'
 bold_blue='\033[1;34m'
 yellow='\033[33m'
 bold_yellow='\033[1;33m'
+light_grey='\033[37m'
 nc='\033[0m'
 
 verbose=0
@@ -99,6 +100,10 @@ else
 fi
 echo -e "${blue}╰────────────────────────────────────────────╯${nc}"
 
+# Add column headers for the status indicators
+printf " %-40s F M\n" "Name"
+
+
 # Statistics
 total_tests=${#test_files[@]}
 passed_functional=0
@@ -118,21 +123,19 @@ mkdir -p memory_test_logs
 for test_file in "${test_files[@]}"; do
     test_name="${test_file%.li}"
     test_path="test/$test_file"
-    
-    printf " %-35s" "● $test_name"
-    
+
     # Run functional test first
     "$run_test" "$test_name" -s > /dev/null 2>&1
     functional_result=$?
-    
+
     if [[ $functional_result -eq 0 ]]; then
         passed_functional=$((passed_functional + 1))
         functional_status="${green}✓${nc}"
-        
+
         # Run memory test if not in fast mode
         if [[ $fast_mode -eq 0 ]]; then
             memory_log="memory_test_logs/${test_name//\//_}.log"
-            
+
             # Run valgrind
             valgrind --tool=memcheck \
                      --leak-check=full \
@@ -141,9 +144,9 @@ for test_file in "${test_files[@]}"; do
                      --log-file="$memory_log" \
                      --error-exitcode=1 \
                      src/li "$test_path" > /dev/null 2>&1
-            
+
             valgrind_exit=$?
-            
+
             # Check for memory leaks
             if grep -q "All heap blocks were freed -- no leaks are possible" "$memory_log" || \
                (grep -q "definitely lost: 0 bytes" "$memory_log" && \
@@ -153,27 +156,50 @@ for test_file in "${test_files[@]}"; do
                 memory_status="${green}✓${nc}"
                 # Clean up log file for passed tests
                 rm -f "$memory_log"
+                # Both tests passed - green bullet
+                bullet_color="${green}"
             else
                 failed_memory=$((failed_memory + 1))
                 memory_failures+=("$test_name")
                 memory_status="${red}✗${nc}"
+                # Memory test failed - red bullet
+                bullet_color="${red}"
             fi
-            
-            echo -e "  ${functional_status} ${memory_status}"
         else
             memory_skipped=$((memory_skipped + 1))
-            echo -e "  ${functional_status} ${yellow}~${nc}"
+            # Fast mode - only functional test matters for bullet color
+            bullet_color="${green}"
         fi
     else
         failed_functional=$((failed_functional + 1))
         functional_failures+=("$test_name")
         functional_status="${red}✗${nc}"
-        
+        # Functional test failed - red bullet
+        bullet_color="${red}"
+
         if [[ $fast_mode -eq 0 ]]; then
             memory_skipped=$((memory_skipped + 1))
-            echo -e "  ${functional_status} ${yellow}~${nc}"
+        fi
+    fi
+
+    # Calculate alignment and print the line with colored bullet
+    available_width=39  # Account for " ● " prefix (3 chars)
+    
+    # Print the full line with colored bullet and light grey test name
+    printf " ${bullet_color}●${nc} ${light_grey}%-*s${nc}" $available_width "$test_name"
+
+    # Print status indicators
+    if [[ $functional_result -eq 0 ]]; then
+        if [[ $fast_mode -eq 0 ]]; then
+            echo -e "${functional_status} ${memory_status}"
         else
-            echo -e "  ${functional_status} ${yellow}~${nc}"
+            echo -e "${functional_status} ${yellow}~${nc}"
+        fi
+    else
+        if [[ $fast_mode -eq 0 ]]; then
+            echo -e "${functional_status} ${yellow}~${nc}"
+        else
+            echo -e "${functional_status} ${yellow}~${nc}"
         fi
     fi
 done
@@ -191,7 +217,7 @@ if [[ $verbose -eq 1 ]]; then
             echo ""
         done
     fi
-    
+
     if [[ ${#memory_failures[@]} -gt 0 ]]; then
         echo -e "${red}Memory Leak Failures:${nc}"
         for failure in "${memory_failures[@]}"; do
@@ -220,7 +246,7 @@ if [[ $fast_mode -eq 1 ]]; then
         func_pad=$(( (total_width - func_len) / 2 ))
         func_pad_right=$(( total_width - func_len - func_pad ))
         printf "${blue}│${green}%*s%s%*s${nc}${blue}│${nc}\n" $func_pad "" "$functional_summary" $func_pad_right ""
-        
+
         memory_summary="Memory: skipped (fast mode)"
         mem_len=${#memory_summary}
         mem_pad=$(( (total_width - mem_len) / 2 ))
@@ -232,7 +258,7 @@ if [[ $fast_mode -eq 1 ]]; then
         func_pad=$(( (total_width - func_len) / 2 ))
         func_pad_right=$(( total_width - func_len - func_pad ))
         printf "${blue}│${red}%*s%s%*s${nc}${blue}│${nc}\n" $func_pad "" "$functional_summary" $func_pad_right ""
-        
+
         memory_summary="Memory: skipped (fast mode)"
         mem_len=${#memory_summary}
         mem_pad=$(( (total_width - mem_len) / 2 ))
@@ -253,7 +279,7 @@ else
         func_pad_right=$(( total_width - func_len - func_pad ))
         printf "${blue}│${red}%*s%s%*s${nc}${blue}│${nc}\n" $func_pad "" "$functional_summary" $func_pad_right ""
     fi
-    
+
     if [[ $failed_memory -eq 0 ]]; then
         memory_summary="Memory: $passed_memory/$((passed_functional)) clean"
         mem_len=${#memory_summary}
@@ -277,7 +303,6 @@ if [[ $fast_mode -eq 1 ]]; then
     echo -e "Legend: ${green}✓${nc} = passed, ${red}✗${nc} = failed, ${yellow}~${nc} = skipped"
 else
     echo -e "Legend: ${green}✓${nc} = passed, ${red}✗${nc} = failed, ${yellow}~${nc} = skipped"
-    echo -e "Format: [functional] [memory]"
 fi
 
 if [[ $verbose -eq 0 ]] && [[ ${#memory_failures[@]} -gt 0 || ${#functional_failures[@]} -gt 0 ]]; then
