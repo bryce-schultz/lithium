@@ -1,4 +1,4 @@
-error: message_failure.li:2:1: assertion failed: One should not equal two
+error: message_failure.li:2:8: assertion failed: One should not equal two
 │ assert 1 == 2, "One should not equal two";
 │ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-│ ^
+│        ^

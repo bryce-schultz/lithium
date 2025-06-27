@@ -14,37 +14,38 @@ string Token::tokenTypeToString(int type)
 {
     switch (type)
     {
-        case NONE:          return "none";
-        case END:           return "eof";
-        case IDENT:         return "identifier";
-        case NUMBER:        return "number";
-        case STRING:        return "string";
-        case LET:           return "keyword (let)";
-        case CONST:         return "keyword (const)";
-        case IF:            return "keyword (if)";
-        case ELSE:          return "keyword (else)";
-        case FOR:           return "keyword (for)";
-        case FOREACH:       return "keyword (foreach)";
-        case WHILE:         return "keyword (while)";
-        case FN:            return "keyword (fn)";
-        case RETURN:        return "keyword (return)";
+        case AND:           return "operator (&&)";
+        case ASSERT:        return "keyword (assert)";
         case BREAK:         return "keyword (break)";
         case CLASS:         return "keyword (class)";
-        case IMPORT:        return "keyword (import)";
-        case EQ:            return "operator (==)";
-        case NE:            return "operator (!=)";
-        case LE:            return "operator (<=)";
-        case GE:            return "operator (>=)";
-        case OR:            return "operator (||)";
-        case AND:           return "operator (&&)";
-        case INC:           return "operator (++)";
+        case CONST:         return "keyword (const)";
         case DEC:           return "operator (--)";
-        case PLUS_EQUAL:    return "operator (+=)";
-        case MINUS_EQUAL:   return "operator (-=)";
-        case MUL_EQUAL:     return "operator (*=)";
         case DIV_EQUAL:     return "operator (/=)";
-        case MOD_EQUAL:     return "operator (%=)";
+        case ELSE:          return "keyword (else)";
+        case END:           return "eof";
+        case EQ:            return "operator (==)";
+        case FN:            return "keyword (fn)";
+        case FOR:           return "keyword (for)";
+        case FOREACH:       return "keyword (foreach)";
+        case GE:            return "operator (>=)";
+        case IDENT:         return "identifier";
+        case IF:            return "keyword (if)";
+        case IMPORT:        return "keyword (import)";
+        case INC:           return "operator (++)";
         case JUNK:          return "junk";
+        case LE:            return "operator (<=)";
+        case LET:           return "keyword (let)";
+        case MINUS_EQUAL:   return "operator (-=)";
+        case MOD_EQUAL:     return "operator (%=)";
+        case MUL_EQUAL:     return "operator (*=)";
+        case NE:            return "operator (!=)";
+        case NONE:          return "none";
+        case NUMBER:        return "number";
+        case OR:            return "operator (||)";
+        case PLUS_EQUAL:    return "operator (+=)";
+        case RETURN:        return "keyword (return)";
+        case STRING:        return "string";
+        case WHILE:         return "keyword (while)";
         default:
         {
             if (0 < type && type < 256)

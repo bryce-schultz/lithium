@@ -1,3 +1,0 @@
-import <args>
-
-println(args[0]);

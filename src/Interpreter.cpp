@@ -1318,7 +1318,7 @@ void Interpreter::visit(AssertNode *node)
     bool conditionValue = condition->toBoolean();
     if (!conditionValue)
     {
-        error("assertion failed: " + messageStr, node->getRange());
+        errorAt("assertion failed: " + messageStr,node->getCondition()->getRange().getStart(), node->getRange());
     }
 }
 
