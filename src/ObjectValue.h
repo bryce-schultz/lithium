@@ -14,6 +14,9 @@ class ObjectValue : public Value
 public:
     // takes the variables out of the environment and uses them as members
     ObjectValue(const string &name, shared_ptr<Environment> env);
+    
+    // Destructor to break reference cycles
+    virtual ~ObjectValue();
 
     // intercept the getMember and setMember calls to use the environment
     virtual shared_ptr<Value> getMember(const string &name) const override

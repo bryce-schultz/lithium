@@ -1,5 +1,6 @@
 # file types:
 *.o
+*.log
 
 # files:
 li

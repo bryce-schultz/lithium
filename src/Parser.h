@@ -28,6 +28,7 @@ class Parser
 {
 public:
     Parser();
+    ~Parser(); // Add explicit destructor
     Result<Node> parse(const string &input, const string &filename = "");
 private:
     Token peekToken() const;

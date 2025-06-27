@@ -28,6 +28,7 @@ public:
     };
 public:
     Environment(shared_ptr<Environment> parent = nullptr);
+    ~Environment(); // Destructor to break cycles
 
     shared_ptr<Value> declare(const string &name, shared_ptr<Value> value, bool constant = false);
     shared_ptr<Value> redeclare(const string &name, shared_ptr<Value> value, bool constant = false);
@@ -36,9 +37,12 @@ public:
     shared_ptr<Value> lookup(const string &name) const;
     shared_ptr<Value> lookupLocal(const string &name) const;
     shared_ptr<Environment> resolve(const string &name) const;
-    shared_ptr<Environment> getParent() const;
 
-    const map<string, shared_ptr<Value>>& getMembers() const; // returns all variables and constants in this environment
+    // Check if the environment contains any function values (potential cycle risk)
+    bool hasFunctions() const;
+
+    const map<string, shared_ptr<Value>> &getMembers() const;
+    shared_ptr<Environment> getParent() const;
 
     void clear(); // clear all variables and break cycles
     void dump() const; // for debugging purposes, prints all variables and constants

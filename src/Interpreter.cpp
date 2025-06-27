@@ -268,7 +268,8 @@ void Interpreter::visitAllChildren(Node *node)
     }
     catch (const ExitException &e)
     {
-        exit(e.exitCode);
+        // Re-throw to let main handle the cleanup and exit
+        throw;
     }
     catch (const ErrorException &e)
     {
@@ -612,12 +613,28 @@ void Interpreter::visit(CallNode *node)
         {
             returnValue = e.value;
         }
-        catch (...)
+        catch (const BreakException &e)
         {
-            // Ensure environment is restored even on other exceptions (like ErrorException)
             env = previousEnv;
-            throw; // Re-throw the exception
+            throw;
         }
+        catch (const ContinueException &e)
+        {
+            env = previousEnv;
+            throw;
+        }
+        catch (const ExitException &e)
+        {
+            env = previousEnv;
+            throw;
+        }
+        catch (const ErrorException &e)
+        {
+            env = previousEnv;
+            throw;
+        }
+        
+        // Don't clear the scope in normal flow - let RAII handle it  
         env = previousEnv;
     }
     else if (callee->getType() == Value::Type::builtin)
@@ -643,90 +660,142 @@ void Interpreter::visit(CallNode *node)
         }
 
         // visit the declarations of the class and capture them in a new environment
-        //auto savedEnv = env;
-        env = make_shared<Environment>(env);
-        shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
-        if (!classBody)
+        auto previousEnv = env;
+        shared_ptr<Environment> classEnv = make_shared<Environment>(env);
+        env = classEnv;
+        
+        try
         {
-            error("class '" + classValue->getName() + "' has no body", calleeNode->getRange());
-            returnValue = nullptr;
-            env = env->getParent();
-            return;
-        }
-
-        // we don't want to push extra scope for class body, so we just visit the statements directly
-        classBody->getStatements()->visit(this);
-
-        // call the constructor of the class
-        auto ctor = env->lookupLocal(classValue->getName());
-
-        if (ctor)
-        {
-            if (ctor->getType() != Value::Type::function)
+            shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
+            if (!classBody)
             {
-                error("class '" + classValue->getName() + "' has no constructor", calleeNode->getRange());
+                error("class '" + classValue->getName() + "' has no body", calleeNode->getRange());
                 returnValue = nullptr;
-                env = env->getParent();
-                return;
-            }
-
-            shared_ptr<FunctionValue> constructor = dynamic_pointer_cast<FunctionValue>(ctor);
-            if (!constructor)
-            {
-                error("class '" + classValue->getName() + "' constructor could not be cast to FunctionValue", calleeNode->getRange());
-                returnValue = nullptr;
-                env = env->getParent();
-                return;
-            }
-
-            // TODO: come back here
-            if (constructor->getParameters() && (size_t)constructor->getParameters()->getParamCount() != args.size())
-            {
-                error("function '" + constructor->getName() + "' expects " +
-                    to_string(constructor->getParameters()->getParamCount()) +
-                    " arguments, but got " + to_string(args.size()), node->getRange());
-                returnValue = nullptr;
-                return;
-            }
-            else if (!constructor->getParameters() && !args.empty())
-            {
-                error("function '" + constructor->getName() + "' does not take any arguments, but got " + to_string(args.size()), node->getRange());
-                returnValue = nullptr;
-                return;
-            }
-
-            shared_ptr<Environment> scope = make_shared<Environment>(constructor->getEnvironment());
-            for (size_t i = 0; i < args.size(); ++i)
-            {
-                scope->declare(constructor->getParameters()->getParam(i)->getName(), args[i]);
-            }
-            auto previousEnv = env;
-            env = scope;
-            try
-            {
-                constructor->getBody()->visit(this);
-            }
-            catch (const ReturnException& e)
-            {
-                if (e.value && e.value->getType() != Value::Type::null)
-                {
-                    error("constructor of class '" + classValue->getName() + "' returned a value, which is not allowed", node->getRange());
-                }
-            }
-            catch (...)
-            {
-                // Ensure environment is restored even on other exceptions (like ErrorException)
                 env = previousEnv;
-                throw; // Re-throw the exception
+                return;
             }
+
+            // we don't want to push extra scope for class body, so we just visit the statements directly
+            classBody->getStatements()->visit(this);
+
+            // call the constructor of the class
+            auto ctor = env->lookupLocal(classValue->getName());
+
+            if (ctor)
+            {
+                if (ctor->getType() != Value::Type::function)
+                {
+                    error("class '" + classValue->getName() + "' has no constructor", calleeNode->getRange());
+                    returnValue = nullptr;
+                    env = previousEnv;
+                    return;
+                }
+
+                shared_ptr<FunctionValue> constructor = dynamic_pointer_cast<FunctionValue>(ctor);
+                if (!constructor)
+                {
+                    error("class '" + classValue->getName() + "' constructor could not be cast to FunctionValue", calleeNode->getRange());
+                    returnValue = nullptr;
+                    env = previousEnv;
+                    return;
+                }
+
+                // TODO: come back here
+                if (constructor->getParameters() && (size_t)constructor->getParameters()->getParamCount() != args.size())
+                {
+                    error("function '" + constructor->getName() + "' expects " +
+                        to_string(constructor->getParameters()->getParamCount()) +
+                        " arguments, but got " + to_string(args.size()), node->getRange());
+                    returnValue = nullptr;
+                    env = previousEnv;
+                    return;
+                }
+                else if (!constructor->getParameters() && !args.empty())
+                {
+                    error("function '" + constructor->getName() + "' does not take any arguments, but got " + to_string(args.size()), node->getRange());
+                    returnValue = nullptr;
+                    env = previousEnv;
+                    return;
+                }
+
+                shared_ptr<Environment> scope = make_shared<Environment>(constructor->getEnvironment());
+                for (size_t i = 0; i < args.size(); ++i)
+                {
+                    scope->declare(constructor->getParameters()->getParam(i)->getName(), args[i]);
+                }
+                auto constructorPrevEnv = env;
+                env = scope;
+                try
+                {
+                    constructor->getBody()->visit(this);
+                }
+                catch (const ReturnException& e)
+                {
+                    if (e.value && e.value->getType() != Value::Type::null)
+                    {
+                        error("constructor of class '" + classValue->getName() + "' returned a value, which is not allowed", node->getRange());
+                    }
+                }
+                catch (const BreakException &e)
+                {
+                    env = constructorPrevEnv;
+                    throw;
+                }
+                catch (const ContinueException &e)
+                {
+                    env = constructorPrevEnv;
+                    throw;
+                }
+                catch (const ExitException &e)
+                {
+                    env = constructorPrevEnv;
+                    throw;
+                }
+                catch (const ErrorException &e)
+                {
+                    env = constructorPrevEnv;
+                    throw;
+                }
+                
+                // Don't clear the scope in normal flow - let RAII handle it
+                env = constructorPrevEnv;
+            }
+
+            // create a new instance of the class
+            auto instance = make_shared<ObjectValue>(classValue->getName(), env);
+
+            // Don't clear the class environment in normal flow - let RAII handle it
             env = previousEnv;
+            returnValue = instance;
         }
-
-        // create a new instance of the class
-        auto instance = make_shared<ObjectValue>(classValue->getName(), env);
-
-        env = env->getParent();
-        returnValue = instance;
+        catch (const BreakException &e)
+        {
+            // Clear the class environment before restoring on exception
+            classEnv->clear();
+            env = previousEnv;
+            throw;
+        }
+        catch (const ContinueException &e)
+        {
+            // Clear the class environment before restoring on exception
+            classEnv->clear();
+            env = previousEnv;
+            throw;
+        }
+        catch (const ExitException &e)
+        {
+            // Clear the class environment before restoring on exception
+            classEnv->clear();
+            env = previousEnv;
+            throw;
+        }
+        catch (const ErrorException &e)
+        {
+            // Clear the class environment before restoring on exception
+            classEnv->clear();
+            env = previousEnv;
+            throw;
+        }
         return;
     }
     else
@@ -1029,18 +1098,40 @@ void Interpreter::visit(BlockNode *node)
         return;
     }
 
-    env = make_shared<Environment>(env); // push a new environment for the block
+    shared_ptr<Environment> prevEnv = env; // Save previous environment
+    shared_ptr<Environment> blockEnv = make_shared<Environment>(env); // Create block environment
+    env = blockEnv; // push a new environment for the block
     try
     {
         node->getStatements()->visit(this);
     }
-    catch (...)
+    catch (const ReturnException &e)
     {
-        // Ensure environment is restored even on exceptions
-        env = env->getParent();
-        throw; // Re-throw the exception
+        env = prevEnv;
+        throw;
     }
-    env = env->getParent(); // pop the environment after visiting the block
+    catch (const BreakException &e)
+    {
+        env = prevEnv;
+        throw;
+    }
+    catch (const ContinueException &e)
+    {
+        env = prevEnv;
+        throw;
+    }
+    catch (const ExitException &e)
+    {
+        env = prevEnv;
+        throw;
+    }
+    catch (const ErrorException &e)
+    {
+        env = prevEnv;
+        throw;
+    }
+    
+    env = prevEnv; // pop the environment after visiting the block
 
     returnValue = nullptr;
 }

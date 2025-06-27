@@ -6,6 +6,15 @@ ObjectValue::ObjectValue(const string &name, shared_ptr<Environment> env):
     env(env)
 { }
 
+ObjectValue::~ObjectValue()
+{
+    // Clear the environment to break cycles
+    if (env) {
+        env->clear();
+    }
+    env.reset();
+}
+
 string ObjectValue::toString() const
 {
     string result = "{ ";

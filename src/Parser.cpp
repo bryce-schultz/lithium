@@ -55,6 +55,13 @@ Parser::Parser():
     currentToken()
 { }
 
+Parser::~Parser()
+{
+    // Reset the tokenizer to ensure proper cleanup
+    tokenizer = Tokenizer();
+    currentToken = Token();
+}
+
 set<int> Parser::additFirsts = { '+', '-' };
 set<int> Parser::andFirsts = { Token::AND };
 set<int> Parser::argListFirsts = exprFirsts;
@@ -108,8 +115,13 @@ Result<Node> Parser::parse(const string &input, const string &filename)
     auto result = parseStmts();
     if (!result.status || hadError)
     {
+        // Clear tokenizer before returning error
+        tokenizer = Tokenizer();
         reject();
     }
+    
+    // Clear tokenizer before successful return
+    tokenizer = Tokenizer();
     accept(result.value);
 }
 

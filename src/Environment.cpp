@@ -15,10 +15,25 @@ using std::const_pointer_cast;
 using std::dynamic_pointer_cast;
 
 Environment::Environment(shared_ptr<Environment> parent):
-    parent(parent),
-    variables(),
-    constants()
+    parent(parent)
+{ }
+
+Environment::~Environment()
 {
+    // Break cycles by clearing function closures
+    for (auto &pair : variables)
+    {
+        if (pair.second && pair.second->getType() == Value::Type::function)
+        {
+            auto func = std::dynamic_pointer_cast<FunctionValue>(pair.second);
+            if (func) {
+                func->clearClosureEnv();
+            }
+        }
+    }
+    variables.clear();
+    constants.clear();
+    parent.reset();
 }
 
 shared_ptr<Value> Environment::declare(const string &name, shared_ptr<Value> value, bool constant)
@@ -201,6 +216,18 @@ bool Environment::hasConstant(const string &name) const
     if (constants.find(name) != constants.end())
     {
         return true;
+    }
+    return false;
+}
+
+bool Environment::hasFunctions() const
+{
+    for (const auto &pair : variables)
+    {
+        if (pair.second && pair.second->getType() == Value::Type::function)
+        {
+            return true;
+        }
     }
     return false;
 }

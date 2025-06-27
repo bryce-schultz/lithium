@@ -26,6 +26,7 @@ class Tokenizer
 public:
     Tokenizer();
     Tokenizer(const string &input, const string &filename = "");
+    ~Tokenizer(); // Add explicit destructor
     Token lex();
 private:
     void skipWhitespace();

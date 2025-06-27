@@ -17,6 +17,7 @@
 #include "SemanticErrorVisitor.h"
 #include "Values.h"
 #include "Error.h"
+#include "Exceptions.h"  // Add this for ExitException
 
 using std::cout;
 using std::cerr;
@@ -77,6 +78,13 @@ int runInteractiveMode(const vector<string> &args)
         {
             interpreter.interpret(result.value.get()); // Reuse the same interpreter
         }
+        catch (const ExitException &e)
+        {
+            // Clean up and exit
+            result.value.reset();
+            clearErrorLocations();
+            return e.exitCode;
+        }
         catch (const exception &e)
         {
             // Exception caught during interpretation, ensure cleanup
@@ -126,9 +134,22 @@ int runFileMode(const vector<string> &args)
 
     {
         Interpreter interpreter(false, env, args);
-        if (!interpreter.interpret(result.value.get()))
+        try
         {
-            return 1;
+            if (!interpreter.interpret(result.value.get()))
+            {
+                return 1;
+            }
+        }
+        catch (const ExitException &e)
+        {
+            // Clean up AST and environment, then exit
+            result.value.reset();
+            if (env)
+            {
+                env->clear();
+            }
+            return e.exitCode;
         }
     } // interpreter destructor called here
 
@@ -137,6 +158,9 @@ int runFileMode(const vector<string> &args)
     {
         env->clear();
     }
+
+    // Explicitly clean up the AST
+    result.value.reset();
 
     return 0;
 }

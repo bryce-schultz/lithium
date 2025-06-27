@@ -25,6 +25,13 @@ Tokenizer::Tokenizer(const string &input, const string &filename):
     location = Location(0, this->input, this->filename);
 }
 
+Tokenizer::~Tokenizer()
+{
+    // Explicitly clear shared_ptr members to ensure cleanup
+    input.reset();
+    filename.reset();
+}
+
 Token Tokenizer::lex()
 {
     Location start = location;
