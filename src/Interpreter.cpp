@@ -61,10 +61,12 @@ using std::to_string;
 
 Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const vector<string> &args):
     isInteractive(isInteractive),
+    hadError(false),
     returnValue(nullptr),
     moduleParser(),
     importedModules(),
-    args(args)
+    args(args),
+    recursionDepth(0)
 {
     if (!env)
     {
@@ -117,6 +119,9 @@ void Interpreter::setupEnvironment()
     setupRuntimeValues();
 }
 
+//***********************************************
+// Built-in functions setup
+//***********************************************
 void Interpreter::setupBuiltInFunctions()
 {
     env->declare("type", make_shared<BuiltinFunctionValue>(Builtins::type), true);
@@ -205,6 +210,13 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
             env->declare("receive", make_shared<BuiltinFunctionValue>(Builtins::receiveSocket), true);
             //env->declare("sock_addr", make_shared<BuiltinFunctionValue>(Builtins::getSocketAddress), true);
             //env->declare("sock_port", make_shared<BuiltinFunctionValue>(Builtins::getSocketPort), true);
+            imported(module);
+            return true;
+        }
+        else if (module == "time")
+        {
+            env->declare("time", make_shared<BuiltinFunctionValue>(Builtins::time), true);
+            env->declare("sleep", make_shared<BuiltinFunctionValue>(Builtins::sleep), true);
             imported(module);
             return true;
         }
@@ -597,6 +609,14 @@ void Interpreter::visit(CallNode *node)
             return;
         }
 
+        // Check recursion depth to prevent stack overflow
+        if (recursionDepth >= MAX_RECURSION_DEPTH)
+        {
+            error("maximum recursion depth exceeded (" + to_string(MAX_RECURSION_DEPTH) + ")", node->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
         shared_ptr<Environment> scope = make_shared<Environment>(function->getEnvironment());
         for (size_t i = 0; i < args.size(); ++i)
         {
@@ -604,6 +624,10 @@ void Interpreter::visit(CallNode *node)
         }
         auto previousEnv = env;
         env = scope;
+        
+        // Increment recursion depth
+        recursionDepth++;
+        
         try
         {
             function->getBody()->visit(this);
@@ -615,24 +639,31 @@ void Interpreter::visit(CallNode *node)
         }
         catch (const BreakException &e)
         {
+            recursionDepth--;
             env = previousEnv;
             throw;
         }
         catch (const ContinueException &e)
         {
+            recursionDepth--;
             env = previousEnv;
             throw;
         }
         catch (const ExitException &e)
         {
+            recursionDepth--;
             env = previousEnv;
             throw;
         }
         catch (const ErrorException &e)
         {
+            recursionDepth--;
             env = previousEnv;
             throw;
         }
+        
+        // Decrement recursion depth
+        recursionDepth--;
         
         // Don't clear the scope in normal flow - let RAII handle it  
         env = previousEnv;
@@ -676,7 +707,10 @@ void Interpreter::visit(CallNode *node)
             }
 
             // we don't want to push extra scope for class body, so we just visit the statements directly
-            classBody->getStatements()->visit(this);
+            if (classBody->getStatements())
+            {
+                classBody->getStatements()->visit(this);
+            }
 
             // call the constructor of the class
             auto ctor = env->lookupLocal(classValue->getName());

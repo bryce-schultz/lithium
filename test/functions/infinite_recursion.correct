@@ -1,0 +1,4 @@
+error: infinite_recursion.li:1:19: maximum recursion depth exceeded (1000)
+│ fn inf() { return inf(); } inf();
+│                   ~~~~~
+│                   ^

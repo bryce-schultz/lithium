@@ -1,0 +1,1 @@
+fn inf() { return inf(); } inf();

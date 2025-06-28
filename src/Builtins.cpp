@@ -2,6 +2,9 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <limits>
+#include <stdexcept>
+#include <ios>
 
 #include <fcntl.h> // platform-specific header for file operations
 #include <unistd.h> // platform-specific header for file operations
@@ -28,6 +31,8 @@ using std::to_string;
 using std::getline;
 using std::stod;
 using std::invalid_argument;
+using std::numeric_limits;
+using std::streamsize;
 
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
@@ -183,15 +188,11 @@ shared_ptr<Value> Builtins::input(const vector<shared_ptr<Value>> &args, shared_
     string userInput;
     getline(cin, userInput);
 
-    // check if getline was eof
     if (cin.eof())
     {
-        // if so, return a NullValue
         return make_shared<NullValue>(range);
     }
 
-    // if userInput is empty, the string will be empty. This allows the user to
-    // distinguish between empty and eof.
     return make_shared<StringValue>(userInput, range);
 }
 
@@ -256,6 +257,44 @@ shared_ptr<Value> Builtins::toNumber(const vector<shared_ptr<Value>> &args, shar
     {
         return make_shared<NullValue>(range); // conversion failed
     }
+}
+
+shared_ptr<Value> Builtins::toString(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 1)
+    {
+        error("expected exactly 1 argument, but got " + to_string(args.size()), range);
+        return make_shared<NullValue>(range);
+    }
+
+    const auto &arg = args[0];
+    if (!arg)
+    {
+        return make_shared<StringValue>("null", range);
+    }
+
+    return make_shared<StringValue>(arg->toString(), arg->getRange());
+}
+
+shared_ptr<Value> Builtins::toBoolean(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 1)
+    {
+        error("expected exactly 1 argument, but got " + to_string(args.size()), range);
+        return make_shared<NullValue>(range);
+    }
+
+    const auto &arg = args[0];
+    if (!arg)
+    {
+        return make_shared<BooleanValue>(false, range);
+    }
+
+    return make_shared<BooleanValue>(arg->toBoolean(), arg->getRange());
 }
 
 // this should function like random() in c
@@ -841,4 +880,52 @@ shared_ptr<Value> Builtins::dumpEnv(const vector<shared_ptr<Value>> &args, share
         cout << "No environment available." << endl;
     }
     return nullptr;
+}
+
+shared_ptr<Value> Builtins::sleep(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 1)
+    {
+        error("sleep() expects exactly 1 argument, but got " + to_string(args.size()), range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::number)
+    {
+        error("sleep() expects a number argument, but got " + args[0]->typeAsString(), args[0]->getRange());
+        return nullptr;
+    }
+
+    double seconds = dynamic_pointer_cast<NumberValue>(args[0])->getValue();
+    if (seconds < 0)
+    {
+        error("sleep() expects a non-negative number, but got " + to_string(seconds), args[0]->getRange());
+        return nullptr;
+    }
+
+    usleep(static_cast<useconds_t>(seconds * 1000000)); // convert seconds to microseconds
+    return nullptr;
+}
+
+shared_ptr<Value> Builtins::time(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 0)
+    {
+        error("time() expects no arguments, but got " + to_string(args.size()), range);
+        return nullptr;
+    }
+
+    // get the current time in seconds since the epoch
+    time_t now = ::time(nullptr);
+    if (now == -1)
+    {
+        error("failed to get current time", range);
+        return nullptr;
+    }
+
+    return make_shared<NumberValue>(static_cast<double>(now), range);
 }

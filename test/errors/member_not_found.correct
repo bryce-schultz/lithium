@@ -1,0 +1,4 @@
+error: member_not_found.li:3:3: member 'b' not found
+│ x.b.c.d;
+│ ~~~
+│   ^

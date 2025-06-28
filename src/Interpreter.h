@@ -77,4 +77,8 @@ private:
     Parser moduleParser;
     set<string> importedModules; // to avoid re-importing the same module
     vector<string> args; // command line arguments passed to the interpreter
+    
+    // Recursion depth tracking to prevent stack overflow
+    int recursionDepth;
+    static const int MAX_RECURSION_DEPTH = 1000;
 };

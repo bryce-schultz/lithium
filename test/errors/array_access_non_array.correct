@@ -1,0 +1,4 @@
+error: array_access_non_array.li:2:1: left-hand side of array access is not an array or string
+│ x[0];
+│ ~
+│ ^

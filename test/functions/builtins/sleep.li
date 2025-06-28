@@ -1,0 +1,11 @@
+import <time>
+
+let start = time();
+
+sleep(4);
+
+let end = time();
+
+let elapsed = end - start;
+
+println("Elapsed time: " + elapsed + " seconds");

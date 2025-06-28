@@ -1,9 +1,25 @@
 # file types:
 *.o
 *.log
+*.tmp
+*.temp
 
 # files:
 li
+
+# fuzzing tools and outputs:
+tools/fuzzer
+tools/fuzzer.out
+tools/advanced_fuzzer_results.log
+tools/fuzzer_results.log
+tools/crash*.li
+crash*.li
+
+# test result caches:
+test_results.txt
+
+# temporary test files:
+/tmp/lithium_*
 
 # directories:
 .vscode/

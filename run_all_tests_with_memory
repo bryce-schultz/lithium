@@ -284,14 +284,6 @@ fi
 
 echo -e "${blue}╰────────────────────────────────────────────╯${nc}"
 
-# Legend
-echo ""
-if [[ $fast_mode -eq 1 ]]; then
-    echo -e "Legend: ${green}✓${nc} = passed, ${red}✗${nc} = failed, ${yellow}~${nc} = skipped"
-else
-    echo -e "Legend: ${green}✓${nc} = passed, ${red}✗${nc} = failed, ${yellow}~${nc} = skipped"
-fi
-
 if [[ $verbose -eq 0 ]] && [[ ${#memory_failures[@]} -gt 0 || ${#functional_failures[@]} -gt 0 ]]; then
     echo ""
     echo -e "${yellow}Use -v/--verbose for detailed failure information${nc}"

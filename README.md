@@ -205,3 +205,22 @@ error: cin:1:7: 'x' is not defined
 ## License
 
 MIT License
+
+---
+
+## Project Structure
+
+- **`src/`** - Interpreter source code (C++)
+- **`test/`** - Comprehensive test suite organized by category
+  - `test/array/` - Array operation tests
+  - `test/class/` - Class and object tests  
+  - `test/errors/` - Error handling tests
+  - `test/functions/` - Function and closure tests
+  - `test/expressions/` - Expression evaluation tests
+  - And more...
+- **`tools/`** - Development and testing tools
+  - `advanced_fuzzer.py` - Advanced vulnerability testing
+  - `fuzzer.cpp` - Basic C++ fuzzer
+  - `test_crashes.sh` - Crash regression tests
+- **`modules/`** - Standard library modules
+- **`memory_test_logs/`** - Memory testing outputs
