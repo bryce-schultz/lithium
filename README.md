@@ -1,8 +1,86 @@
 # Lithium Programming Language
 
-![CI](https://github.com/username/lithium/workflows/CI/badge.svg)
-
 Lithium is a lightweight, interpreted programming language designed for clarity, expressiveness, and ease of embedding. It features a C-like syntax, dynamic typing, first-class functions, closures, arrays, and a small but powerful set of built-in functions. Lithium is ideal for scripting, teaching, and rapid prototyping.
+
+---
+
+## Quick Start
+
+### 🚀 Build & Setup
+```bash
+# Clone the repository
+git clone <repository-url>
+cd lithium
+
+# Option 1: Quick build (recommended - uses parallel compilation)
+./build
+
+# Option 2: Development setup with dependencies
+./setup_dev.sh
+
+# Option 3: Manual build
+make -C src
+```
+
+### 🏃 Run Your First Program
+```bash
+# Create a simple program
+echo 'println("Hello, Lithium!");' > hello.li
+
+# Run it
+./src/li hello.li
+
+# Or use interactive mode (REPL)
+./src/li
+# > println("Interactive mode!");
+# > let x = 5 + 3;
+# > println("Result:", x);
+```
+
+### 🧪 Testing
+```bash
+# Run all native tests
+./run_all_tests
+
+# Run Python integration tests  
+python3 -m pytest -v
+
+# Run memory leak tests (optional)
+./run_all_tests_with_memory
+
+# Run a specific test
+./run_test string/basic_object_concat
+```
+
+### 🛠️ Development Tools
+```bash
+# Build uses parallel compilation by default for faster builds
+./build
+
+# Add/remove CI test verification
+./tools/add_failing_test.sh      # Add failing test
+./tools/remove_failing_test.sh   # Remove for clean builds
+
+# Run fuzzing tests
+./tools/run_fuzzer.sh
+```
+
+### 📁 Project Structure
+```
+lithium/
+├── src/           # C++ interpreter source
+├── test/          # Comprehensive test suite  
+├── tools/         # Development and testing tools
+├── modules/       # Standard library modules
+├── .github/       # CI/CD workflows
+└── build          # Main build script
+```
+
+### 🔧 Troubleshooting
+- **Build fails**: Ensure you have `gcc`, `g++`, and `make` installed
+- **Tests not found**: Run tests from project root directory
+- **Interpreter not in PATH**: Add `export PATH="$(pwd)/src:$PATH"` or use `./src/li`
+- **Permission denied**: Make scripts executable with `chmod +x <script>`
 
 ---
 

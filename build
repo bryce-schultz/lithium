@@ -71,7 +71,8 @@ build_target()
         target="src"
     fi
 
-    make $build_args_without_no_test > /dev/null
+    # Use parallel compilation with all available cores for faster builds
+    make -j$(nproc) $build_args_without_no_test > /dev/null
 
     if [ $? -eq 0 ]; then
         success $target
