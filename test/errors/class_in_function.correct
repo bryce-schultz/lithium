@@ -1,0 +1,4 @@
+error: class_in_function.li:2:5: class 'FunctionClass' must be declared at global scope
+│ class FunctionClass {
+│ ~~~~~~~~~~~~~~~~~~~~~
+│ ^

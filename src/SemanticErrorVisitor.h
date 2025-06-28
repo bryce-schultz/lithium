@@ -21,6 +21,7 @@ public:
     virtual void visit(BreakNode *node) override;
     virtual void visit(CallNode *node) override;
     virtual void visit(ClassNode *node) override;
+    virtual void visit(BlockNode *node) override;
     virtual void visit(AssignNode *node) override;
     virtual void visit(MemberAccessNode *node) override;
     virtual void visit(ArrayAccessNode *node) override;
@@ -28,6 +29,7 @@ public:
     int errorCount;
     int functionDepth;
     int loopDepth;
+    int blockDepth;  // Track block nesting depth for scope validation
 
     // Recursion detection
     std::set<std::string> currentFunctionStack;

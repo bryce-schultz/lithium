@@ -11,6 +11,7 @@ SemanticErrorVisitor::SemanticErrorVisitor():
     errorCount(0),
     functionDepth(0),
     loopDepth(0),
+    blockDepth(0),
     currentFunctionName("")
 {
 }
@@ -145,6 +146,12 @@ void SemanticErrorVisitor::visit(CallNode *node)
 
 void SemanticErrorVisitor::visit(ClassNode *node)
 {
+    // Check if class is defined inside a block or function
+    if (blockDepth > 0 || functionDepth > 0)
+    {
+        error("class '" + node->getName() + "' must be declared at global scope", node->getRange());
+    }
+
     // Track that this class is declared
     declaredClasses.insert(node->getName());
 
@@ -153,6 +160,16 @@ void SemanticErrorVisitor::visit(ClassNode *node)
     {
         node->getBody()->visit(this);
     }
+}
+
+void SemanticErrorVisitor::visit(BlockNode *node)
+{
+    blockDepth++;
+    
+    // Visit all statements in the block
+    Visitor::visit(node);
+    
+    blockDepth--;
 }
 
 void SemanticErrorVisitor::visit(AssignNode *node)

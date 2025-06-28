@@ -213,7 +213,7 @@ MIT License
 - **`src/`** - Interpreter source code (C++)
 - **`test/`** - Comprehensive test suite organized by category
   - `test/array/` - Array operation tests
-  - `test/class/` - Class and object tests  
+  - `test/class/` - Class and object tests
   - `test/errors/` - Error handling tests
   - `test/functions/` - Function and closure tests
   - `test/expressions/` - Expression evaluation tests

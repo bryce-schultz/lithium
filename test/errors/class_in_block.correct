@@ -1,0 +1,4 @@
+error: class_in_block.li:2:5: class 'NestedClass' must be declared at global scope
+│ class NestedClass {
+│ ~~~~~~~~~~~~~~~~~~~
+│ ^
