@@ -1,4 +1,4 @@
 error: arity_error.li:2:1: function 'f' expects 2 arguments, but got 1
-│  f(1);
-│  ~~~~
-│  ^
+│ f(1);
+│ ~~~~
+│ ^

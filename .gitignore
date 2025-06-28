@@ -1,26 +1,71 @@
-# file types:
+# Compiled binaries and object files:
 *.o
+li
+src/li
+
+# Log files:
 *.log
+
+# Temporary files:
 *.tmp
 *.temp
+*.swp
+*.swo
+*~
 
-# files:
-li
+# Python cache and artifacts:
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
 
-# fuzzing tools and outputs:
+# VSCode user-specific settings (keep our shared configuration):
+.vscode/settings.json.user
+.vscode/.ropeproject
+# Note: .vscode/ directory with our shared config is tracked
+
+# Fuzzing tools and outputs:
 tools/fuzzer
 tools/fuzzer.out
 tools/advanced_fuzzer_results.log
 tools/fuzzer_results.log
 tools/crash*.li
 crash*.li
+fuzz_*
 
-# test result caches:
+# Test result caches and outputs:
 test_results.txt
+tools/test_adapter_results.json
+*.out
 
-# temporary test files:
+# Temporary test files:
 /tmp/lithium_*
+test_output_*
 
-# directories:
-.vscode/
+# Memory testing logs:
 memory_test_logs/
+valgrind_*.log
+
+# Build artifacts:
+build/
+dist/
+*.dSYM/
+
+# OS generated files:
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files (excluding our VSCode config):
+.idea/
+*.sublime-*
+*.code-workspace

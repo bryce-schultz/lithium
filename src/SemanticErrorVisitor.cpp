@@ -28,24 +28,24 @@ bool SemanticErrorVisitor::hasErrors() const
 void SemanticErrorVisitor::visit(FuncDeclNode *node)
 {
     functionDepth++;
-    
+
     // Track function name for recursion detection
     std::string prevFunctionName = currentFunctionName;
     currentFunctionName = node->getName();
-    
+
     // Check for immediate self-recursion in function body
     if (currentFunctionStack.find(currentFunctionName) != currentFunctionStack.end())
     {
         // This would be detected during call analysis, but let's be extra safe
         // error("potential infinite recursion detected in function '" + currentFunctionName + "'", node->getRange());
     }
-    
+
     currentFunctionStack.insert(currentFunctionName);
-    
+
     if (node->getBody()) {
         node->getBody()->visit(this);
     }
-    
+
     currentFunctionStack.erase(currentFunctionName);
     currentFunctionName = prevFunctionName;
     functionDepth--;
@@ -107,19 +107,19 @@ void SemanticErrorVisitor::visit(CallNode *node)
 {
     // First visit the callee to see what we're trying to call
     auto calleeNode = node->getCallee();
-    
+
     // Check if it's a simple variable call (most common case for direct recursion)
     if (auto varExpr = dynamic_cast<VarExprNode*>(calleeNode.get()))
     {
         std::string calleeName = varExpr->getName();
-        
+
         // Check for direct self-recursion
         if (calleeName == currentFunctionName && functionDepth > 0)
         {
             // This is a direct recursive call - warn but don't error (recursion can be valid)
             // We could add a warning system later, for now just track it
         }
-        
+
         // Check if trying to call a class without proper instantiation
         if (declaredClasses.find(calleeName) != declaredClasses.end())
         {
@@ -127,11 +127,11 @@ void SemanticErrorVisitor::visit(CallNode *node)
             // For now, we can't determine if it has a constructor without more analysis
             // but we can at least flag it for review
         }
-        
+
         // Check for mutual recursion patterns (simple case: A calls B, B calls A)
         // This is more complex to detect perfectly, but we can catch simple cases
     }
-    
+
     // Visit arguments and callee as normal
     if (node->getArgs())
     {
@@ -143,17 +143,11 @@ void SemanticErrorVisitor::visit(CallNode *node)
     calleeNode->visit(this);
 }
 
-void SemanticErrorVisitor::visit(VarExprNode *node)
-{
-    // This is where we could add undefined variable checking
-    // For now, just let the default visitor handle it
-}
-
 void SemanticErrorVisitor::visit(ClassNode *node)
 {
     // Track that this class is declared
     declaredClasses.insert(node->getName());
-    
+
     // Visit the class body
     if (node->getBody())
     {
@@ -168,7 +162,7 @@ void SemanticErrorVisitor::visit(AssignNode *node)
     {
         node->getExpr()->visit(this);
     }
-    
+
     // Track variable declarations
     if (auto varExpr = dynamic_cast<VarExprNode*>(node->getAsignee().get()))
     {
@@ -183,7 +177,7 @@ void SemanticErrorVisitor::visit(MemberAccessNode *node)
     {
         node->getExpression()->visit(this);
     }
-    
+
     // We could add type checking here if we had type information
     // For now, just ensure we visit all children
 }
@@ -195,11 +189,11 @@ void SemanticErrorVisitor::visit(ArrayAccessNode *node)
     {
         node->getArray()->visit(this);
     }
-    
+
     if (node->getIndex())
     {
         node->getIndex()->visit(this);
     }
-    
+
     // We could add bounds checking and type validation here
 }

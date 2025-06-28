@@ -1,0 +1,59 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Lithium Interpreter",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/li",
+            "args": ["${input:testFile}"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Interpreter"
+        },
+        {
+            "name": "Debug Single Test",
+            "type": "cppdbg", 
+            "request": "launch",
+            "program": "${workspaceFolder}/src/li",
+            "args": ["test/${input:debugTestName}.li"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing", 
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Interpreter"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testFile",
+            "description": "Path to Lithium file to debug",
+            "default": "test/array/basic.li",
+            "type": "promptString"
+        },
+        {
+            "id": "debugTestName", 
+            "description": "Test name to debug (e.g., array/basic)",
+            "default": "array/basic",
+            "type": "promptString"
+        }
+    ]
+}

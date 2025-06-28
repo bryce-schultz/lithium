@@ -1,0 +1,161 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run All Tests",
+            "type": "shell",
+            "command": "./run_all_tests",
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run All Tests with Memory Check",
+            "type": "shell",
+            "command": "./run_all_tests_with_memory",
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Interpreter",
+            "type": "shell",
+            "command": "make",
+            "args": ["-C", "src"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": ["relative", "${workspaceFolder}/src"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }
+        },
+        {
+            "label": "Run Single Test",
+            "type": "shell",
+            "command": "./run_test",
+            "args": ["${input:testName}"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Advanced Fuzzer",
+            "type": "shell",
+            "command": "python3",
+            "args": ["tools/advanced_fuzzer.py", "${input:fuzzerTests}"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Basic Fuzzer",
+            "type": "shell",
+            "command": "./tools/run_fuzzer.sh",
+            "args": ["${input:fuzzerTests}"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Test Crash Cases",
+            "type": "shell",
+            "command": "./tools/test_crashes.sh",
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Pytest Tests",
+            "type": "shell",
+            "command": "python3",
+            "args": ["-m", "pytest", "-v"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Pytest with Coverage",
+            "type": "shell",
+            "command": "python3",
+            "args": ["-m", "pytest", "--tb=short", "-v"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "testName",
+            "description": "Test name (e.g., array/basic)",
+            "default": "array/basic",
+            "type": "promptString"
+        },
+        {
+            "id": "fuzzerTests",
+            "description": "Number of fuzzer tests to run",
+            "default": "100",
+            "type": "promptString"
+        }
+    ]
+}
