@@ -40,27 +40,31 @@ jobs:
         
     - name: Test basic interpreter functionality
       run: |
-        ./src/li .github/test_ci_basic.li
+        export PATH="$(pwd)/src:$PATH"
+        li .github/test_ci_basic.li
         
     - name: Run native test suite
       run: |
+        export PATH="$(pwd)/src:$PATH"
         chmod +x ./run_all_tests
         ./run_all_tests
         
     - name: Run Python/pytest test suite
       run: |
-        python -m pytest -v --tb=short
+        export PATH="$(pwd)/src:$PATH"
+        python3 -m pytest -v --tb=short
         
     - name: Test interpreter with sample programs
       run: |
+        export PATH="$(pwd)/src:$PATH"
         # Test a few sample programs if they exist
         if [ -f "test/samples/grid.li" ]; then
           echo "Testing grid sample..."
-          timeout 10 ./src/li test/samples/grid.li || echo "Grid test completed"
+          timeout 10 li test/samples/grid.li || echo "Grid test completed"
         fi
         if [ -f "test/samples/pascal.li" ]; then
           echo "Testing pascal sample..."
-          timeout 10 ./src/li test/samples/pascal.li || echo "Pascal test completed"
+          timeout 10 li test/samples/pascal.li || echo "Pascal test completed"
         fi
 
   memory-test:
@@ -81,6 +85,7 @@ jobs:
         
     - name: Run memory leak tests (if available)
       run: |
+        export PATH="$(pwd)/src:$PATH"
         if [ -f "./run_all_tests_with_memory" ]; then
           chmod +x ./run_all_tests_with_memory
           echo "Running memory leak tests with timeout..."

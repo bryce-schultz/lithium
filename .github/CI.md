@@ -16,10 +16,11 @@ The CI pipeline consists of two main jobs:
 
 **Steps:**
 1. **Build Verification**: Clean build of the interpreter
-2. **Basic Functionality**: Run a simple test program to verify core functionality
-3. **Native Test Suite**: Execute all 97+ native Lithium tests using `./run_all_tests`
-4. **Python Test Suite**: Run pytest-based tests for compatibility and integration
-5. **Sample Programs**: Test interpreter with sample programs (grid, pascal)
+2. **PATH Setup**: Add interpreter to PATH for test runner compatibility
+3. **Basic Functionality**: Run a simple test program to verify core functionality
+4. **Native Test Suite**: Execute all 97+ native Lithium tests using `./run_all_tests`
+5. **Python Test Suite**: Run pytest-based tests for compatibility and integration
+6. **Sample Programs**: Test interpreter with sample programs (grid, pascal)
 
 ### 2. Memory Test Job (`memory-test`)
 - **Platform**: Ubuntu Latest
@@ -60,11 +61,14 @@ To run the same tests that CI runs:
 # Build interpreter
 make -C src
 
+# Add interpreter to PATH (required for test runner)
+export PATH="$(pwd)/src:$PATH"
+
 # Run native tests
 ./run_all_tests
 
 # Run Python tests
-python -m pytest -v
+python3 -m pytest -v
 
 # Run memory tests (optional)
 ./run_all_tests_with_memory
