@@ -1,3 +1,0 @@
-println("This test should fail!");
-println("Expected output: SUCCESS");
-println("Actual output: FAILURE");
