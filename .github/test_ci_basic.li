@@ -1,0 +1,6 @@
+println("Hello, CI!");
+println("Testing basic operations...");
+let x = 5 + 3;
+println("5 + 3 =", x);
+let message = "CI test " + "passed!";
+println(message);

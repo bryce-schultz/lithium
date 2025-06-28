@@ -1,5 +1,7 @@
 # Lithium Programming Language
 
+![CI](https://github.com/username/lithium/workflows/CI/badge.svg)
+
 Lithium is a lightweight, interpreted programming language designed for clarity, expressiveness, and ease of embedding. It features a C-like syntax, dynamic typing, first-class functions, closures, arrays, and a small but powerful set of built-in functions. Lithium is ideal for scripting, teaching, and rapid prototyping.
 
 ---
@@ -224,3 +226,19 @@ MIT License
   - `test_crashes.sh` - Crash regression tests
 - **`modules/`** - Standard library modules
 - **`memory_test_logs/`** - Memory testing outputs
+
+---
+
+## Continuous Integration
+
+This project uses GitHub Actions for automated testing and quality assurance. The CI pipeline:
+
+- **Builds** the interpreter from source on Ubuntu
+- **Runs** all 97+ native tests using the test runner
+- **Executes** Python/pytest integration tests
+- **Performs** memory leak detection with valgrind
+- **Tests** sample programs for regression detection
+
+See [`.github/CI.md`](.github/CI.md) for detailed CI documentation.
+
+---

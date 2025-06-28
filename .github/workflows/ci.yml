@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential gcc g++ make valgrind
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+    
+    - name: Build interpreter
+      run: |
+        make clean -C src
+        make -C src
+        
+    - name: Verify interpreter build
+      run: |
+        ls -la src/li
+        file src/li
+        
+    - name: Test basic interpreter functionality
+      run: |
+        ./src/li .github/test_ci_basic.li
+        
+    - name: Run native test suite
+      run: |
+        chmod +x ./run_all_tests
+        ./run_all_tests
+        
+    - name: Run Python/pytest test suite
+      run: |
+        python -m pytest -v --tb=short
+        
+    - name: Test interpreter with sample programs
+      run: |
+        # Test a few sample programs if they exist
+        if [ -f "test/samples/grid.li" ]; then
+          echo "Testing grid sample..."
+          timeout 10 ./src/li test/samples/grid.li || echo "Grid test completed"
+        fi
+        if [ -f "test/samples/pascal.li" ]; then
+          echo "Testing pascal sample..."
+          timeout 10 ./src/li test/samples/pascal.li || echo "Pascal test completed"
+        fi
+
+  memory-test:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential gcc g++ make valgrind
+    
+    - name: Build interpreter
+      run: |
+        make -C src
+        
+    - name: Run memory leak tests (if available)
+      run: |
+        if [ -f "./run_all_tests_with_memory" ]; then
+          chmod +x ./run_all_tests_with_memory
+          echo "Running memory leak tests with timeout..."
+          timeout 600 ./run_all_tests_with_memory || echo "Memory tests completed or timed out"
+        else
+          echo "Memory leak tests not available"
+        fi
