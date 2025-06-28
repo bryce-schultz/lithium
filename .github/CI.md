@@ -92,6 +92,7 @@ If CI fails:
 2. **Test Failures**: Review test output to identify which specific tests failed
 3. **Memory Issues**: Check valgrind output for memory leaks or access violations
 4. **Timeout Issues**: Some tests have timeouts to prevent hanging in CI
+5. **Exit Codes**: Test runners properly exit with code 1 on failure, code 0 on success
 
 **Note**: There is an intentionally failing test (`test/ci/failing_test.li`) to verify CI failure detection. 
 

@@ -62,6 +62,7 @@ if [[ $did_fail -eq 0 ]]; then
     printf "${green}╭────────────────────────────────────────────╮${nc}\n"
     printf "${green}│${bold_green}%*s%s%*s${nc}${green}│${nc}\n" $pad "" "$summary" $pad_right ""
     printf "${green}╰────────────────────────────────────────────╯${nc}\n"
+    exit 0
 else
     passed_count=$(( ${#test_files[@]} - fail_count ))
     summary="${passed_count}/${#test_files[@]} passed, ${fail_count}/${#test_files[@]} failed."
@@ -72,4 +73,5 @@ else
     printf "${red}╭────────────────────────────────────────────╮${nc}\n"
     printf "${red}│${bold_red}%*s%s%*s${nc}${red}│${nc}\n" $pad "" "$summary" $pad_right ""
     printf "${red}╰────────────────────────────────────────────╯${nc}\n"
+    exit 1
 fi

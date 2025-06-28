@@ -75,6 +75,21 @@ Removes the intentionally failing test for clean builds.
 - Cleans up empty directories
 - Enables clean CI builds for production
 
+### verify_ci.sh
+Comprehensive verification script for CI components.
+
+**Usage:**
+```bash
+./tools/verify_ci.sh
+```
+
+**Features:**
+- Tests interpreter build process
+- Verifies basic functionality
+- Checks exit code behavior for both success and failure
+- Tests both native and pytest test runners
+- Comprehensive CI readiness verification
+
 ## Output Files
 
 - **advanced_fuzzer_results.log** - Detailed results from advanced fuzzer
