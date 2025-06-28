@@ -1101,6 +1101,7 @@ void Interpreter::visit(BlockNode *node)
     shared_ptr<Environment> prevEnv = env; // Save previous environment
     shared_ptr<Environment> blockEnv = make_shared<Environment>(env); // Create block environment
     env = blockEnv; // push a new environment for the block
+    
     try
     {
         node->getStatements()->visit(this);
@@ -1130,7 +1131,23 @@ void Interpreter::visit(BlockNode *node)
         env = prevEnv;
         throw;
     }
-    
+
+    // Before exiting block, rewrite function closures to point to parent environment
+    // This prevents block environments from being kept alive unnecessarily
+    for (const auto& pair : blockEnv->getMembers()) 
+    {
+        if (pair.second && pair.second->getType() == Value::Type::function) 
+        {
+            auto func = dynamic_pointer_cast<FunctionValue>(pair.second);
+            if (func && func->getEnvironment() == blockEnv) 
+            {
+                // This function was declared in this block and captures the block environment
+                // Rewrite its closure to use the parent environment instead
+                func->rewriteClosureEnv(prevEnv);
+            }
+        }
+    }
+
     env = prevEnv; // pop the environment after visiting the block
 
     returnValue = nullptr;

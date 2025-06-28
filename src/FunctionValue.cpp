@@ -45,6 +45,11 @@ void FunctionValue::clearClosureEnv()
     closureEnv.reset();
 }
 
+void FunctionValue::rewriteClosureEnv(shared_ptr<Environment> newEnv)
+{
+    closureEnv = newEnv;
+}
+
 string FunctionValue::toString() const
 {
     return "<function " + name + ">";

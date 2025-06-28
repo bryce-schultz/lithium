@@ -1,0 +1,197 @@
+#!/usr/bin/env bash
+
+# Usage: run_test_with_memory (<test> | -l) [-s] [-v]
+# Runs a single .li test with valgrind memory leak checking
+# 
+# Examples:
+#   ./run_test_with_memory array/basic          # Run array/basic test with memory checking
+#   ./run_test_with_memory functions/hoisting -v   # Run with verbose memory leak output
+#   ./run_test_with_memory -l                   # List all available tests
+#   ./run_test_with_memory assert/basic -s      # Run in silent mode (no output on success)
+#
+# Options:
+#   -s: silent mode (no output on success)
+#   -v: verbose output (show detailed valgrind output)
+
+green='\033[0;32m'
+bold_green='\033[1;32m'
+red='\033[0;31m'
+bold_red='\033[1;31m'
+blue='\033[0;34m'
+bold_blue='\033[1;34m'
+yellow='\033[33m'
+light_grey='\033[37m'
+nc='\033[0m'
+
+if [[ -z "$1" ]]; then
+  echo "Usage: $0 (<test> | -l) [-s] [-v]"
+  echo "  -s: silent mode (no output on success)"
+  echo "  -v: verbose output (show detailed valgrind output)"
+  exit 1
+fi
+
+test_name="$1"
+silent=0
+verbose=0
+
+# Parse options
+shift
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -s|--silent)
+            silent=1
+            shift
+            ;;
+        -v|--verbose)
+            verbose=1
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# List tests if requested
+[[ "$test_name" == "-l" ]] && {
+  if [[ $silent -eq 1 ]]; then
+    exit 0
+  fi
+  echo "Available tests:"
+  find test -type f -name '*.li' | sed 's|^test/||' | sed 's|\.li$||'
+  exit 0
+}
+
+# Check if valgrind is available
+if ! command -v valgrind &> /dev/null; then
+    echo -e "${red}Error: valgrind not found. Please install valgrind for memory leak checking.${nc}"
+    exit 1
+fi
+
+# Check if lithium interpreter exists
+if [[ ! -f "src/li" ]]; then
+    echo -e "${red}Error: lithium interpreter not found at src/li${nc}"
+    echo "Please build the project first: cd src && make"
+    exit 1
+fi
+
+# Get the absolute path to the project root before changing directories
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+project_root="$script_dir"
+lithium="$project_root/src/li"
+
+if [[ ! -f "$lithium" ]]; then
+  echo "Lithium interpreter not found at $lithium"
+  exit 1
+fi
+
+if [[ ! -d "test" ]]; then
+  echo "Tests directory does not exist."
+  exit 1
+fi
+
+cd test || exit 1
+
+# If test_name contains subdirectories, cd into them
+if [[ "$test_name" == */* ]]; then
+  test_dir="${test_name%/*}"
+  test_base="${test_name##*/}"
+  if [[ ! -d "$test_dir" ]]; then
+    echo "Directory $test_dir does not exist."
+    exit 1
+  fi
+  cd "$test_dir" || exit 1
+else
+  test_base="$test_name"
+fi
+
+test_file="${test_base}.li"
+expected_file="${test_base}.correct"
+output_file="${test_base}.out"
+
+if [[ ! -f "$test_file" ]]; then
+  echo "Test file $test_file does not exist."
+  exit 1
+fi
+if [[ ! -f "$expected_file" ]]; then
+  echo "Test $test_name has no .correct file - skipping"
+  exit 0
+fi
+
+# Create memory_test_logs directory if it doesn't exist
+mkdir -p "$project_root/memory_test_logs"
+
+# First run functional test
+"$lithium" "$test_file" > "$output_file" 2>&1
+functional_result=0
+if ! diff -b "$output_file" "$expected_file" > /dev/null; then
+    functional_result=1
+fi
+
+# Clean up output file
+rm -f "$output_file"
+
+# If functional test failed, report and exit
+if [[ $functional_result -ne 0 ]]; then
+    if [[ $silent -eq 0 ]]; then
+        echo -e " ${bold_red}●${nc} ${light_grey}${test_name}${nc} - Functional test failed"
+        if [[ $verbose -eq 1 ]]; then
+            echo "Functional test output differences:"
+            "$lithium" "$test_file" > "$output_file" 2>&1
+            diff -b "$output_file" "$expected_file" | head -10
+            rm -f "$output_file"
+        fi
+    fi
+    exit 1
+fi
+
+# Run memory test with valgrind
+memory_log="$project_root/memory_test_logs/${test_name//\//_}.log"
+
+# Get absolute path to test file
+test_file_abs="$(pwd)/$test_file"
+
+valgrind --tool=memcheck \
+         --leak-check=full \
+         --show-leak-kinds=all \
+         --track-origins=yes \
+         --log-file="$memory_log" \
+         --error-exitcode=1 \
+         "$lithium" "$test_file_abs" > /dev/null 2>&1
+
+valgrind_exit=$?
+
+# Check for memory leaks
+memory_clean=0
+if grep -q "All heap blocks were freed -- no leaks are possible" "$memory_log" || \
+   (grep -q "definitely lost: 0 bytes" "$memory_log" && \
+    grep -q "indirectly lost: 0 bytes" "$memory_log" && \
+    grep -q "possibly lost: 0 bytes" "$memory_log"); then
+    memory_clean=1
+fi
+
+if [[ $memory_clean -eq 1 ]]; then
+    # Memory test passed
+    if [[ $silent -eq 0 ]]; then
+        echo -e " ${bold_green}●${nc} ${light_grey}${test_name}${nc} - Both functional and memory tests passed"
+    fi
+    # Clean up log file for passed tests
+    rm -f "$memory_log"
+    exit 0
+else
+    # Memory test failed
+    if [[ $silent -eq 0 ]]; then
+        echo -e " ${bold_red}●${nc} ${light_grey}${test_name}${nc} - Memory leak detected"
+        if [[ $verbose -eq 1 ]]; then
+            echo "Memory leak summary:"
+            grep -E "(definitely lost|indirectly lost|possibly lost)" "$memory_log" | head -3 | sed 's/^/  /'
+            echo ""
+            echo "Full valgrind log saved to: $memory_log"
+        else
+            echo "Use -v for detailed memory leak information"
+            echo "Memory leak log saved to: $memory_log"
+        fi
+    fi
+    exit 1
+fi
