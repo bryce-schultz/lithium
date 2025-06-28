@@ -1,0 +1,31 @@
+class TestClass
+{
+    let value = 42;
+}
+
+class EmptyClass
+{
+}
+
+class AnotherClass
+{
+    let name = "Test";
+}
+
+println("=== String + Class ===");
+println("Result:", "Class: " + TestClass);
+println("Result:", "Empty: " + EmptyClass);
+println("Result:", "Another: " + AnotherClass);
+
+println("=== Class + String ===");
+println("Result:", TestClass + " definition");
+println("Result:", EmptyClass + " is empty");
+println("Result:", AnotherClass + " has name");
+
+println("=== Mixed Class and Object ===");
+let obj = TestClass();
+println("Result:", "Class " + TestClass + " creates " + obj);
+println("Result:", obj + " is instance of " + TestClass);
+
+println("=== Multiple Classes ===");
+println("Result:", TestClass + " and " + EmptyClass + " and " + AnotherClass);

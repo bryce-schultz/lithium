@@ -1,0 +1,19 @@
+class TestClass
+{
+    let name = "Object";
+    let value = 42;
+}
+
+let obj = TestClass();
+
+println("String + Object:", "Hello " + obj);
+println("Object + String:", obj + " World");
+println("Complex:", "Name: " + obj + ", Done");
+
+let str1 = "Prefix " + obj;
+let str2 = obj + " Suffix";
+println("Stored result 1:", str1);
+println("Stored result 2:", str2);
+
+println("Object member:", "Value is " + obj.value);
+println("Mixed:", "Object " + obj + " has value " + obj.value);

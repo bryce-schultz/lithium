@@ -1,0 +1,7 @@
+class TestClass
+{
+    let value = 42;
+}
+
+println("String + Class:", "Class: " + TestClass);
+println("Class + String:", TestClass + " definition");

@@ -1,0 +1,7 @@
+String + Object: Hello { name: Object, value: 42 }
+Object + String: { name: Object, value: 42 } World
+Complex: Name: { name: Object, value: 42 }, Done
+Stored result 1: Prefix { name: Object, value: 42 }
+Stored result 2: { name: Object, value: 42 } Suffix
+Object member: Value is 42
+Mixed: Object { name: Object, value: 42 } has value 42

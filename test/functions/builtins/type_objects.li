@@ -1,0 +1,39 @@
+class Person
+{
+    let name = "John";
+    let age = 30;
+}
+
+class Vehicle
+{
+    let model = "Car";
+}
+
+class EmptyClass
+{
+}
+
+let person = Person();
+let vehicle = Vehicle();
+let empty = EmptyClass();
+
+println("=== Object Instance Types ===");
+println("Person instance:", type(person));
+println("Vehicle instance:", type(vehicle));
+println("Empty class instance:", type(empty));
+
+println("=== Class Definition Types ===");
+println("Person class:", type(Person));
+println("Vehicle class:", type(Vehicle));
+println("Empty class:", type(EmptyClass));
+
+println("=== Basic Type Verification ===");
+println("String type:", type("hello"));
+println("Number type:", type(42));
+println("Boolean type:", type(true));
+println("Null type:", type(null));
+
+println("=== Type in Expressions ===");
+println("Type comparison:", type(person) + " vs " + type(vehicle));
+println("Same type check:", type(person) + " == Person: " + (type(person) == "Person"));
+println("Different type check:", type(vehicle) + " == Person: " + (type(vehicle) == "Person"));

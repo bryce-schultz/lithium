@@ -271,6 +271,11 @@ bool ArrayValue::toBoolean() const
     return !elements.empty();
 }
 
+string ArrayValue::typeAsString() const
+{
+    return "array";
+}
+
 shared_ptr<Value> ArrayValue::eq(const shared_ptr<ArrayValue> &other) const
 {
     if (elements.size() != (size_t)other->getElementCount())

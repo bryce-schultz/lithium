@@ -1,0 +1,18 @@
+=== Empty and Special Strings ===
+Empty: { empty: , spaces:    , special: !@#$% }
+Spaces:    { empty: , spaces:    , special: !@#$% }
+Special: !@#$%{ empty: , spaces:    , special: !@#$% }
+=== Nested Objects ===
+Nested: Outer: { inner: { empty: , spaces:    , special: !@#$% } } Inner: { empty: , spaces:    , special: !@#$% }
+Deep: { empty: , spaces:    , special: !@#$% } has empty: ''
+=== Object in Different Contexts ===
+Start: { empty: , spaces:    , special: !@#$% } at beginning
+Middle: before { empty: , spaces:    , special: !@#$% } after
+End: ending with { empty: , spaces:    , special: !@#$% }
+=== Multiple Same Objects ===
+Same obj: { empty: , spaces:    , special: !@#$% } equals { empty: , spaces:    , special: !@#$% }
+Chain: First { empty: , spaces:    , special: !@#$% } Second { empty: , spaces:    , special: !@#$% } Third { empty: , spaces:    , special: !@#$% }
+=== String Escapes with Objects ===
+Newline: Object\n{ empty: , spaces:    , special: !@#$% }
+Tab: Object\t{ empty: , spaces:    , special: !@#$% }
+Quote: Object"{ empty: , spaces:    , special: !@#$% }"

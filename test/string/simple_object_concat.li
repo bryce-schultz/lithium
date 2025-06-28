@@ -1,0 +1,15 @@
+class TestClass
+{
+    let value = 42;
+}
+
+let obj = TestClass();
+
+let result1 = "Hello " + obj;
+println("String + Object:", result1);
+
+let result2 = obj + " World";
+println("Object + String:", result2);
+
+let result3 = "Value: " + obj + " End";
+println("Chained concatenation:", result3);

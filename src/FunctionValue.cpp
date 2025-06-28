@@ -55,6 +55,11 @@ string FunctionValue::toString() const
     return "<function " + name + ">";
 }
 
+string FunctionValue::typeAsString() const
+{
+    return "function";
+}
+
 shared_ptr<Value> FunctionValue::eq(const shared_ptr<FunctionValue> &other) const
 {
     if (!other)

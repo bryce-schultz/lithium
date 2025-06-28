@@ -1,0 +1,14 @@
+=== Object with Methods ===
+Person object: The person is { age: 30, name: John }
+Name method: Name: John
+Age method: Age: 30
+=== Function Results in Concatenation ===
+Greeting: Hello John, you are 30 years old
+=== Object Properties ===
+Direct name: Name is John
+Direct age: Age is 30
+=== Complex Object Description ===
+Description: Person { age: 30, name: John } named John aged 30
+=== Object Assignment and Concatenation ===
+Same reference: obj1: { age: 30, name: John } person: { age: 30, name: John }
+Different objects: obj1: { age: 30, name: John } obj2: { age: 30, name: John }

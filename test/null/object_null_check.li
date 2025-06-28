@@ -1,0 +1,113 @@
+class TestClass
+{
+    let value = 42;
+}
+
+let nullVar = null;
+
+if (nullVar == null)
+{
+    println("pass: null variable equals null");
+}
+else
+{
+    println("fail: null variable should equal null");
+}
+
+if (nullVar != null)
+{
+    println("fail: null variable should equal null (using !=)");
+}
+else
+{
+    println("pass: null variable equals null (using !=)");
+}
+
+if (null == nullVar)
+{
+    println("pass: null literal equals null variable");
+}
+else
+{
+    println("fail: null literal should equal null variable");
+}
+
+if (null != nullVar)
+{
+    println("fail: null literal should equal null variable (using !=)");
+}
+else
+{
+    println("pass: null literal equals null variable (using !=)");
+}
+
+let obj = TestClass();
+println("Created object:", obj);
+println("Object value property:", obj.value);
+
+if (obj == null)
+{
+    println("fail: object should not equal null");
+}
+else
+{
+    println("pass: object does not equal null");
+}
+
+if (obj != null)
+{
+    println("pass: object is not null (using !=)");
+}
+else
+{
+    println("fail: object should not be null (using !=)");
+}
+
+if (null == obj)
+{
+    println("fail: null should not equal object");
+}
+else
+{
+    println("pass: null does not equal object");
+}
+
+if (null != obj)
+{
+    println("pass: null is not equal to object (using !=)");
+}
+else
+{
+    println("fail: null should not equal object (using !=)");
+}
+
+let obj2 = TestClass();
+if (obj == obj2)
+{
+    println("fail: different object instances should not be equal");
+}
+else
+{
+    println("pass: different object instances are not equal");
+}
+
+if (obj != obj2)
+{
+    println("pass: different object instances are not equal (using !=)");
+}
+else
+{
+    println("fail: different object instances should not be equal (using !=)");
+}
+
+if (obj == obj)
+{
+    println("pass: object equals itself");
+}
+else
+{
+    println("fail: object should equal itself");
+}
+
+println("String concatenation with object:", "Result: " + obj);
+println("Object concatenation with string:", obj + " - concatenated");

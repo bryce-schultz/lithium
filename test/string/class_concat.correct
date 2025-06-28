@@ -1,0 +1,13 @@
+=== String + Class ===
+Result: Class: <class TestClass>
+Result: Empty: <class EmptyClass>
+Result: Another: <class AnotherClass>
+=== Class + String ===
+Result: <class TestClass> definition
+Result: <class EmptyClass> is empty
+Result: <class AnotherClass> has name
+=== Mixed Class and Object ===
+Result: Class <class TestClass> creates { value: 42 }
+Result: { value: 42 } is instance of <class TestClass>
+=== Multiple Classes ===
+Result: <class TestClass> and <class EmptyClass> and <class AnotherClass>

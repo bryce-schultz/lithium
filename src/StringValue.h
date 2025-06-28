@@ -19,12 +19,15 @@ public:
     bool toBoolean() const override; // Override toBoolean for string values
 
     virtual shared_ptr<Value> getMember(const string &name) const override;
+    virtual string typeAsString() const override;
 public:
     virtual shared_ptr<Value> add(const shared_ptr<NumberValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<StringValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<BooleanValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<ArrayValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<NullValue> &other) const override;
+    virtual shared_ptr<Value> add(const shared_ptr<ClassValue> &other) const override;
+    virtual shared_ptr<Value> add(const shared_ptr<ObjectValue> &other) const override;
 
     virtual shared_ptr<Value> eq(const shared_ptr<StringValue> &other) const override;
     virtual shared_ptr<Value> eq(const shared_ptr<NumberValue> &other) const override;

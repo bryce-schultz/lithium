@@ -11,6 +11,16 @@ string NullValue::toString() const
     return "null";
 }
 
+bool NullValue::toBoolean() const
+{
+    return false;
+}
+
+string NullValue::typeAsString() const
+{
+    return "null";
+}
+
 shared_ptr<Value> NullValue::add(const shared_ptr<StringValue> &other) const
 {
     if (!other) return nullptr;
@@ -97,6 +107,30 @@ shared_ptr<Value> NullValue::eq(const shared_ptr<ArrayValue> &other) const
 }
 
 shared_ptr<Value> NullValue::ne(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> NullValue::eq(const shared_ptr<ClassValue> &other) const
+{
+    if (!other) return nullptr;
+    return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> NullValue::ne(const shared_ptr<ClassValue> &other) const
+{
+    if (!other) return nullptr;
+    return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> NullValue::eq(const shared_ptr<ObjectValue> &other) const
+{
+    if (!other) return nullptr;
+    return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> NullValue::ne(const shared_ptr<ObjectValue> &other) const
 {
     if (!other) return nullptr;
     return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));

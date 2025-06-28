@@ -1,0 +1,18 @@
+=== String + Object + Numbers ===
+Result: Object { name: test, value: 42 } with number 123
+Result: Number 456: { name: test, value: 42 }
+=== String + Object + Booleans ===
+Result: Object { name: test, value: 42 } is active: true
+Result: Status false for { name: test, value: 42 }
+=== String + Object + null ===
+Result: Object { name: test, value: 42 } and null value: null
+Result: null and { name: test, value: 42 } together
+=== Object member concatenation ===
+Result: Value is 42 and name is test
+Result: test has value 42
+=== Complex string expressions ===
+Complex: Object { name: test, value: 42 } has value 42 (active: true)
+=== Object with string literals ===
+Quote: '{ name: test, value: 42 }'
+Brackets: [{ name: test, value: 42 }]
+Parentheses: ({ name: test, value: 42 })

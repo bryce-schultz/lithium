@@ -55,6 +55,11 @@ bool NumberValue::toBoolean() const
     return value != 0.0;
 }
 
+string NumberValue::typeAsString() const
+{
+    return "number";
+}
+
 shared_ptr<Value> NumberValue::add(const shared_ptr<NumberValue> &other) const
 {
     return make_shared<NumberValue>(value + other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));

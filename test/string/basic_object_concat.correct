@@ -1,0 +1,14 @@
+=== Basic String + Object ===
+Result: Hello { value: 123 }
+Result: Value: { active: true, id: 456, name: Test }
+=== Basic Object + String ===
+Result: { value: 123 } World
+Result: { active: true, id: 456, name: Test } Done
+=== Empty String Concatenation ===
+Result: { value: 123 }
+Result: { value: 123 }
+=== Multiple Object Concatenation ===
+Result: { value: 123 } and { active: true, id: 456, name: Test }
+Result: First: { value: 123 }, Second: { active: true, id: 456, name: Test } End
+=== Chained Operations ===
+Final: Start { value: 123 } Middle { active: true, id: 456, name: Test } Finish

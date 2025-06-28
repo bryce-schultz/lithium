@@ -1,0 +1,32 @@
+class TestClass
+{
+    let value = 42;
+    let name = "test";
+}
+
+let obj = TestClass();
+
+println("=== String + Object + Numbers ===");
+println("Result:", "Object " + obj + " with number 123");
+println("Result:", "Number 456: " + obj);
+
+println("=== String + Object + Booleans ===");
+println("Result:", "Object " + obj + " is active: true");
+println("Result:", "Status false for " + obj);
+
+println("=== String + Object + null ===");
+println("Result:", "Object " + obj + " and null value: null");
+println("Result:", "null and " + obj + " together");
+
+println("=== Object member concatenation ===");
+println("Result:", "Value is " + obj.value + " and name is " + obj.name);
+println("Result:", obj.name + " has value " + obj.value);
+
+println("=== Complex string expressions ===");
+let result = "Object " + obj + " has value " + obj.value + " (active: true)";
+println("Complex:", result);
+
+println("=== Object with string literals ===");
+println("Quote:", "'" + obj + "'");
+println("Brackets:", "[" + obj + "]");
+println("Parentheses:", "(" + obj + ")");

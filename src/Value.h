@@ -28,6 +28,8 @@ class BooleanValue;
 class FunctionValue;
 class BuiltinFunctionValue;
 class ArrayValue;
+class ClassValue;
+class ObjectValue;
 
 class Value
 {
@@ -45,7 +47,7 @@ public:
         object // for instances of classes
     };
 
-    string typeAsString() const;
+    virtual string typeAsString() const;
 public:
     enum ResultStatus
     {
@@ -102,6 +104,8 @@ public:
     virtual shared_ptr<Value> add(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> add(const shared_ptr<BuiltinFunctionValue> &other) const;
     virtual shared_ptr<Value> add(const shared_ptr<ArrayValue> &other) const;
+    virtual shared_ptr<Value> add(const shared_ptr<ClassValue> &other) const;
+    virtual shared_ptr<Value> add(const shared_ptr<ObjectValue> &other) const;
 
     // - operator overloads
     virtual shared_ptr<Value> sub(const shared_ptr<NullValue> &other) const;
@@ -147,6 +151,8 @@ public:
     virtual shared_ptr<Value> eq(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> eq(const shared_ptr<BuiltinFunctionValue> &other) const;
     virtual shared_ptr<Value> eq(const shared_ptr<ArrayValue> &other) const;
+    virtual shared_ptr<Value> eq(const shared_ptr<ClassValue> &other) const;
+    virtual shared_ptr<Value> eq(const shared_ptr<ObjectValue> &other) const;
 
     // != operator overloads
     virtual shared_ptr<Value> ne(const shared_ptr<NullValue> &other) const;
@@ -156,6 +162,8 @@ public:
     virtual shared_ptr<Value> ne(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> ne(const shared_ptr<BuiltinFunctionValue> &other) const;
     virtual shared_ptr<Value> ne(const shared_ptr<ArrayValue> &other) const;
+    virtual shared_ptr<Value> ne(const shared_ptr<ClassValue> &other) const;
+    virtual shared_ptr<Value> ne(const shared_ptr<ObjectValue> &other) const;
 
     // < operator overloads
 

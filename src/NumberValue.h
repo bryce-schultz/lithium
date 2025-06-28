@@ -19,6 +19,7 @@ public:
 
     virtual string toString() const override;
     virtual bool toBoolean() const override;
+    virtual string typeAsString() const override;
 public:
     virtual shared_ptr<Value> add(const shared_ptr<NumberValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<StringValue> &other) const override;

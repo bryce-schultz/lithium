@@ -1,0 +1,15 @@
+pass: null variable equals null
+pass: null variable equals null (using !=)
+pass: null literal equals null variable
+pass: null literal equals null variable (using !=)
+Created object: { value: 42 }
+Object value property: 42
+pass: object does not equal null
+pass: object is not null (using !=)
+pass: null does not equal object
+pass: null is not equal to object (using !=)
+pass: different object instances are not equal
+pass: different object instances are not equal (using !=)
+pass: object equals itself
+String concatenation with object: Result: { value: 42 }
+Object concatenation with string: { value: 42 } - concatenated

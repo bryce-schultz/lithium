@@ -105,6 +105,11 @@ shared_ptr<Value> StringValue::getMember(const string &name) const
     return Value::getMember(name);
 }
 
+string StringValue::typeAsString() const
+{
+    return "string";
+}
+
 shared_ptr<Value> StringValue::add(const shared_ptr<NumberValue> &other) const
 {
     return make_shared<StringValue>(value + other->toString(), Range(getRange().getStart(), other->getRange().getEnd()));
@@ -126,6 +131,16 @@ shared_ptr<Value> StringValue::add(const shared_ptr<NullValue> &other) const
 }
 
 shared_ptr<Value> StringValue::add(const shared_ptr<ArrayValue> &other) const
+{
+    return make_shared<StringValue>(value + other->toString(), Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> StringValue::add(const shared_ptr<ClassValue> &other) const
+{
+    return make_shared<StringValue>(value + other->toString(), Range(getRange().getStart(), other->getRange().getEnd()));
+}
+
+shared_ptr<Value> StringValue::add(const shared_ptr<ObjectValue> &other) const
 {
     return make_shared<StringValue>(value + other->toString(), Range(getRange().getStart(), other->getRange().getEnd()));
 }

@@ -18,30 +18,31 @@ public:
     // Destructor to break reference cycles
     virtual ~ObjectValue();
 
+    // Get the class name of this object instance
+    const string& getClassName() const;
+
     // intercept the getMember and setMember calls to use the environment
-    virtual shared_ptr<Value> getMember(const string &name) const override
-    {
-        return env->lookup(name);
-    }
+    virtual shared_ptr<Value> getMember(const string &name) const override;
 
     // intercept the setMember call to use the environment
-    virtual Result<Value> setMember(const string &name, const shared_ptr<Value> &value) override
-    {
-        return env->assign(name, value);
-    }
+    virtual Result<Value> setMember(const string &name, const shared_ptr<Value> &value) override;
 
     // add a member to the environment, returns true if successful
-    virtual bool addMember(const string &name, const shared_ptr<Value> &value, bool isConst) override
-    {
-        return env->declare(name, value, isConst) != nullptr;
-    }
+    virtual bool addMember(const string &name, const shared_ptr<Value> &value, bool isConst) override;
 
-    virtual const std::map<string, shared_ptr<Value>> &getMembers() const override
-    {
-        return env->getMembers();
-    }
+    virtual const std::map<string, shared_ptr<Value>> &getMembers() const override;
+
+    // Addition operations (for string concatenation)
+    virtual shared_ptr<Value> add(const shared_ptr<StringValue> &other) const override;
+
+    // Equality operations
+    virtual shared_ptr<Value> eq(const shared_ptr<NullValue> &other) const override;
+    virtual shared_ptr<Value> ne(const shared_ptr<NullValue> &other) const override;
+    virtual shared_ptr<Value> eq(const shared_ptr<ObjectValue> &other) const override;
+    virtual shared_ptr<Value> ne(const shared_ptr<ObjectValue> &other) const override;
 
     virtual string toString() const override;
+    virtual string typeAsString() const override;
 private:
     string name;
     shared_ptr<Environment> env;

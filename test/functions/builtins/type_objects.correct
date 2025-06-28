@@ -1,0 +1,17 @@
+=== Object Instance Types ===
+Person instance: Person
+Vehicle instance: Vehicle
+Empty class instance: EmptyClass
+=== Class Definition Types ===
+Person class: class
+Vehicle class: class
+Empty class: class
+=== Basic Type Verification ===
+String type: string
+Number type: number
+Boolean type: boolean
+Null type: null
+=== Type in Expressions ===
+Type comparison: Person vs Vehicle
+Same type check: Person == Person: true
+Different type check: Vehicle == Person: false

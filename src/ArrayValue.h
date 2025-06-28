@@ -24,6 +24,8 @@ public:
 
     string toString() const override;
     bool toBoolean() const override;
+
+    virtual string typeAsString() const override;
 public:
     virtual shared_ptr<Value> eq(const shared_ptr<ArrayValue> &other) const override;
     virtual shared_ptr<Value> eq(const shared_ptr<NullValue> &other) const override;

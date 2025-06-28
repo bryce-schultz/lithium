@@ -1,0 +1,37 @@
+class EdgeCase
+{
+    let empty = "";
+    let spaces = "   ";
+    let special = "!@#$%";
+}
+
+class Nested
+{
+    let inner = EdgeCase();
+}
+
+let edge = EdgeCase();
+let nested = Nested();
+
+println("=== Empty and Special Strings ===");
+println("Empty:", edge.empty + edge);
+println("Spaces:", edge.spaces + edge);
+println("Special:", edge.special + edge);
+
+println("=== Nested Objects ===");
+println("Nested:", "Outer: " + nested + " Inner: " + nested.inner);
+println("Deep:", nested.inner + " has empty: '" + nested.inner.empty + "'");
+
+println("=== Object in Different Contexts ===");
+println("Start:", edge + " at beginning");
+println("Middle:", "before " + edge + " after");
+println("End:", "ending with " + edge);
+
+println("=== Multiple Same Objects ===");
+println("Same obj:", edge + " equals " + edge);
+println("Chain:", "First " + edge + " Second " + edge + " Third " + edge);
+
+println("=== String Escapes with Objects ===");
+println("Newline:", "Object\\n" + edge);
+println("Tab:", "Object\\t" + edge);
+println("Quote:", "Object\"" + edge + "\"");

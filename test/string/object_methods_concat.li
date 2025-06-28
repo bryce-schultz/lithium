@@ -1,0 +1,40 @@
+class PersonClass
+{
+    let name = "John";
+    let age = 30;
+    
+    fn getName()
+    {
+        return name;
+    }
+    
+    fn getAge()
+    {
+        return age;
+    }
+}
+
+let person = PersonClass();
+
+println("=== Object with Methods ===");
+println("Person object:", "The person is " + person);
+println("Name method:", "Name: " + person.getName());
+println("Age method:", "Age: " + person.getAge());
+
+println("=== Function Results in Concatenation ===");
+let greeting = "Hello " + person.getName() + ", you are " + person.getAge() + " years old";
+println("Greeting:", greeting);
+
+println("=== Object Properties ===");
+println("Direct name:", "Name is " + person.name);
+println("Direct age:", "Age is " + person.age);
+
+println("=== Complex Object Description ===");
+let description = "Person " + person + " named " + person.name + " aged " + person.age;
+println("Description:", description);
+
+println("=== Object Assignment and Concatenation ===");
+let obj1 = person;
+let obj2 = PersonClass();
+println("Same reference:", "obj1: " + obj1 + " person: " + person);
+println("Different objects:", "obj1: " + obj1 + " obj2: " + obj2);

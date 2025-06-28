@@ -1,0 +1,36 @@
+class SimpleClass
+{
+    let value = 123;
+}
+
+class ComplexClass
+{
+    let name = "Test";
+    let id = 456;
+    let active = true;
+}
+
+let simple = SimpleClass();
+let complex = ComplexClass();
+
+println("=== Basic String + Object ===");
+println("Result:", "Hello " + simple);
+println("Result:", "Value: " + complex);
+
+println("=== Basic Object + String ===");
+println("Result:", simple + " World");
+println("Result:", complex + " Done");
+
+println("=== Empty String Concatenation ===");
+println("Result:", "" + simple);
+println("Result:", simple + "");
+
+println("=== Multiple Object Concatenation ===");
+println("Result:", simple + " and " + complex);
+println("Result:", "First: " + simple + ", Second: " + complex + " End");
+
+println("=== Chained Operations ===");
+let result1 = "Start " + simple;
+let result2 = result1 + " Middle " + complex;
+let result3 = result2 + " Finish";
+println("Final:", result3);

@@ -27,6 +27,11 @@ bool BooleanValue::toBoolean() const
     return value;
 }
 
+string BooleanValue::typeAsString() const
+{
+    return "boolean";
+}
+
 shared_ptr<Value> BooleanValue::eq(const shared_ptr<BooleanValue> &other) const
 {
     return make_shared<BooleanValue>(value == other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));

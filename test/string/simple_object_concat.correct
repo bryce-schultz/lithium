@@ -1,0 +1,3 @@
+String + Object: Hello { value: 42 }
+Object + String: { value: 42 } World
+Chained concatenation: Value: { value: 42 } End

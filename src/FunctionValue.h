@@ -33,6 +33,8 @@ public:
     void clearClosureEnv(); // clear closure environment to break cycles
     void rewriteClosureEnv(shared_ptr<Environment> newEnv); // rewrite closure environment
     string toString() const override;
+
+    virtual string typeAsString() const override;
 public:
     virtual shared_ptr<Value> eq(const shared_ptr<FunctionValue> &other) const;
     virtual shared_ptr<Value> eq(const shared_ptr<NullValue> &other) const;

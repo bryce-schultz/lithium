@@ -5,18 +5,8 @@
 
 string Value::typeAsString() const
 {
-    switch (type)
-    {
-        case Type::null: return "null";
-        case Type::number: return "number";
-        case Type::string: return "string";
-        case Type::boolean: return "boolean";
-        case Type::function: return "function";
-        case Type::builtin: return "builtin";
-        case Type::array: return "array";
-        case Type::class_: return "class";
-        default: return "unknown";
-    }
+    return "value";
+    // subclasses should override this method to return their specific type as a string
 }
 
 Value::Value(Type type, Range range):
@@ -128,6 +118,10 @@ shared_ptr<Value> Value::add(const shared_ptr<Value> &other) const
             return add(static_pointer_cast<BuiltinFunctionValue>(other));
         case Type::array:
             return add(static_pointer_cast<ArrayValue>(other));
+        case Type::class_:
+            return add(static_pointer_cast<ClassValue>(other));
+        case Type::object:
+            return add(static_pointer_cast<ObjectValue>(other));
         default:
             return nullptr; // Unsupported type for addition
     }
@@ -253,6 +247,10 @@ shared_ptr<Value> Value::eq(const shared_ptr<Value> &other) const
             return eq(static_pointer_cast<BuiltinFunctionValue>(other));
         case Type::array:
             return eq(static_pointer_cast<ArrayValue>(other));
+        case Type::class_:
+            return eq(static_pointer_cast<ClassValue>(other));
+        case Type::object:
+            return eq(static_pointer_cast<ObjectValue>(other));
         default:
             return nullptr; // Unsupported type for equality check
     }
@@ -278,6 +276,10 @@ shared_ptr<Value> Value::ne(const shared_ptr<Value> &other) const
             return ne(static_pointer_cast<BuiltinFunctionValue>(other));
         case Type::array:
             return ne(static_pointer_cast<ArrayValue>(other));
+        case Type::class_:
+            return ne(static_pointer_cast<ClassValue>(other));
+        case Type::object:
+            return ne(static_pointer_cast<ObjectValue>(other));
         default:
             return nullptr; // Unsupported type for inequality check
     }
@@ -500,6 +502,18 @@ shared_ptr<Value> Value::add(const shared_ptr<ArrayValue> &other) const
     return nullptr;
 }
 
+shared_ptr<Value> Value::add(const shared_ptr<ClassValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::add(const shared_ptr<ObjectValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
 shared_ptr<Value> Value::sub(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -709,6 +723,18 @@ shared_ptr<Value> Value::eq(const shared_ptr<ArrayValue> &other) const
     return nullptr;
 }
 
+shared_ptr<Value> Value::eq(const shared_ptr<ClassValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::eq(const shared_ptr<ObjectValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
 shared_ptr<Value> Value::ne(const shared_ptr<NullValue> &other) const
 {
     if (!other) return nullptr;
@@ -746,6 +772,18 @@ shared_ptr<Value> Value::ne(const shared_ptr<BuiltinFunctionValue> &other) const
 }
 
 shared_ptr<Value> Value::ne(const shared_ptr<ArrayValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<ClassValue> &other) const
+{
+    if (!other) return nullptr;
+    return nullptr;
+}
+
+shared_ptr<Value> Value::ne(const shared_ptr<ObjectValue> &other) const
 {
     if (!other) return nullptr;
     return nullptr;
