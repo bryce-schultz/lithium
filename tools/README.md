@@ -47,6 +47,34 @@ cd tools
 ./test_crashes.sh
 ```
 
+## CI Testing Tools
+
+### add_failing_test.sh
+Creates an intentionally failing test to verify CI failure detection.
+
+**Usage:**
+```bash
+./tools/add_failing_test.sh
+```
+
+**Features:**
+- Creates `test/ci/failing_test.li` and corresponding `.correct` file
+- Ensures CI properly detects and reports test failures
+- Useful for verifying CI configuration
+
+### remove_failing_test.sh
+Removes the intentionally failing test for clean builds.
+
+**Usage:**
+```bash
+./tools/remove_failing_test.sh
+```
+
+**Features:**
+- Removes `test/ci/failing_test.*` files
+- Cleans up empty directories
+- Enables clean CI builds for production
+
 ## Output Files
 
 - **advanced_fuzzer_results.log** - Detailed results from advanced fuzzer

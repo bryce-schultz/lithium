@@ -48,6 +48,9 @@ The CI pipeline covers:
 ├── workflows/
 │   └── ci.yml              # Main CI workflow
 └── test_ci_basic.li        # Basic functionality test for CI
+
+test/ci/
+└── failing_test.li         # Intentionally failing test to verify CI detection
 ```
 
 ## Running Tests Locally
@@ -89,6 +92,18 @@ If CI fails:
 2. **Test Failures**: Review test output to identify which specific tests failed
 3. **Memory Issues**: Check valgrind output for memory leaks or access violations
 4. **Timeout Issues**: Some tests have timeouts to prevent hanging in CI
+
+**Note**: There is an intentionally failing test (`test/ci/failing_test.li`) to verify CI failure detection. 
+
+To remove it for clean builds:
+```bash
+./tools/remove_failing_test.sh
+```
+
+To restore it for CI testing:
+```bash
+./tools/add_failing_test.sh
+```
 
 ## Adding New Tests
 
