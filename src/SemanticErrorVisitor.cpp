@@ -43,7 +43,10 @@ void SemanticErrorVisitor::visit(FuncDeclNode *node)
 
     currentFunctionStack.insert(currentFunctionName);
 
-    if (node->getBody()) {
+    // Check if function has a body
+    if (!node->getBody()) {
+        error("function '" + currentFunctionName + "' has no body", node->getRange());
+    } else {
         node->getBody()->visit(this);
     }
 

@@ -630,6 +630,14 @@ void Interpreter::visit(CallNode *node)
         
         try
         {
+            if (!function->getBody()) {
+                error("function '" + function->getName() + "' has no body", node->getRange());
+                returnValue = nullptr;
+                recursionDepth--;
+                env = previousEnv;
+                return;
+            }
+            
             function->getBody()->visit(this);
             returnValue = nullptr;
         }
@@ -761,6 +769,12 @@ void Interpreter::visit(CallNode *node)
                 env = scope;
                 try
                 {
+                    if (!constructor->getBody()) {
+                        error("constructor '" + constructor->getName() + "' has no body", node->getRange());
+                        env = constructorPrevEnv;
+                        return;
+                    }
+                    
                     constructor->getBody()->visit(this);
                 }
                 catch (const ReturnException& e)

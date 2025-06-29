@@ -1,0 +1,5 @@
+fn workingFunction() {
+    println("This function works!");
+}
+
+workingFunction();
