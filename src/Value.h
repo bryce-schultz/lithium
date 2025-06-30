@@ -60,9 +60,9 @@ public:
     Value(Type type, Range range = {});
     virtual ~Value();
 
-    Type getType() const;
-    Range getRange() const;
-    void setRange(const Range &range);
+    inline Type getType() const { return type; }
+    inline Range getRange() const { return range; }
+    inline void setRange(const Range &range_) { range = range_; }
 
     virtual string toString() const = 0; // makes this class abstract
     virtual bool toBoolean() const;

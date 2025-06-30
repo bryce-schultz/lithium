@@ -7,10 +7,9 @@ class ClassValue : public Value
 public:
     ClassValue(const string &name, const shared_ptr<StatementNode> &body);
 
-    const string &getName() const;
-    void setName(const string &name);
-
-    shared_ptr<StatementNode> getBody() const;
+    inline const string &getName() const { return name; }
+    inline void setName(const string &n) { name = n; }
+    inline shared_ptr<StatementNode> getBody() const { return body; }
 
     // Addition operations (for string concatenation)
     virtual shared_ptr<Value> add(const shared_ptr<StringValue> &other) const override;

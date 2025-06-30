@@ -22,21 +22,6 @@ NumberValue::NumberValue(double value, Range range):
     value(value)
 { }
 
-double NumberValue::getValue() const
-{
-    return value;
-}
-
-void NumberValue::setValue(double value)
-{
-    this->value = value;
-}
-
-bool NumberValue::isInteger() const
-{
-    return value == static_cast<int>(value);
-}
-
 string NumberValue::toString() const
 {
 

@@ -8,12 +8,11 @@ public:
     StringValue(char c, Range range = {});
     StringValue(const string &value, Range range = {});
 
-    const string &getValue() const;
-    void setValue(const string &value);
-
-    char getCharAt(int index) const;
-    size_t length() const;
-    bool isEmpty() const;
+    inline const string &getValue() const { return value; }
+    inline void setValue(const string &v) { value = v; }
+    inline char getCharAt(int index) const { return value[index]; }
+    inline size_t length() const { return value.length(); }
+    inline bool isEmpty() const { return value.empty(); }
 
     string toString() const override;
     bool toBoolean() const override; // Override toBoolean for string values

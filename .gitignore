@@ -1,7 +1,7 @@
 # Compiled binaries and object files:
 *.o
-li
 src/li
+src/test_tokenizer
 
 # Log files:
 *.log

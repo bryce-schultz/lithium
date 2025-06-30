@@ -22,7 +22,7 @@ void ArgListNode::addArg(shared_ptr<ExpressionNode> arg)
 {
     if (arg)
     {
-        args.push_back(arg);
+        args.emplace_back(arg);
         if (args.size() == 1)
         {
             setRangeStart(arg->getRange().getStart());

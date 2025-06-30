@@ -16,11 +16,6 @@ ObjectValue::~ObjectValue()
     env.reset();
 }
 
-const string &ObjectValue::getClassName() const
-{
-    return name;
-}
-
 shared_ptr<Value> ObjectValue::getMember(const string &name) const
 {
     auto member = env->lookup(name);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <algorithm>
 
 #include "Value.h"
 
@@ -12,15 +13,25 @@ class ArrayValue : public Value
 public:
     ArrayValue(const vector<shared_ptr<Value>> &arr, Range range = {});
 
-    const vector<shared_ptr<Value>> &getElements() const;
-    shared_ptr<Value> getElement(int index) const;
-    void addElement(const shared_ptr<Value> &element);
-    void removeElement(int index);
-    int getElementCount() const;
-    bool isEmpty() const;
-    void clear();
-    void setElement(int index, const shared_ptr<Value> &value);
-    int find(const shared_ptr<Value> &value) const;
+    inline const vector<shared_ptr<Value>> &getElements() const { return elements; }
+    inline shared_ptr<Value> getElement(int index) const { return elements[index]; }
+    inline void addElement(const shared_ptr<Value> &element) { elements.push_back(element); }
+    inline void removeElement(int index) { elements.erase(elements.begin() + index); }
+    inline int getElementCount() const { return static_cast<int>(elements.size()); }
+    inline bool isEmpty() const { return elements.empty(); }
+    inline void clear() { elements.clear(); }
+    inline void setElement(int index, const shared_ptr<Value> &value) { elements[index] = value; }
+    inline int find(const shared_ptr<Value> &value) const
+    {
+        for (size_t i = 0; i < elements.size(); ++i)
+        {
+            if (elements[i]->eq(value)->toBoolean())
+            {
+                return static_cast<int>(i);
+            }
+        }
+        return -1;
+    }
 
     string toString() const override;
     bool toBoolean() const override;

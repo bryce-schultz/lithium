@@ -17,21 +17,6 @@ Value::Value(Type type, Range range):
 Value::~Value()
 { }
 
-Value::Type Value::getType() const
-{
-    return type;
-}
-
-Range Value::getRange() const
-{
-    return range;
-}
-
-void Value::setRange(const Range &range)
-{
-    this->range = range;
-}
-
 bool Value::toBoolean() const
 {
     return type != Type::null;

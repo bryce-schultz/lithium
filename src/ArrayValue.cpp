@@ -198,59 +198,6 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, Range range)
     ), true);
 }
 
-const vector<shared_ptr<Value>> &ArrayValue::getElements() const {
-    return elements;
-}
-
-shared_ptr<Value> ArrayValue::getElement(int index) const {
-    if (index < 0 || index >= static_cast<int>(elements.size())) {
-        return nullptr; // Index out of bounds
-    }
-    return elements[index];
-}
-
-void ArrayValue::addElement(const shared_ptr<Value> &element) {
-    elements.push_back(element);
-}
-
-void ArrayValue::removeElement(int index) {
-    if (index < 0 || index >= static_cast<int>(elements.size())) {
-        return; // Index out of bounds, do nothing
-    }
-    elements.erase(elements.begin() + index);
-}
-
-int ArrayValue::getElementCount() const {
-    return static_cast<int>(elements.size());
-}
-
-bool ArrayValue::isEmpty() const {
-    return elements.empty();
-}
-
-void ArrayValue::clear() {
-    elements.clear();
-}
-
-void ArrayValue::setElement(int index, const shared_ptr<Value> &value) {
-    if (index < 0 || index >= static_cast<int>(elements.size())) {
-        return; // Index out of bounds, do nothing
-    }
-    elements[index] = value;
-}
-
-int ArrayValue::find(const shared_ptr<Value> &value) const
-{
-    for (size_t i = 0; i < elements.size(); ++i)
-    {
-        if (elements[i]->eq(value)->toBoolean())
-        {
-            return static_cast<int>(i); // Return the index of the first matching element
-        }
-    }
-    return -1; // Return -1 if not found
-}
-
 string ArrayValue::toString() const
 {
     string result = "[";
@@ -325,21 +272,21 @@ shared_ptr<Value> ArrayValue::ne(const shared_ptr<NullValue> &other) const
 shared_ptr<Value> ArrayValue::add(const shared_ptr<NumberValue> &other) const
 {
     vector<shared_ptr<Value>> newElements = elements;
-    newElements.push_back(other);
+    newElements.emplace_back(other);
     return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> ArrayValue::add(const shared_ptr<StringValue> &other) const
 {
     vector<shared_ptr<Value>> newElements = elements;
-    newElements.push_back(other);
+    newElements.emplace_back(other);
     return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> ArrayValue::add(const shared_ptr<BooleanValue> &other) const
 {
     vector<shared_ptr<Value>> newElements = elements;
-    newElements.push_back(other);
+    newElements.emplace_back(other);
     return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
@@ -355,20 +302,20 @@ shared_ptr<Value> ArrayValue::add(const shared_ptr<ArrayValue> &other) const
 shared_ptr<Value> ArrayValue::add(const shared_ptr<FunctionValue> &other) const
 {
     vector<shared_ptr<Value>> newElements = elements;
-    newElements.push_back(other);
+    newElements.emplace_back(other);
     return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> ArrayValue::add(const shared_ptr<BuiltinFunctionValue> &other) const
 {
     vector<shared_ptr<Value>> newElements = elements;
-    newElements.push_back(other);
+    newElements.emplace_back(other);
     return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> ArrayValue::add(const shared_ptr<NullValue> &other) const
 {
     vector<shared_ptr<Value>> newElements = elements;
-    newElements.push_back(other);
+    newElements.emplace_back(other);
     return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
 }

@@ -19,7 +19,7 @@ public:
     virtual ~ObjectValue();
 
     // Get the class name of this object instance
-    const string& getClassName() const;
+    inline const string& getClassName() const { return name; }
 
     // intercept the getMember and setMember calls to use the environment
     virtual shared_ptr<Value> getMember(const string &name) const override;

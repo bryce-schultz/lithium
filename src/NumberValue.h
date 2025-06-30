@@ -12,10 +12,9 @@ public:
     NumberValue(unsigned long value, Range range = {});
     NumberValue(double value, Range range = {});
 
-    double getValue() const;
-    void setValue(double value);
-
-    bool isInteger() const;
+    inline double getValue() const { return value; }
+    inline void setValue(double v) { value = v; }
+    inline bool isInteger() const { return value == static_cast<int>(value); }
 
     virtual string toString() const override;
     virtual bool toBoolean() const override;

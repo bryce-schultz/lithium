@@ -108,7 +108,7 @@ shared_ptr<Value> Builtins::printf(const vector<shared_ptr<Value>> &args, shared
     {
         if (args[i])
         {
-            formatArgs.push_back(args[i]->toString());
+            formatArgs.emplace_back(args[i]->toString());
         }
     }
     string result = Utils::formatString(format, formatArgs);

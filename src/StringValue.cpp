@@ -62,35 +62,6 @@ StringValue::StringValue(const string &value, Range range):
     ), true);
 }
 
-const string &StringValue::getValue() const
-{
-    return value;
-}
-
-void StringValue::setValue(const string &value)
-{
-    this->value = value;
-}
-
-char StringValue::getCharAt(int index) const
-{
-    if (index < 0 || index >= static_cast<int>(value.length()))
-    {
-        return '\0'; // return null character for out-of-bounds index
-    }
-    return value[index];
-}
-
-size_t StringValue::length() const
-{
-    return value.length();
-}
-
-bool StringValue::isEmpty() const
-{
-    return value.empty();
-}
-
 string StringValue::toString() const
 {
     return value;
