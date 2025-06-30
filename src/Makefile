@@ -167,7 +167,8 @@ NumberNode.o: NumberNode.cpp NumberNode.h ExpressionNode.h \
 ObjectValue.o: ObjectValue.cpp ObjectValue.h Value.h StatementsNode.h \
  Node.h Range.h Location.h Visitor.h StatementNode.h Environment.h \
  Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
- ExpressionNode.h
+ ExpressionNode.h Values.h NullValue.h NumberValue.h StringValue.h \
+ BooleanValue.h FunctionValue.h ArrayValue.h ClassValue.h
 XmlVisitor.o: XmlVisitor.cpp XmlVisitor.h Visitor.h Nodes.h Node.h \
  Range.h Location.h ArgListNode.h ExpressionNode.h StatementNode.h \
  ArrayAccessNode.h Token.h ArrayNode.h AssignNode.h BinaryExprNode.h \
@@ -216,7 +217,9 @@ BinaryExprNode.o: BinaryExprNode.cpp BinaryExprNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h OpNode.h Token.h
 ClassValue.o: ClassValue.cpp ClassValue.h Value.h StatementsNode.h Node.h \
  Range.h Location.h Visitor.h StatementNode.h Environment.h Result.h \
- ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h
+ ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h \
+ Values.h NullValue.h NumberValue.h StringValue.h BooleanValue.h \
+ FunctionValue.h ArrayValue.h ObjectValue.h
 CallNode.o: CallNode.cpp CallNode.h ArgListNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h
 StatementsNode.o: StatementsNode.cpp StatementsNode.h Node.h Range.h \
@@ -244,7 +247,7 @@ ExpressionNode.o: ExpressionNode.cpp ExpressionNode.h StatementNode.h \
 Environment.o: Environment.cpp Environment.h Result.h Value.h \
  StatementsNode.h Node.h Range.h Location.h Visitor.h StatementNode.h \
  ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h \
- FunctionValue.h Error.h Color.h
+ FunctionValue.h ArrayValue.h Error.h Color.h
 Location.o: Location.cpp Location.h
 Utils.o: Utils.cpp Utils.h
 ForEachNode.o: ForEachNode.cpp ForEachNode.h StatementNode.h Node.h \
@@ -274,7 +277,8 @@ main.o: main.cpp Utils.h Parser.h Tokenizer.h Token.h Range.h Location.h \
  IfStatementNode.h ImportNode.h ReturnStatementNode.h WhileNode.h \
  Result.h Interpreter.h Environment.h Value.h SemanticErrorVisitor.h \
  Values.h NullValue.h NumberValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h Error.h Color.h
+ FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h Error.h Color.h \
+ Exceptions.h
 Parser.o: Parser.cpp Parser.h Tokenizer.h Token.h Range.h Location.h \
  Nodes.h Node.h Visitor.h ArgListNode.h ExpressionNode.h StatementNode.h \
  ArrayAccessNode.h ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h \
@@ -330,6 +334,6 @@ SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  ReturnStatementNode.h WhileNode.h Error.h Color.h
 
 # Options from .mk file:
-CXXFLAGS += -O3#0 -g -Wall -Wextra -Wpedantic
+CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -Werror
 MAIN_EXE = li
 
