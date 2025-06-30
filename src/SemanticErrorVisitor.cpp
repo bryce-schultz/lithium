@@ -7,6 +7,10 @@
     rangeError(msg, range, __FILE__, __LINE__); \
     errorCount++
 
+#define errorAt(msg, location, range) \
+    locationRangeError(msg, location, range, __FILE__, __LINE__); \
+    errorCount++;
+
 SemanticErrorVisitor::SemanticErrorVisitor():
     errorCount(0),
     functionDepth(0),
@@ -45,7 +49,7 @@ void SemanticErrorVisitor::visit(FuncDeclNode *node)
 
     // Check if function has a body
     if (!node->getBody()) {
-        error("function '" + currentFunctionName + "' has no body", node->getRange());
+        errorAt("function '" + currentFunctionName + "' has no body", node->getToken().getRange().getStart(), node->getRange());
     } else {
         node->getBody()->visit(this);
     }
@@ -152,7 +156,7 @@ void SemanticErrorVisitor::visit(ClassNode *node)
     // Check if class is defined inside a block or function
     if (blockDepth > 0 || functionDepth > 0)
     {
-        error("class '" + node->getName() + "' must be declared at global scope", node->getRange());
+        errorAt("class '" + node->getName() + "' must be declared at global scope", node->getToken().getRange().getStart(), node->getRange());
     }
 
     // Track that this class is declared

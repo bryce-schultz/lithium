@@ -1,0 +1,4 @@
+error: invalid_member_access.li:6:11: member 'foo' not found
+│ println(n.foo);  # Error: 'number' has no member 'foo'
+│         ~~~~~
+│           ^

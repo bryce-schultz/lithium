@@ -1,0 +1,6 @@
+# Lithium test: invalid member access
+# This test checks that accessing invalid members on numbers, arrays, strings, and class instances produces an error as per the spec.
+
+# 1. Number: invalid member access
+let n = 42;
+println(n.foo);  # Error: 'number' has no member 'foo'

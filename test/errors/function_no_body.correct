@@ -1,4 +1,4 @@
-error: function_no_body.li:2:1: function 'functionWithNoBody' has no body
-│ fn functionWithNoBody()
+error: function_no_body.li:2:4: function 'functionWithNoBody' has no body
+│ fn functionWithNoBody();
 │ ~~~~~~~~~~~~~~~~~~~~~
-│ ^
+│    ^

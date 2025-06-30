@@ -1,2 +1,2 @@
 # Test for function declaration with no body - should be semantic error
-fn functionWithNoBody()
+fn functionWithNoBody();

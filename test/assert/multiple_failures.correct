@@ -1,4 +1,4 @@
-error: multiple_failures.li:2:8: assertion failed:
+error: multiple_failures.li:2:8: assertion failed: 
 │ assert 1 > 2;
 │        ~~~~~
 │        ^

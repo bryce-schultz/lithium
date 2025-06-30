@@ -64,7 +64,7 @@ if [[ -z "$lithium" ]]; then
 fi
 
 "$lithium" "$test_file" > "$output_file" 2>&1
-if diff -b "$output_file" "$expected_file" > /dev/null; then
+if diff "$output_file" "$expected_file" > /dev/null; then
   [[ $silent -eq 0 ]] && {
     echo -e " ${bold_green}●${nc} ${test_name}"
   }
@@ -72,7 +72,7 @@ if diff -b "$output_file" "$expected_file" > /dev/null; then
   exit 0
 else
   [[ $silent -eq 0 ]] && {
-    diff -b "$output_file" "$expected_file"
+    diff "$output_file" "$expected_file"
     echo -e " ${bold_red}●${nc} ${test_name}"
   }
   exit 1

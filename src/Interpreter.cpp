@@ -631,7 +631,7 @@ void Interpreter::visit(CallNode *node)
         try
         {
             if (!function->getBody()) {
-                error("function '" + function->getName() + "' has no body", node->getRange());
+                errorAt("function '" + function->getName() + "' has no body", node->getCallee()->getRange().getStart(), node->getRange());
                 returnValue = nullptr;
                 recursionDepth--;
                 env = previousEnv;
