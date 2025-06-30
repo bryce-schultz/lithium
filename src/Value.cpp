@@ -9,9 +9,8 @@ string Value::typeAsString() const
     // subclasses should override this method to return their specific type as a string
 }
 
-Value::Value(Type type, Range range):
-    type(type),
-    range(range)
+Value::Value(Type type, const Range &range):
+    type(type), range(range)
 { }
 
 Value::~Value()

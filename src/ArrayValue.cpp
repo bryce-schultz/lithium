@@ -18,7 +18,7 @@ using std::dynamic_pointer_cast;
 #define errorAt(msg, location, range) \
     locationRangeError(msg, location, range, __FILE__, __LINE__)
 
-ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, Range range)
+ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     : Value(Type::array, range), elements(arr)
 {
     addMember("push", make_shared<BuiltinFunctionValue>(

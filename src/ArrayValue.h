@@ -11,7 +11,7 @@ using std::string;
 class ArrayValue : public Value
 {
 public:
-    ArrayValue(const vector<shared_ptr<Value>> &arr, Range range = {});
+    ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range = {});
 
     inline const vector<shared_ptr<Value>> &getElements() const { return elements; }
     inline shared_ptr<Value> getElement(int index) const { return elements[index]; }

@@ -8,9 +8,9 @@
 class NumberValue : public Value
 {
 public:
-    NumberValue(int value, Range range = {});
-    NumberValue(unsigned long value, Range range = {});
-    NumberValue(double value, Range range = {});
+    NumberValue(int value, const Range &range = {});
+    NumberValue(unsigned long value, const Range &range = {});
+    NumberValue(double value, const Range &range = {});
 
     inline double getValue() const { return value; }
     inline void setValue(double v) { value = v; }

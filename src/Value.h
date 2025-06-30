@@ -57,7 +57,7 @@ public:
         MEMBER_IS_CONSTANT = 3,
     };
 public:
-    Value(Type type, Range range = {});
+    Value(Type type, const Range &range = {});
     virtual ~Value();
 
     inline Type getType() const { return type; }

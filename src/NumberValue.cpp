@@ -7,20 +7,20 @@
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
 
-NumberValue::NumberValue(int value, Range range):
-    Value(Type::number, range),
-    value(static_cast<double>(value))
-{ }
+NumberValue::NumberValue(int value, const Range &range):
+    Value(Type::number, range), value(value)
+{
+}
 
-NumberValue::NumberValue(unsigned long value, Range range):
-    Value(Type::number, range),
-    value(static_cast<double>(value))
-{ }
+NumberValue::NumberValue(unsigned long value, const Range &range):
+    Value(Type::number, range), value(static_cast<double>(value))
+{
+}
 
-NumberValue::NumberValue(double value, Range range):
-    Value(Type::number, range),
-    value(value)
-{ }
+NumberValue::NumberValue(double value, const Range &range):
+    Value(Type::number, range), value(value)
+{
+}
 
 string NumberValue::toString() const
 {

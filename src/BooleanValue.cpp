@@ -2,7 +2,7 @@
 
 #include "Values.h"
 
-BooleanValue::BooleanValue(bool value, Range range):
+BooleanValue::BooleanValue(bool value, const Range &range):
     Value(Type::boolean, range), // set the type to boolean
     value(value)
 { }

@@ -1034,7 +1034,7 @@ void Interpreter::visit(AssignNode *node)
         }
 
         auto indexValue = dynamic_pointer_cast<NumberValue>(returnValue);
-        int index = static_cast<int>(indexValue->getValue());
+        int index = indexValue ? static_cast<int>(indexValue->getValue()) : 0;
 
         if (index < 0 || index >= arrayValue->getElementCount())
         {
@@ -1556,9 +1556,9 @@ void Interpreter::visit(ArrayAccessNode *node)
         }
 
         auto indexValue = dynamic_pointer_cast<NumberValue>(returnValue);
-        int index = static_cast<int>(indexValue->getValue());
+        int index = indexValue ? static_cast<int>(indexValue->getValue()) : 0;
 
-        if (index < 0 || index >= arrayValue->getElementCount())
+        if (index < 0 || index >= static_cast<int>(arrayValue->getElementCount()))
         {
             error("array index out of bounds: " + to_string(index), node->getIndex()->getRange());
             returnValue = nullptr;
@@ -1594,7 +1594,7 @@ void Interpreter::visit(ArrayAccessNode *node)
         }
 
         auto indexValue = dynamic_pointer_cast<NumberValue>(returnValue);
-        int index = static_cast<int>(indexValue->getValue());
+        int index = indexValue ? static_cast<int>(indexValue->getValue()) : 0;
 
         if (index < 0 || index >= static_cast<int>(stringValue->length()))
         {

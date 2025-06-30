@@ -7,7 +7,7 @@
 class BooleanValue : public Value
 {
 public:
-    BooleanValue(bool value, Range range = {});
+    BooleanValue(bool value, const Range &range = {});
 
     bool getValue() const;
     void setValue(bool value);

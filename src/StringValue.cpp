@@ -15,16 +15,13 @@ using std::make_shared;
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
 
-StringValue::StringValue(char c, Range range):
-    Value(Type::string, range), // set the type to string
-    value(1, c)
+StringValue::StringValue(char c, const Range &range):
+    Value(Type::string, range), value(1, c)
 {
-    constants.insert("length");
 }
 
-StringValue::StringValue(const string &value, Range range):
-    Value(Type::string, range),
-    value(value)
+StringValue::StringValue(const string &value, const Range &range):
+    Value(Type::string, range), value(value)
 {
     constants.insert("length");
 

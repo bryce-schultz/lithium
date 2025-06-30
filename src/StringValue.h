@@ -5,8 +5,8 @@
 class StringValue : public Value
 {
 public:
-    StringValue(char c, Range range = {});
-    StringValue(const string &value, Range range = {});
+    StringValue(char c, const Range &range = {});
+    StringValue(const string &value, const Range &range = {});
 
     inline const string &getValue() const { return value; }
     inline void setValue(const string &v) { value = v; }
