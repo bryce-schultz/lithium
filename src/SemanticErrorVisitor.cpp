@@ -113,34 +113,7 @@ void SemanticErrorVisitor::visit(BreakNode *node)
 
 void SemanticErrorVisitor::visit(CallNode *node)
 {
-    // First visit the callee to see what we're trying to call
-    auto calleeNode = node->getCallee();
-
-    // Check if it's a simple variable call (most common case for direct recursion)
-    if (auto varExpr = dynamic_cast<VarExprNode*>(calleeNode.get()))
-    {
-        std::string calleeName = varExpr->getName();
-
-        // Check for direct self-recursion
-        if (calleeName == currentFunctionName && functionDepth > 0)
-        {
-            // This is a direct recursive call - warn but don't error (recursion can be valid)
-            // We could add a warning system later, for now just track it
-        }
-
-        // Check if trying to call a class without proper instantiation
-        if (declaredClasses.find(calleeName) != declaredClasses.end())
-        {
-            // This is calling a class - warn that it might not have a constructor
-            // For now, we can't determine if it has a constructor without more analysis
-            // but we can at least flag it for review
-        }
-
-        // Check for mutual recursion patterns (simple case: A calls B, B calls A)
-        // This is more complex to detect perfectly, but we can catch simple cases
-    }
-
-    // Visit arguments and callee as normal
+    // visit arguments and callee as normal
     if (node->getArgs())
     {
         for (auto &arg : node->getArgs()->getArgs())
@@ -148,7 +121,8 @@ void SemanticErrorVisitor::visit(CallNode *node)
             arg->visit(this);
         }
     }
-    calleeNode->visit(this);
+    if (node->getCallee())
+        node->getCallee()->visit(this);
 }
 
 void SemanticErrorVisitor::visit(ClassNode *node)
@@ -172,10 +146,10 @@ void SemanticErrorVisitor::visit(ClassNode *node)
 void SemanticErrorVisitor::visit(BlockNode *node)
 {
     blockDepth++;
-    
+
     // Visit all statements in the block
     Visitor::visit(node);
-    
+
     blockDepth--;
 }
 
@@ -196,14 +170,11 @@ void SemanticErrorVisitor::visit(AssignNode *node)
 
 void SemanticErrorVisitor::visit(MemberAccessNode *node)
 {
-    // Visit the object being accessed
-    if (node->getExpression())
-    {
-        node->getExpression()->visit(this);
-    }
-
-    // We could add type checking here if we had type information
-    // For now, just ensure we visit all children
+    // visit the object being accessed
+    if (!node->getExpression())
+        return;
+    node->getExpression()->visit(this);
+    // for class instances and dynamic types, member checks must be done at runtime
 }
 
 void SemanticErrorVisitor::visit(ArrayAccessNode *node)
@@ -218,6 +189,4 @@ void SemanticErrorVisitor::visit(ArrayAccessNode *node)
     {
         node->getIndex()->visit(this);
     }
-
-    // We could add bounds checking and type validation here
 }
