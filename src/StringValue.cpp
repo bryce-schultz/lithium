@@ -7,6 +7,11 @@
 #include "Environment.h"
 #include "Utils.h"
 
+using std::shared_ptr;
+using std::string;
+using std::vector;
+using std::make_shared;
+
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
 
@@ -47,10 +52,10 @@ StringValue::StringValue(const string &value, Range range):
             size_t pos = 0, found;
             while ((found = this->value.find(delimiter, pos)) != string::npos)
             {
-                parts.push_back(make_shared<StringValue>(this->value.substr(pos, found - pos), range));
+                parts.push_back(std::make_shared<StringValue>(this->value.substr(pos, found - pos), range));
                 pos = found + delimiter.length();
             }
-            parts.push_back(make_shared<StringValue>(this->value.substr(pos), range));
+            parts.push_back(std::make_shared<StringValue>(this->value.substr(pos), range));
             return make_shared<ArrayValue>(parts, range);
         },
         getRange()

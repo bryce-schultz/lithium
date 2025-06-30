@@ -1,0 +1,19 @@
+import <time>
+
+const start = time();
+
+const count = 10000000;
+
+for (let i = 0; i < count; i++)
+{
+    let x = i * 2;
+    if (x % 3 == 0) {
+        x += 1;
+    }
+}
+
+const end = time();
+
+const duration = end - start;
+
+println("Time taken for " + count + " iterations: " + duration + " seconds");

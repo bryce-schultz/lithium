@@ -1,7 +1,7 @@
 #include "ClassValue.h"
 #include "Values.h"
 
-ClassValue::ClassValue(const std::string &name, shared_ptr<StatementNode> body):
+ClassValue::ClassValue(const std::string &name, const shared_ptr<StatementNode> &body):
     Value(Value::Type::class_),
     name(name),
     body(body)

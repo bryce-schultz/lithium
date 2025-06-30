@@ -567,10 +567,8 @@ shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNod
 void Interpreter::visit(CallNode *node)
 {
     vector<shared_ptr<Value>> args;
-    if (node->getArgs())
-    {
-        for (auto &arg : node->getArgs()->getArgs())
-        {
+    if (node->getArgs()) {
+        for (auto &arg : node->getArgs()->getArgs()) {
             arg->visit(this);
             args.push_back(returnValue);
         }
@@ -1474,7 +1472,7 @@ void Interpreter::visit(ImportNode *node)
 void Interpreter::visit(ArrayNode *node)
 {
     vector<shared_ptr<Value>> elements;
-    for (const auto &element : node->getElements())
+for (const auto &element : node->getElements())
     {
         element->visit(this);
         if (!returnValue)
