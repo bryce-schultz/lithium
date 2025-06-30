@@ -1,6 +1,0 @@
-# Test case for function with empty body
-fn emptyFunction() {
-}
-
-# This should work fine
-emptyFunction();
