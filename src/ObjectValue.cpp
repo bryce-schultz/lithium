@@ -66,6 +66,11 @@ const std::map<string, shared_ptr<Value>> &ObjectValue::getMembers() const
 
 string ObjectValue::toString() const
 {
+    if (env->getMembers().empty())
+    {
+        return "{ }";
+    }
+
     string result = "{ ";
     bool first = true;
     for (const auto &pair : env->getMembers())

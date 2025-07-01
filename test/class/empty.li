@@ -1,0 +1,5 @@
+class test
+{ }
+
+let t = test();
+println(t);

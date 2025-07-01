@@ -200,6 +200,11 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
 
 string ArrayValue::toString() const
 {
+    if (elements.empty())
+    {
+        return "[]";
+    }
+
     string result = "[";
     for (size_t i = 0; i < elements.size(); ++i)
     {
