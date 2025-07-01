@@ -51,6 +51,7 @@ public:
     virtual shared_ptr<Value> add(const shared_ptr<FunctionValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<BuiltinFunctionValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<NullValue> &other) const override;
+    virtual shared_ptr<Value> add(const shared_ptr<ObjectValue> &other) const override;
 private:
     vector<shared_ptr<Value>> elements;
 };

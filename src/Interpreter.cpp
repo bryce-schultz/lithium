@@ -970,7 +970,53 @@ void Interpreter::visit(AssignNode *node)
 
         if (!value)
         {
-            errorAtToken("invalid operators in assignment", node->getToken(), node->getRange());
+            string opName;
+            string preposition;
+            string leftType, rightType;
+            auto assigneeValue = env->lookup(asignee->getName());
+            string assigneeType = assigneeValue ? assigneeValue->typeAsString() : "unknown";
+            
+            switch (node->getOp())
+            {
+                case Token::PLUS_EQUAL:
+                    opName = "add";
+                    preposition = "to";
+                    leftType = returnValue->typeAsString();
+                    rightType = assigneeType;
+                    break;
+                case Token::MINUS_EQUAL:
+                    opName = "subtract";
+                    preposition = "from";
+                    leftType = returnValue->typeAsString();
+                    rightType = assigneeType;
+                    break;
+                case Token::MUL_EQUAL:
+                    opName = "multiply";
+                    preposition = "with";
+                    leftType = assigneeType;
+                    rightType = returnValue->typeAsString();
+                    break;
+                case Token::DIV_EQUAL:
+                    opName = "divide";
+                    preposition = "by";
+                    leftType = assigneeType;
+                    rightType = returnValue->typeAsString();
+                    break;
+                case Token::MOD_EQUAL:
+                    opName = "mod";
+                    preposition = "by";
+                    leftType = assigneeType;
+                    rightType = returnValue->typeAsString();
+                    break;
+                default:
+                    opName = "operate";
+                    preposition = "with";
+                    leftType = assigneeType;
+                    rightType = returnValue->typeAsString();
+                    break;
+            }
+            
+            errorAtToken("invalid assignment type, can't " + opName + " " + leftType + " " + preposition + " " + rightType, node->getToken(), node->getRange());
             returnValue = nullptr;
             return;
         }

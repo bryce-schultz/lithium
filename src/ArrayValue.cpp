@@ -324,3 +324,10 @@ shared_ptr<Value> ArrayValue::add(const shared_ptr<NullValue> &other) const
     newElements.emplace_back(other);
     return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
 }
+
+shared_ptr<Value> ArrayValue::add(const shared_ptr<ObjectValue> &other) const
+{
+    vector<shared_ptr<Value>> newElements = elements;
+    newElements.emplace_back(other);
+    return make_shared<ArrayValue>(newElements, Range(getRange().getStart(), other->getRange().getEnd()));
+}

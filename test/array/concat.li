@@ -15,3 +15,18 @@ let b = [1, 2, 3];
 println(b);
 b += [b];
 println(b);
+
+class Pair {
+    let x = 0;
+    let y = 0;
+
+    fn Pair(x_, y_) {
+        x = x_;
+        y = y_;
+    }
+}
+
+let c = [];
+
+c += Pair(1, 2);
+println(c);
