@@ -1,7 +1,0 @@
-# Test case that might create function with null body
-fn testFunction() 
-    # Missing opening brace - this might cause parsing issues
-    println("test");
-}
-
-testFunction();
