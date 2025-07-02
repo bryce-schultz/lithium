@@ -1,0 +1,69 @@
+🗂️  HashMap Demo in Lithium
+============================
+
+📝 Adding data:
+HashMap contents:
+  name: John Doe
+  age: 30
+  city: New York
+  email: john@example.com
+  42: The Answer
+  special-chars: Testing!@#$%
+  émojis: 🚀✨🎯
+
+🔍 Testing new methods:
+Is empty: false
+Size: 7
+
+📋 All entries:
+  [name]: John Doe
+  [age]: 30
+  [city]: New York
+  [email]: john@example.com
+  [42]: The Answer
+  [special-chars]: Testing!@#$%
+  [émojis]: 🚀✨🎯
+
+🔍 Retrieving data:
+Name: John Doe
+Age (lowercase): 30
+City (lowercase): New York
+Unknown key: null
+Number key (42): The Answer
+
+✅ Testing key existence:
+Has 'name': true
+Has 'unknown': false
+
+📋 All keys:
+  name
+  age
+  city
+  email
+  42
+  special-chars
+  émojis
+
+📋 All values:
+  John Doe
+  30
+  New York
+  john@example.com
+  The Answer
+  Testing!@#$%
+  🚀✨🎯
+
+🔄 Updating age:
+New age: 31
+
+🗑️  Removing 'city':
+Removed: true
+HashMap contents:
+  name: John Doe
+  age: 31
+  email: john@example.com
+  42: The Answer
+  special-chars: Testing!@#$%
+  émojis: 🚀✨🎯
+
+Final size: 6

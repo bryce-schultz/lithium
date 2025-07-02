@@ -1363,6 +1363,19 @@ void Interpreter::visit(BlockNode *node)
     }
     catch (const ErrorException &e)
     {
+        // On error, clear function closures to prevent memory leaks
+        // since the block didn't complete successfully
+        for (const auto& pair : blockEnv->getMembers()) 
+        {
+            if (pair.second && pair.second->getType() == Value::Type::function) 
+            {
+                auto func = dynamic_pointer_cast<FunctionValue>(pair.second);
+                if (func) 
+                {
+                    func->clearClosureEnv();
+                }
+            }
+        }
         env = prevEnv;
         throw;
     }
