@@ -61,6 +61,8 @@ int runInteractiveMode(const vector<string> &args)
     string line;
     while ((line = Utils::getInputLine()) != "exit")
     {
+        clearErrorLocations(); // Clear error cache before parsing each new input
+        
         Result<Node> result = parser.parse(line, "cin");
         if (!result.status)
         {

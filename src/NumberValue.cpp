@@ -3,9 +3,11 @@
 #include "NumberValue.h"
 #include "Values.h"
 #include "Error.h"
+#include "Exceptions.h"
 
 #define error(msg, range) \
-    rangeError(msg, range, __FILE__, __LINE__)
+    rangeError(msg, range, __FILE__, __LINE__); \
+    throw ErrorException(msg, range)
 
 NumberValue::NumberValue(int value, const Range &range):
     Value(Type::number, range), value(value)
