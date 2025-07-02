@@ -473,13 +473,155 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
             }
 
             shared_ptr<VarExprNode> varExpr = dynamic_pointer_cast<VarExprNode>(expression);
-            if (!varExpr)
+            if (varExpr)
             {
-                error("expected a modifiable expression", expression->getRange());
-                return nullptr;
+                return evalVariableUnaryExpression(varExpr, opNode, prefix);
             }
 
-            return evalVariableUnaryExpression(varExpr, opNode, prefix);
+            shared_ptr<ArrayAccessNode> arrayAccess = dynamic_pointer_cast<ArrayAccessNode>(expression);
+            if (arrayAccess)
+            {
+                arrayAccess->getArray()->visit(this);
+                if (!returnValue)
+                {
+                    error("array access left-hand side evaluated to null", arrayAccess->getArray()->getRange());
+                    returnValue = nullptr;
+                    return nullptr;
+                }
+
+                if (returnValue->getType() != Value::Type::array)
+                {
+                    error("left-hand side of array access is not an array, it is " + returnValue->typeAsString(), arrayAccess->getArray()->getRange());
+                    returnValue = nullptr;
+                    return nullptr;
+                }
+
+                auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
+                if (!arrayValue)
+                {
+                    error("left-hand side of array access could not be cast to ArrayValue", arrayAccess->getArray()->getRange());
+                    returnValue = nullptr;
+                    return nullptr;
+                }
+
+                auto indexValue = arrayAccess->getIndex();
+                indexValue->visit(this);
+                auto index = returnValue;
+                if (!index || index->getType() != Value::Type::number)
+                {
+                    error("index in array access must be a number", indexValue->getRange());
+                    return nullptr;
+                }
+
+                auto array = dynamic_pointer_cast<ArrayValue>(arrayValue);
+                if (!array)
+                {
+                    error("array access expression is not an ArrayValue", expression->getRange());
+                    return nullptr;
+                }
+
+                int indexInt = static_cast<int>(dynamic_pointer_cast<NumberValue>(index)->getValue());
+                if (indexInt < 0 || indexInt >= array->getElementCount())
+                {
+                    error("array index out of bounds: " + to_string(indexInt) + " for array of size " + to_string(array->getElementCount()), indexValue->getRange());
+                    return nullptr;
+                }
+
+                shared_ptr<Value> elementValue = array->getElement(indexInt);
+                if (!elementValue)
+                {
+                    error("array element at index " + to_string(indexInt) + " is null", indexValue->getRange());
+                    return nullptr;
+                }
+
+                if (opNode->getType() == Token::INC)
+                {
+                    if (elementValue->getType() != Value::Type::number)
+                    {
+                        error("array element at index " + to_string(indexInt) + " is not a number", indexValue->getRange());
+                        return nullptr;
+                    }
+                    auto numberValue = dynamic_pointer_cast<NumberValue>(elementValue);
+                    auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
+                    array->setElement(indexInt, tmp);
+                    return prefix ? tmp : numberValue; // return the incremented value if prefix, otherwise the original value
+                }
+                else if (opNode->getType() == Token::DEC)
+                {
+                    if (elementValue->getType() != Value::Type::number)
+                    {
+                        error("array element at index " + to_string(indexInt) + " is not a number", indexValue->getRange());
+                        return nullptr;
+                    }
+                    auto numberValue = dynamic_pointer_cast<NumberValue>(elementValue);
+                    auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
+                    array->setElement(indexInt, tmp);
+                    return prefix ? tmp : numberValue; // return the decremented value if prefix, otherwise the original value
+                }
+            }
+
+            shared_ptr<MemberAccessNode> memberAccess = dynamic_pointer_cast<MemberAccessNode>(expression);
+            if (memberAccess)
+            {
+                memberAccess->getExpression()->visit(this);
+                if (!returnValue)
+                {
+                    error("member access left-hand side evaluated to null", memberAccess->getExpression()->getRange());
+                    returnValue = nullptr;
+                    return nullptr;
+                }
+
+                if (returnValue->getType() != Value::Type::object && returnValue->getType() != Value::Type::class_)
+                {
+                    error("left-hand side of member access is not an object or class, it is " + returnValue->typeAsString(), memberAccess->getExpression()->getRange());
+                    returnValue = nullptr;
+                    return nullptr;
+                }
+
+                auto objectValue = dynamic_pointer_cast<ObjectValue>(returnValue);
+                if (!objectValue)
+                {
+                    error("left-hand side of member access could not be cast to ObjectValue", memberAccess->getExpression()->getRange());
+                    returnValue = nullptr;
+                    return nullptr;
+                }
+
+                auto memberName = memberAccess->getIdentifier().getValue();
+                shared_ptr<Value> memberValue = objectValue->getMember(memberName);
+                if (!memberValue)
+                {
+                    error("member '" + memberName + "' not found in object", memberAccess->getIdentifier().getRange());
+                    return nullptr;
+                }
+
+                if (opNode->getType() == Token::INC)
+                {
+                    if (memberValue->getType() != Value::Type::number)
+                    {
+                        error("member '" + memberName + "' is not a number", memberAccess->getIdentifier().getRange());
+                        return nullptr;
+                    }
+                    auto numberValue = dynamic_pointer_cast<NumberValue>(memberValue);
+                    auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
+                    objectValue->setMember(memberName, tmp);
+                    return prefix ? tmp : numberValue; // return the incremented value if prefix, otherwise the original value
+                }
+                else if (opNode->getType() == Token::DEC)
+                {
+                    if (memberValue->getType() != Value::Type::number)
+                    {
+                        error("member '" + memberName + "' is not a number", memberAccess->getIdentifier().getRange());
+                        return nullptr;
+                    }
+                    auto numberValue = dynamic_pointer_cast<NumberValue>(memberValue);
+                    auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
+                    objectValue->setMember(memberName, tmp);
+                    return prefix ? tmp : numberValue; // return the decremented value if prefix, otherwise the original value
+                }
+            }
+
+            error("expected a modifiable expression", expression->getRange());
+            return nullptr;
         }
         case '!':
             returnValue = value->unaryNot();
@@ -928,7 +1070,8 @@ void Interpreter::visit(AssignNode *node)
 {
     node->getExpr()->visit(this);
     shared_ptr<Value> value = returnValue;
-    if (!value) {
+    if (!value)
+    {
         error("assignment right-hand side evaluated to null", node->getExpr()->getRange());
         returnValue = nullptr;
         return;

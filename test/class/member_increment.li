@@ -1,0 +1,16 @@
+class Test
+{
+    let a = 1;
+    let b = [10, 20, 30];
+}
+
+let t = Test();
+
+println(t.a++);
+println(t.a);
+println(t.b[0]--);
+println(t.b[0]);
+println(++t.a);
+println(--t.b[1]);
+println(t.b[1]);
+println(t.b);

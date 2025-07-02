@@ -436,11 +436,20 @@ shared_ptr<Value> Builtins::openFile(const vector<shared_ptr<Value>> &args, shar
     const string &filename = filenameValue->getValue();
     const string &mode = modeValue->getValue();
 
-    int fd = open(filename.c_str(), Utils::parseOpenMode(mode));
+    int flags = Utils::parseOpenMode(mode);
+    int fd;
+    
+    // If O_CREAT is set, we need to provide file permissions
+    if (flags & O_CREAT) {
+        // Use 0644 permissions (rw-r--r--) for created files
+        fd = open(filename.c_str(), flags, 0644);
+    } else {
+        fd = open(filename.c_str(), flags);
+    }
+    
     if (fd < 0)
     {
-        error("failed to open file '" + filename + "' with mode '" + mode + "'", range);
-        return nullptr;
+        return make_shared<NullValue>(range);
     }
     return make_shared<NumberValue>(static_cast<double>(fd), range);
 }

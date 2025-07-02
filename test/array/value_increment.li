@@ -1,0 +1,15 @@
+let a = [0, 1, 2];
+# post increment and decrement
+let b = a[0]++;
+let c = a[1]--;
+a[2] += 3;
+println(a);
+println(b);
+println(c);
+
+# pre increment and decrement
+let d = ++a[0];
+let e = --a[1];
+println(d);
+println(e);
+println(a);
