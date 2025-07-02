@@ -847,6 +847,28 @@ println(words);                # ["Hello", "World", "Example"]
 let path = "home/user/documents";
 let parts = path.split("/");
 println(parts);                # ["home", "user", "documents"]
+
+# string case conversion
+let text = "Hello World";
+println(text.lower());         # "hello world"
+println(text.upper());         # "HELLO WORLD"
+
+let mixed = "CamelCase";
+println(mixed.lower());        # "camelcase"
+println(mixed.upper());        # "CAMELCASE"
+
+# character codes
+let single = "A";
+println(single.code());        # 65 (single number for single character)
+
+let word = "Hi";
+println(word.code());          # [72, 105] (array for multiple characters)
+
+let greeting = "Hello!";
+println(greeting.code());      # [72, 101, 108, 108, 111, 33]
+
+let empty = "";
+println(empty.code());         # [] (empty array for empty string)
 ```
 
 ---

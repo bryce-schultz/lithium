@@ -79,6 +79,83 @@ void StringValue::registerBuiltins()
         },
         getRange()
     ), true);
+
+    // lower() -> string
+    addMember("lower", make_shared<BuiltinFunctionValue>(
+        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("lower() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+
+            string lowerValue = value;
+            for (char &c : lowerValue)
+            {
+                c = static_cast<char>(tolower(c));
+            }
+
+            return make_shared<StringValue>(lowerValue, range);
+        }
+    ), true);
+
+    // upper() -> string
+    addMember("upper", make_shared<BuiltinFunctionValue>(
+        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("upper() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+
+            string upperValue = value;
+            for (char &c : upperValue)
+            {
+                c = static_cast<char>(toupper(c));
+            }
+
+            return make_shared<StringValue>(upperValue, range);
+        }
+    ), true);
+
+    // code() -> number or array
+    addMember("code", make_shared<BuiltinFunctionValue>(
+        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("code() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+
+            if (value.empty())
+            {
+                // Return empty array for empty string
+                return make_shared<ArrayValue>(vector<shared_ptr<Value>>(), range);
+            }
+            else if (value.length() == 1)
+            {
+                // Return single number for single character
+                return make_shared<NumberValue>(static_cast<double>(static_cast<unsigned char>(value[0])), range);
+            }
+            else
+            {
+                // Return array of char codes for multi-character string
+                vector<shared_ptr<Value>> charCodes;
+                charCodes.reserve(value.length());
+                for (char c : value)
+                {
+                    charCodes.emplace_back(make_shared<NumberValue>(static_cast<double>(static_cast<unsigned char>(c)), range));
+                }
+                return make_shared<ArrayValue>(charCodes, range);
+            }
+        }
+    ), true);
 }
 
 string StringValue::toString() const
