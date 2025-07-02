@@ -8,6 +8,8 @@ public:
     StringValue(char c, const Range &range = {});
     StringValue(const string &value, const Range &range = {});
 
+    void registerBuiltins();
+
     inline const string &getValue() const { return value; }
     inline void setValue(const string &v) { value = v; }
     inline char getCharAt(int index) const { return value[index]; }
@@ -17,7 +19,6 @@ public:
     string toString() const override;
     bool toBoolean() const override; // Override toBoolean for string values
 
-    virtual shared_ptr<Value> getMember(const string &name) const override;
     virtual string typeAsString() const override;
 public:
     virtual shared_ptr<Value> add(const shared_ptr<NumberValue> &other) const override;
@@ -45,8 +46,6 @@ public:
     virtual shared_ptr<Value> gt(const shared_ptr<StringValue> &other) const override;
 
     virtual shared_ptr<Value> ge(const shared_ptr<StringValue> &other) const override;
-private:
-    void replaceEscapeSequences();
 private:
     string value;
 };

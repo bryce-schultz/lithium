@@ -1,7 +1,0 @@
-println("Hello, World!".length);
-println("".length);
-
-let str_var = "Hello, World!";
-println(str_var.length);
-println("Hello, " + "World!".length);
-println("Hello, " + "World!".length + 10);

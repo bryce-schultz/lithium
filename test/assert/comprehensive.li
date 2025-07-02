@@ -7,7 +7,7 @@ println("Basic assertions passed");
 
 println("Testing assertions with messages:");
 assert 5 > 3, "Five is greater than three";
-assert "test".length == 4, "Test string has correct length";
+assert "test".length() == 4, "Test string has correct length";
 assert !(false), "Negation of false should be true";
 println("Message assertions passed");
 

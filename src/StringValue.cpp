@@ -15,16 +15,38 @@ using std::make_shared;
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
 
+#define errorAt(msg, location, range) \
+    locationRangeError(msg, location, range, __FILE__, __LINE__)
+
 StringValue::StringValue(char c, const Range &range):
     Value(Type::string, range), value(1, c)
 {
+    registerBuiltins();
 }
 
 StringValue::StringValue(const string &value, const Range &range):
     Value(Type::string, range), value(value)
 {
-    constants.insert("length");
+    registerBuiltins();
+}
 
+void StringValue::registerBuiltins()
+{
+    addMember("length", make_shared<BuiltinFunctionValue>(
+        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("length() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+            return make_shared<NumberValue>(static_cast<double>(this->value.length()), range);
+        },
+        getRange()
+    ), true);
+
+    // split(delimiter) -> []
     addMember("split", make_shared<BuiltinFunctionValue>(
         [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
@@ -49,10 +71,10 @@ StringValue::StringValue(const string &value, const Range &range):
             size_t pos = 0, found;
             while ((found = this->value.find(delimiter, pos)) != string::npos)
             {
-                parts.push_back(std::make_shared<StringValue>(this->value.substr(pos, found - pos), range));
+                parts.push_back(make_shared<StringValue>(this->value.substr(pos, found - pos), range));
                 pos = found + delimiter.length();
             }
-            parts.push_back(std::make_shared<StringValue>(this->value.substr(pos), range));
+            parts.push_back(make_shared<StringValue>(this->value.substr(pos), range));
             return make_shared<ArrayValue>(parts, range);
         },
         getRange()
@@ -67,15 +89,6 @@ string StringValue::toString() const
 bool StringValue::toBoolean() const
 {
     return !value.empty();
-}
-
-shared_ptr<Value> StringValue::getMember(const string &name) const
-{
-    if (name == "length")
-    {
-        return make_shared<NumberValue>(static_cast<double>(value.length()), Range(getRange().getStart(), getRange().getEnd()));
-    }
-    return Value::getMember(name);
 }
 
 string StringValue::typeAsString() const

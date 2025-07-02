@@ -253,8 +253,8 @@ pre code::first-line {
 Only line comments are supported using the `#` character:
 
 ```lithium
-# This is a comment
-let x = 10;  # This is also a comment
+# this is a comment
+let x = 10;  # this is also a comment
 ```
 
 #### **Identifiers**
@@ -319,11 +319,11 @@ println("Tab\tSeparated");
 #### **Arithmetic Operators**
 
 ```lithium
-let a = 10 + 5;     # Addition: 15
-let b = 10 - 5;     # Subtraction: 5
-let c = 10 * 5;     # Multiplication: 50
-let d = 10 / 5;     # Division: 2
-let e = 10 % 3;     # Modulo: 1
+let a = 10 + 5;     # addition: 15
+let b = 10 - 5;     # subtraction: 5
+let c = 10 * 5;     # multiplication: 50
+let d = 10 / 5;     # division: 2
+let e = 10 % 3;     # modulo: 1
 ```
 
 #### **Assignment Operators**
@@ -335,7 +335,16 @@ x -= 3;    # x = x - 3  -> 12
 x *= 2;    # x = x * 2  -> 24
 x /= 4;    # x = x / 4  -> 6
 x %= 5;    # x = x % 5  -> 1
+
+# special behavior for arrays
+let arr = [1, 2];
+arr += 3;       # appends element: [1, 2, 3]
+arr += [4, 5];  # appends array: [1, 2, 3, 4, 5]
 ```
+
+<div class="info">
+<strong>📘 Array += Operator:</strong> For arrays, the <code>+=</code> operator performs concatenation rather than addition. It appends elements to the end of the array, automatically handling array growth.
+</div>
 
 #### **Comparison Operators**
 
@@ -401,11 +410,11 @@ println(--x);  # 5 (prefix: decrements first, then returns new value)
 Lithium performs automatic type conversion in certain contexts:
 
 ```lithium
-# String concatenation
+# string concatenation
 println("Number: " + 42);        # "Number: 42"
 println("Value: " + true);       # "Value: true"
 
-# Boolean context (truthiness)
+# boolean context (truthiness)
 if (0) { }          # false
 if (1) { }          # true
 if ("") { }         # false
@@ -425,11 +434,11 @@ if ([]) { }         # false (empty array is falsy)
 #### **Variable Declarations**
 
 ```lithium
-# Mutable variables (must be initialized)
+# mutable variables (must be initialized)
 let name = "John";
 let age = 30;
 
-# Constants (must be initialized)
+# constants (must be initialized)
 const PI = 3.14159;
 const VERSION = "1.0";
 ```
@@ -439,15 +448,15 @@ const VERSION = "1.0";
 </div>
 
 ```lithium
-# ✅ Valid declarations
+# ✅ valid declarations
 let x = 10;
 let name = "hello";
 let flag = true;
 const MAX = 100;
 
-# ❌ Invalid - syntax error
-let y;              # Error: expected '='
-const LIMIT;        # Error: expected '='
+# ❌ invalid - syntax error
+let y;              # error: expected '='
+const LIMIT;        # error: expected '='
 ```
 
 <div class="warning">
@@ -463,11 +472,11 @@ let global = "I'm global";
 
 if (true) {
     let block = "I'm in a block";
-    println(global);  # Accessible: "I'm global"
-    println(block);   # Accessible: "I'm in a block"
+    println(global);  # accessible: "I'm global"
+    println(block);   # accessible: "I'm in a block"
 }
 
-# println(block);  # Error: 'block' is not defined
+# println(block);  # error: 'block' is not defined
 ```
 
 #### **Variable Shadowing**
@@ -497,15 +506,15 @@ fn functionName(param1, param2) {
     return result;
 }
 
-# Functions without parameters
+# functions without parameters
 fn greet() {
     println("Hello, World!");
 }
 
-# Functions without explicit return
+# functions without explicit return
 fn doSomething() {
     println("This function has no return value");
-    # Cannot assign result: let x = doSomething(); would be a syntax error
+    # cannot assign result: let x = doSomething(); would be a syntax error
 }
 ```
 
@@ -546,7 +555,7 @@ println(counter2());  # 11
 Functions are hoisted within their block scope:
 
 ```lithium
-println(hoisted());  # Works! Prints "I'm hoisted"
+println(hoisted());  # works! Prints "I'm hoisted"
 
 fn hoisted() {
     return "I'm hoisted";
@@ -574,14 +583,14 @@ fn withoutReturn() {
     println("No return value");
 }
 
-# ✅ Valid - function has explicit return
+# ✅ valid - function has explicit return
 let result = withReturn();  # result = 42
 
-# ❌ Invalid - function has no return value
-let invalid = withoutReturn();  # Syntax error: cannot assign undefined value
+# ❌ invalid - function has no return value
+let invalid = withoutReturn();  # syntax error: cannot assign undefined value
 
-# ✅ Valid - call function without assignment
-withoutReturn();  # Just calls the function
+# ✅ valid - call function without assignment
+withoutReturn();  # just calls the function
 ```
 
 ---
@@ -596,16 +605,16 @@ withoutReturn();  # Just calls the function
 
 ```lithium
 class ClassName {
-    # Class members (variables and methods)
+    # class members (variables and methods)
     let memberVariable = defaultValue;
     
-    # Constructor (must match class name)
+    # constructor (must match class name)
     fn ClassName(param1, param2) {
         memberVariable = param1;
-        # Initialize other members
+        # initialize other members
     }
     
-    # Methods
+    # methods
     fn methodName() {
         return memberVariable;
     }
@@ -646,15 +655,15 @@ class Point {
 #### **Object Instantiation**
 
 ```lithium
-# Create instances
+# create instances
 let p1 = Point(10, 20);
 let p2 = Point(0, 0);
 
-# Access members
+# access members
 println(p1.x);         # 10
 println(p1.getX());    # 10
 
-# Call methods
+# call methods
 p1.move(5, -3);
 println(p1.toString()); # "Point(15, 17)"
 ```
@@ -666,16 +675,16 @@ println(p1.toString()); # "Point(15, 17)"
 </div>
 
 ```lithium
-# ✅ Valid - global scope
+# ✅ valid - global scope
 class MyClass { }
 
 fn someFunction() {
-    # ❌ Invalid - classes cannot be declared in functions
+    # ❌ invalid - classes cannot be declared in functions
     class LocalClass { }
 }
 
 if (condition) {
-    # ❌ Invalid - classes cannot be declared in blocks
+    # ❌ invalid - classes cannot be declared in blocks
     class BlockClass { }
 }
 ```
@@ -716,6 +725,95 @@ arr[0] = 100;
 println(arr[0]);  # 100
 ```
 
+<div class="warning">
+<strong>⚠️ Array Bounds Checking:</strong> Lithium performs strict bounds checking on array access. Accessing an index that doesn't exist (including <code>array[len(array)]</code>) will cause a runtime error. You cannot extend arrays by assigning to out-of-bounds indices - use the <code>+=</code> operator instead.
+</div>
+
+```lithium
+let arr = [1, 2, 3];
+
+# ❌ this will cause a runtime error
+arr[3] = 4;           # error: array index out of bounds
+arr[len(arr)] = 4;    # error: array index out of bounds
+
+# ✅ use += to extend arrays safely
+arr += 4;             # correct: [1, 2, 3, 4]
+```
+
+#### **Array Concatenation**
+
+Arrays support concatenation using the `+=` operator for appending elements:
+
+```lithium
+let numbers = [1, 2, 3];
+
+# append single element
+numbers += 4;
+println(numbers);  # [1, 2, 3, 4]
+
+# append multiple elements from another array
+numbers += [5, 6];
+println(numbers);  # [1, 2, 3, 4, 5, 6]
+
+# append mixed types
+let mixed = ["hello"];
+mixed += 42;
+mixed += [true, null];
+println(mixed);  # ["hello", 42, true, null]
+```
+
+<div class="info">
+<strong>📘 Array Growth:</strong> The <code>+=</code> operator automatically handles array growth without needing to know the current length. This is the preferred way to append elements to arrays in Lithium.
+</div>
+
+#### **Adding Arrays as Elements (Nested Arrays)**
+
+When working with nested arrays or records, you need to distinguish between concatenating array contents vs. adding entire arrays as single elements:
+
+```lithium
+let records = [];
+let contact = ["John", "john@email.com", "555-1234"];
+
+# ❌ wrong: this concatenates individual elements
+records += contact;
+println(records);  # ["John", "john@email.com", "555-1234"] (flattened)
+
+# ✅ correct: this adds the array as a single element
+records = [];  # reset
+records += [contact];
+println(records);  # [["John", "john@email.com", "555-1234"]] (nested)
+
+# ✅ building a collection of records
+let moreRecords = [];
+moreRecords += [["Alice", "alice@email.com", "555-5678"]];
+moreRecords += [["Bob", "bob@email.com", "555-9012"]];
+println(moreRecords);  # [["Alice", "alice@email.com", "555-5678"], ["Bob", "bob@email.com", "555-9012"]]
+```
+
+<div class="warning">
+<strong>⚠️ Common Mistake:</strong> When you want to add an array as a single element to another array, you must wrap it in square brackets: <code>array += [element]</code>. Using <code>array += element</code> when <code>element</code> is an array will concatenate its contents instead.
+</div>
+
+#### **Array Properties**
+
+```lithium
+let numbers = [1, 2, 3, 4, 5];
+println(numbers.length());    # 5
+
+let empty = [];
+println(empty.length());      # 0
+
+let nested = [[1, 2], [3, 4]];
+println(nested.length());     # 2 (number of top-level elements)
+
+# alternative: built-in len() function
+println(len(numbers));        # 5 (same result)
+```
+
+<div class="info">
+<strong>📘 Array Length:</strong> Arrays support both <code>array.length()</code> method and the built-in <code>len(array)</code> function. Both return the same result - use whichever style you prefer.
+</div>
+
 #### **String Indexing**
 
 Strings support array-like indexing:
@@ -730,11 +828,25 @@ println(str[4]);  # "o"
 #### **String Properties**
 
 ```lithium
-println("hello".length);     # 5
-println("".length);          # 0
+println("hello".length());     # 5
+println("".length());          # 0
 
 let text = "Hello, World!";
-println(text.length);        # 13
+println(text.length());        # 13
+
+# string splitting
+let csv = "apple,banana,cherry";
+let fruits = csv.split(",");
+println(fruits);               # ["apple", "banana", "cherry"]
+
+let sentence = "Hello World Example";
+let words = sentence.split(" ");
+println(words);                # ["Hello", "World", "Example"]
+
+# split with single character
+let path = "home/user/documents";
+let parts = path.split("/");
+println(parts);                # ["home", "user", "documents"]
 ```
 
 ---
@@ -760,7 +872,7 @@ if (condition) {
     # code if false
 }
 
-# Nested conditions
+# nested conditions
 if (x > 0) {
     println("positive");
 } else if (x < 0) {
@@ -787,7 +899,7 @@ for (let i = 0; i < 10; i++) {
     println(i);
 }
 
-# For loop parts: initialization; condition; increment
+# for loop parts: initialization; condition; increment
 for (let i = 10; i > 0; i--) {
     println("Countdown: " + i);
 }
@@ -796,13 +908,13 @@ for (let i = 10; i > 0; i--) {
 #### **Foreach Loops**
 
 ```lithium
-# Array iteration - single value variant
+# array iteration - single value variant
 let numbers = [1, 2, 3, 4, 5];
 foreach (num : numbers) {
     println(num);
 }
 
-# Object iteration - key-value variant  
+# object iteration - key-value variant  
 class Person {
     let name = "John";
     let age = 30;
@@ -812,7 +924,7 @@ foreach (key, value : p) {
     println(key + ": " + value);
 }
 
-# Works with mixed arrays
+# works with mixed arrays
 let mixed = ["hello", 42, true, null];
 foreach (item : mixed) {
     println("Item: " + item);
@@ -829,24 +941,24 @@ foreach (item : mixed) {
 </div>
 
 ```lithium
-# ✅ Valid usage
+# ✅ valid usage
 let arr = [1, 2, 3];
-foreach (item : arr) {           # Correct: single value for array
+foreach (item : arr) {           # correct: single value for array
     println(item);
 }
 
 class MyClass { let x = 10; }
 let obj = MyClass();
-foreach (key, value : obj) {     # Correct: key-value for object
+foreach (key, value : obj) {     # correct: key-value for object
     println(key + " = " + value);
 }
 
-# ❌ Invalid usage  
-foreach (key, value : arr) {     # Error: key-value syntax on array
+# ❌ invalid usage  
+foreach (key, value : arr) {     # error: key-value syntax on array
     println(key + ": " + value);
 }
 
-foreach (item : obj) {           # Error: single value syntax on object
+foreach (item : obj) {           # error: single value syntax on object
     println(item);
 }
 ```
@@ -856,14 +968,14 @@ foreach (item : obj) {           # Error: single value syntax on object
 ```lithium
 for (let i = 0; i < 10; i++) {
     if (i == 3) {
-        continue;  # Skip iteration when i is 3
+        continue;  # skip iteration when i is 3
     }
     if (i == 7) {
-        break;     # Exit loop when i is 7
+        break;     # exit loop when i is 7
     }
     println(i);
 }
-# Output: 0, 1, 2, 4, 5, 6
+# output: 0, 1, 2, 4, 5, 6
 ```
 
 <div class="warning">
@@ -875,22 +987,22 @@ for (let i = 0; i < 10; i++) {
 </div>
 
 ```lithium
-# ✅ Valid usage
+# ✅ valid usage
 for (let i = 0; i < 10; i++) {
     if (i == 5) {
-        break;     # Valid: inside a loop
+        break;     # valid: inside a loop
     }
     if (i % 2 == 0) {
-        continue;  # Valid: inside a loop
+        continue;  # valid: inside a loop
     }
 }
 
-# ❌ Invalid usage
-break;                 # Error: break outside of loop
-continue;              # Error: continue outside of loop
+# ❌ invalid usage
+break;                 # error: break outside of loop
+continue;              # error: continue outside of loop
 
 if (true) {
-    break;             # Error: break not in a loop
+    break;             # error: break not in a loop
 }
 ```
 
@@ -911,7 +1023,7 @@ Lithium provides several built-in modules that must be explicitly imported:
 | `<io>` | Input/Output operations | `printf()`, `input()` |
 | `<math>` | Mathematical constants | `PI`, `E` |
 | `<args>` | Command line arguments | `args` (array of arguments) |
-| `<random>` | Random number generation | `random()` |
+| `<random>` | Random number generation | `random()` - returns 64-bit integer |
 | `<os>` | Operating system functions | `open()`, `close()`, `read()`, `write()`, `shell()` |
 | `<socket>` | Network socket operations | `socket()`, `listen()`, `accept()`, `connect()`, `send()`, `receive()` |
 | `<time>` | Time and sleep functions | `time()`, `sleep()` |
@@ -919,13 +1031,13 @@ Lithium provides several built-in modules that must be explicitly imported:
 #### **Import Syntax**
 
 ```lithium
-# Import modules
+# import modules
 import <io>
 import <math>
 
-# Import modules using path notation (. becomes /)
-import <io.getfile>  # Imports from modules/io/getfile.li
-import <utils.string.helpers>  # Imports from modules/utils/string/helpers.li
+# import modules using path notation (. becomes /)
+import <io.getfile>  # imports from modules/io/getfile.li
+import <utils.string.helpers>  # imports from modules/utils/string/helpers.li
 ```
 
 #### **Module Search Order**
@@ -947,10 +1059,10 @@ When you use `import <moduleName>`, Lithium searches for modules in this specifi
 
 **Examples:**
 ```lithium
-import <io>                    # Built-in module (phase 2)
-import <mymodule>              # Searches for mymodule.li in phase 1 locations
-import <utils.math>            # Searches for utils/math.li in phase 1 locations
-import <data.parsers.json>     # Searches for data/parsers/json.li in phase 1 locations
+import <io>                    # built-in module (phase 2)
+import <mymodule>              # searches for mymodule.li in phase 1 locations
+import <utils.math>            # searches for utils/math.li in phase 1 locations
+import <data.parsers.json>     # searches for data/parsers/json.li in phase 1 locations
 ```
 
 **Search Locations for `import <utils.math>`:**
@@ -964,22 +1076,22 @@ import <data.parsers.json>     # Searches for data/parsers/json.li in phase 1 lo
 Some constants and functions are always available without imports:
 
 ```lithium
-# Built-in constants
-println(VERSION);    # Lithium version ("1.1")
-println(FILE);       # Current file name (string)
-println(LINE);       # Current line number (number)
-println(true);       # Boolean true
-println(false);      # Boolean false
-println(null);       # Null value
+# built-in constants
+println(VERSION);    # lithium version ("1.1")
+println(FILE);       # current file name (string)
+println(LINE);       # current line number (number)
+println(true);       # boolean true
+println(false);      # boolean false
+println(null);       # null value
 
-# Built-in functions (no import required)
-print("Hello");      # Print values without newline
-println("World");    # Print values with newline
-type(42);            # Get type of value → "number"
-exit(0);             # Exit program with code
-len([1, 2, 3]);      # Get length of array → 3
-number("42");        # Convert to number → 42
-dumpenv();           # Dump environment variables (debugging)
+# built-in functions (no import required)
+print("Hello");      # print values without newline
+println("World");    # print values with newline
+type(42);            # get type of value → "number"
+exit(0);             # exit program with code
+len([1, 2, 3]);      # get length of array → 3
+number("42");        # convert to number → 42
+dumpenv();           # dump environment variables (debugging)
 ```
 
 #### **User Modules**
@@ -1001,7 +1113,7 @@ fn complexCalculation() {
 import <mymodule>
 println(utility());  # "This is a utility function"
 
-import <math.advanced>  # Loads modules/math/advanced.li
+import <math.advanced>  # loads modules/math/advanced.li
 println(complexCalculation());  # "Advanced math result"
 ```
 
@@ -1036,7 +1148,7 @@ println(type(null));        # "null"
 println(type([1, 2, 3]));   # "array"
 println(type(type));        # "builtin"
 
-# For object instances, returns class name
+# for object instances, returns class name
 class Person { }
 let p = Person();
 println(type(p));           # "Person"
@@ -1047,7 +1159,7 @@ println(type(p));           # "Person"
 ```lithium
 import <io>
 
-printf("Hello %s, you are %d years old\n", "John", 25);
+printf("Hello %, you are % years old\n", "John", 25);
 let name = input("Enter your name: ");
 println("Hello, " + name);
 ```
@@ -1077,7 +1189,20 @@ foreach (arg : args) {
 ```lithium
 import <random>
 
-println(random());  # Random number between 0 and 1
+# random() returns a 64-bit random integer
+let randomInt = random();
+println("Random 64-bit integer: " + randomInt);
+
+# to get a random number in a specific range (e.g., 1-100):
+let min = 1;
+let max = 100;
+let range = max - min + 1;
+let randomInRange = min + (random() % range);
+println("Random number 1-100: " + randomInRange);
+
+# for floating point random values between 0 and 1:
+let randomFloat = (random() % 1000000) / 1000000.0;
+println("Random float 0-1: " + randomFloat);
 ```
 
 #### **Operating System Functions** (require `import <os>`)
@@ -1133,18 +1258,18 @@ assert expression, "Custom error message";
 #### **Assertion Examples**
 
 ```lithium
-# Basic assertions
+# basic assertions
 assert true;
 assert 1 + 1 == 2;
 assert "hello" == "hello";
 
-# Assertions with custom messages
+# assertions with custom messages
 assert x > 0, "x must be positive";
 assert len(array) > 0, "Array cannot be empty";
 
-# Assertions that will fail
-assert false;                    # AssertionError
-assert 1 == 2, "Math is broken"; # AssertionError: Math is broken
+# assertions that will fail
+assert false;                    # assertionError
+assert 1 == 2, "Math is broken"; # assertionError: Math is broken
 ```
 
 <div class="info">
@@ -1162,7 +1287,7 @@ assert 1 == 2, "Math is broken"; # AssertionError: Math is broken
 #### **Object Equality**
 
 ```lithium
-# Null equality works with any type
+# null equality works with any type
 let obj = MyClass();
 if (obj == null) {
     println("Object is null");
@@ -1171,7 +1296,7 @@ if (null == obj) {
     println("Object is null (reverse)");
 }
 
-# String/Object concatenation
+# string/Object concatenation
 class Person {
     let name = "John";
     fn toString() {
@@ -1180,7 +1305,7 @@ class Person {
 }
 
 let p = Person();
-println("Hello " + p);  # Calls toString() method
+println("Hello " + p);  # calls toString() method
 ```
 
 #### **Truthiness**
@@ -1204,7 +1329,7 @@ if ("") { }        # false
 if ([]) { }        # false (empty array is falsy)
 if (false) { }     # false
 
-# Empty objects are also falsy
+# empty objects are also falsy
 class Empty { }
 let emptyObj = Empty();
 if (emptyObj) { }  # false (empty object is falsy)
@@ -1389,31 +1514,90 @@ lithium v1.1 type 'exit' to quit.
 #### **Code Style**
 
 ```lithium
-# ✅ Good: Clear function names
+# ✅ good: clear function names
 fn calculateArea(width, height) {
     return width * height;
 }
 
-# ✅ Good: Meaningful variable names
+# ✅ good: meaningful variable names
 let userAge = 25;
 let isLoggedIn = true;
 
-# ✅ Good: Consistent indentation
+# ✅ good: consistent indentation
 if (condition) {
     doSomething();
     doSomethingElse();
 }
 
-# ✅ Good: Comments for complex logic
+# ✅ good: comments for complex logic
 fn fibonacci(n) {
-    # Handle base cases
+    # handle base cases
     if (n <= 1) {
         return n;
     }
     
-    # Recursive case
+    # recursive case
     return fibonacci(n - 1) + fibonacci(n - 2);
 }
+```
+
+#### **Array Operations**
+
+```lithium
+# ✅ good: use += for array concatenation
+let items = [];
+items += "first";               # add single element
+items += ["second", "third"];   # add multiple elements
+
+# ✅ good: add arrays as elements (nested arrays)
+let records = [];
+let record = ["name", "email", "phone"];
+records += [record];            # add array as single element
+# result: records = [["name", "email", "phone"]]
+
+# ✅ good: use len() to check array size
+if (len(items) > 0) {
+    println("Array has elements");
+}
+
+# ❌ avoid: manual array index management
+let items = [];
+items[len(items)] = "item";     # error-prone, use += instead
+
+# ❌ avoid: adding array directly when you want it as an element
+let records = [];
+let record = ["name", "email", "phone"];
+records += record;              # wrong! adds individual elements
+# result: records = ["name", "email", "phone"] (flattened)
+```
+
+#### **Random Number Generation**
+
+```lithium
+import <random>
+
+# ✅ good: generate random numbers in a specific range
+fn randomRange(min, max) {
+    let range = max - min + 1;
+    let randomValue = random() % range;
+    if (randomValue < 0) {
+        randomValue = -randomValue;  # handle negative values
+    }
+    return min + randomValue;
+}
+
+# ✅ good: generate random floating-point values
+fn randomFloat() {
+    # generate float between 0 and 1 with reasonable precision
+    return (random() % 1000000) / 1000000.0;
+}
+
+# ✅ good: use for dice rolls, game mechanics
+let diceRoll = randomRange(1, 6);
+let percentChance = randomRange(1, 100);
+
+# ❌ avoid: assuming random() returns a float
+let badRandom = random() * 100;  # wrong! random() returns 64-bit integer
 ```
 
 #### **Error Handling**
@@ -1427,7 +1611,7 @@ fn divide(a, b) {
 
 # ✅ Good: Check array bounds
 fn getElement(array, index) {
-    assert index >= 0 && index < array.length, "Index out of bounds";
+    assert index >= 0 && index < array.length(), "Index out of bounds";
     return array[index];
 }
 ```
