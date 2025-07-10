@@ -81,4 +81,10 @@ private:
     // Recursion depth tracking to prevent stack overflow
     int recursionDepth;
     static const int MAX_RECURSION_DEPTH = 1000;
+    
+    // Track temporary environments for cleanup during chained calls
+    std::vector<std::shared_ptr<Environment>> tempEnvironments;
+    
+    // Helper to clean up any temporary environments
+    void cleanupTempEnvironments();
 };

@@ -1,0 +1,28 @@
+fn outer() {
+    let x = 42;
+    fn inner() {
+        println(x);
+        return x;
+    }
+    return inner;
+}
+
+let result1 = outer()();
+println("Result 1:", result1);
+
+let func = outer();
+let result2 = func();
+println("Result 2:", result2);
+
+fn createMultiplier(factor) {
+    fn multiply(x) {
+        fn innerMultiply(y) {
+            return x * y * factor;
+        }
+        return innerMultiply;
+    }
+    return multiply;
+}
+
+let result3 = createMultiplier(2)(5)(3);
+println("Result 3:", result3);

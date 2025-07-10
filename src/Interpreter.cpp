@@ -110,7 +110,37 @@ bool Interpreter::interpret(Node *node)
     // Visit the node to interpret it
     visitAllChildren(node);
 
+    // Clean up any temporary environments created during this interpretation
+    cleanupTempEnvironments();
+
     return !hadError;
+}
+
+void Interpreter::cleanupTempEnvironments()
+{
+    // Clear all functions in temp environments to break circular references
+    for (auto& tempEnv : tempEnvironments)
+    {
+        if (tempEnv && tempEnv.use_count() > 1)
+        {
+            // This environment is still being referenced somewhere
+            // Clear function closures to break cycles
+            for (const auto& pair : tempEnv->getMembers())
+            {
+                if (pair.second && pair.second->getType() == Value::Type::function)
+                {
+                    auto func = std::dynamic_pointer_cast<FunctionValue>(pair.second);
+                    if (func && func->getEnvironment() == tempEnv)
+                    {
+                        // This function's closure points back to this temp environment
+                        // Clear it to break the circular reference
+                        func->clearClosureEnv();
+                    }
+                }
+            }
+        }
+    }
+    tempEnvironments.clear();
 }
 
 void Interpreter::setupEnvironment()
@@ -765,6 +795,9 @@ void Interpreter::visit(CallNode *node)
         auto previousEnv = env;
         env = scope;
         
+        // Track this function call scope for cleanup
+        tempEnvironments.push_back(scope);
+        
         // Increment recursion depth
         recursionDepth++;
         
@@ -812,6 +845,20 @@ void Interpreter::visit(CallNode *node)
         
         // Decrement recursion depth
         recursionDepth--;
+        
+        // If the returned value is a function, check if it has a closure environment
+        // that might create a circular reference with the current scope
+        if (returnValue && returnValue->getType() == Value::Type::function) 
+        {
+            auto returnedFunc = dynamic_pointer_cast<FunctionValue>(returnValue);
+            if (returnedFunc && returnedFunc->getEnvironment() == scope) 
+            {
+                // The returned function was declared in this call's scope
+                // This can create a circular reference (scope -> function -> scope)
+                // Clear the closure to break the cycle
+                returnedFunc->clearClosureEnv();
+            }
+        }
         
         // Don't clear the scope in normal flow - let RAII handle it  
         env = previousEnv;
@@ -1337,6 +1384,9 @@ void Interpreter::visit(BlockNode *node)
     shared_ptr<Environment> blockEnv = make_shared<Environment>(env); // Create block environment
     env = blockEnv; // push a new environment for the block
     
+    // Track this as a temporary environment for later cleanup
+    tempEnvironments.push_back(blockEnv);
+    
     try
     {
         node->getStatements()->visit(this);
@@ -1363,37 +1413,8 @@ void Interpreter::visit(BlockNode *node)
     }
     catch (const ErrorException &e)
     {
-        // On error, clear function closures to prevent memory leaks
-        // since the block didn't complete successfully
-        for (const auto& pair : blockEnv->getMembers()) 
-        {
-            if (pair.second && pair.second->getType() == Value::Type::function) 
-            {
-                auto func = dynamic_pointer_cast<FunctionValue>(pair.second);
-                if (func) 
-                {
-                    func->clearClosureEnv();
-                }
-            }
-        }
         env = prevEnv;
         throw;
-    }
-
-    // Before exiting block, rewrite function closures to point to parent environment
-    // This prevents block environments from being kept alive unnecessarily
-    for (const auto& pair : blockEnv->getMembers()) 
-    {
-        if (pair.second && pair.second->getType() == Value::Type::function) 
-        {
-            auto func = dynamic_pointer_cast<FunctionValue>(pair.second);
-            if (func && func->getEnvironment() == blockEnv) 
-            {
-                // This function was declared in this block and captures the block environment
-                // Rewrite its closure to use the parent environment instead
-                func->rewriteClosureEnv(prevEnv);
-            }
-        }
     }
 
     env = prevEnv; // pop the environment after visiting the block

@@ -1,9 +1,0 @@
-# Test case to trigger memory leak by causing error during block processing
-
-{
-    fn localFunction() {
-        return 42;
-    }
-    
-    undefined_variable = localFunction;  # This should cause an error
-}
