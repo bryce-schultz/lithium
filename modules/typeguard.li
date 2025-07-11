@@ -1,0 +1,8 @@
+fn typeguard(value, expectedType)
+{
+    if (type(value) != expectedType)
+    {
+        println("Expected type " + expectedType + ", but got " + type(value));
+        exit(1);
+    }
+}

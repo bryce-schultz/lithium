@@ -1839,27 +1839,73 @@ void Interpreter::visit(MemberAccessNode *node)
     }
 
     auto lhs = returnValue;
-    auto member = returnValue->getMember(node->getIdentifier().getValue());
-    if (member && member->getType() == Value::Type::builtin)
+
+    if (returnValue->getType() != Value::Type::class_)
     {
-        // if the member is a builtin function, we need to bind it to the left-hand side so it can access the object it belongs to.
-        auto builtin = dynamic_pointer_cast<BuiltinFunctionValue>(member);
-        if (!builtin)
+        auto member = returnValue->getMember(node->getIdentifier().getValue());
+        if (member && member->getType() == Value::Type::builtin)
         {
-            returnValue = nullptr;
+            // if the member is a builtin function, we need to bind it to the left-hand side so it can access the object it belongs to.
+            auto builtin = dynamic_pointer_cast<BuiltinFunctionValue>(member);
+            if (!builtin)
+            {
+                returnValue = nullptr;
+                return;
+            }
+
+            returnValue = builtin->bind(lhs);
             return;
         }
 
-        returnValue = builtin->bind(lhs);
-        return;
+        returnValue = member;
+
+        if (!returnValue)
+        {
+            errorAtToken("member '" + node->getIdentifier().getValue() + "' not found", node->getIdentifier(), node->getRange());
+            return;
+        }
     }
-
-    returnValue = member;
-
-    if (!returnValue)
+    else if (returnValue->getType() == Value::Type::class_)
     {
-        errorAtToken("member '" + node->getIdentifier().getValue() + "' not found", node->getIdentifier(), node->getRange());
-        return;
+        auto classValue = dynamic_pointer_cast<ClassValue>(lhs);
+        if (!classValue)
+        {
+            returnValue = nullptr;
+            error("left-hand side of member access could not be cast to ClassValue", node->getExpression()->getRange());
+            return;
+        }
+
+        try
+        {
+            shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
+            if (!classBody)
+            {
+                error("class '" + classValue->getName() + "' has no body", node->getRange());
+                returnValue = nullptr;
+                return;
+            }
+
+            shared_ptr<Environment> oldEnv = env;
+            env = make_shared<Environment>();
+
+            // we don't want to push extra scope for class body, so we just visit the statements directly
+            if (classBody->getStatements())
+            {
+                classBody->getStatements()->visit(this);
+            }
+
+            // lookup the member in the class environment
+            returnValue = env->lookupLocal(node->getIdentifier().getValue());
+            env = oldEnv;
+            if (!returnValue)
+            {
+                errorAtToken("member '" + node->getIdentifier().getValue() + "' not found in class", node->getIdentifier(), node->getRange());
+            }
+        }
+        catch (const ErrorException &e)
+        {
+            throw e;
+        }
     }
 }
 

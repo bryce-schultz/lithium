@@ -79,7 +79,8 @@
         "ratio": "cpp",
         "iomanip": "cpp",
         "format": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "charconv": "cpp"
     },
     "makefile.makefilePath": "",
     "makefile.makePath": "src/make"

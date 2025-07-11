@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/bryce/projects/lithium/src",
+            "binaryPath": "/home/bryce/projects/lithium/src/li",
+            "binaryArgs": []
+        }
+    ]
+}

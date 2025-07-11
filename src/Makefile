@@ -104,8 +104,8 @@ MAIN_OBJS = main.o \
  ArrayValue.o \
  ClassValue.o \
  ObjectValue.o \
- Builtins.o \
  Exceptions.o \
+ Builtins.o \
  SemanticErrorVisitor.o
 
 # Phony Targets:
@@ -156,7 +156,8 @@ NumberValue.o: NumberValue.cpp NumberValue.h Values.h Value.h \
  StatementsNode.h Node.h Range.h Location.h Visitor.h StatementNode.h \
  Environment.h Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
  ExpressionNode.h NullValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h Error.h Color.h
+ FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h Error.h Color.h \
+ Exceptions.h
 MemberAccessNode.o: MemberAccessNode.cpp MemberAccessNode.h \
  ExpressionNode.h StatementNode.h Node.h Range.h Location.h Visitor.h \
  Token.h
@@ -334,6 +335,6 @@ SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  ReturnStatementNode.h WhileNode.h Error.h Color.h
 
 # Options from .mk file:
-CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -Werror
+CXXFLAGS += -O0 -g#3 -Wall -Wextra -Wpedantic -Werror
 MAIN_EXE = li
 

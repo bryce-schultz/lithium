@@ -1,0 +1,14 @@
+import <Math>
+
+println("Math.PI: " + Math.PI);
+println("Math.E: " + Math.E);
+
+println("Math.min(5, 10): " + Math.min(5, 10));
+println("Math.max(5, 10): " + Math.max(5, 10));
+println("Math.clamp(15, 10, 20): " + Math.clamp(15, 10, 20));
+println("Math.abs(-5): " + Math.abs(-5));
+println("Math.lerp(0, 10, 0.5): " + Math.lerp(0, 10, 0.5));
+println("Math.lerp(0, 10, 1.5): " + Math.lerp(0, 10, 1.5));
+println("Math.lerp(0, 10, -0.5): " + Math.lerp(0, 10, -0.5));
+
+typeguard(Math.PI, "string");
