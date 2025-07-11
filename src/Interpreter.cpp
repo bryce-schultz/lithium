@@ -1886,7 +1886,7 @@ void Interpreter::visit(MemberAccessNode *node)
             }
 
             shared_ptr<Environment> oldEnv = env;
-            env = make_shared<Environment>();
+            env = make_shared<Environment>(oldEnv); // Inherit from current environment to access imports
 
             // we don't want to push extra scope for class body, so we just visit the statements directly
             if (classBody->getStatements())
