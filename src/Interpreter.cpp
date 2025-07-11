@@ -1875,36 +1875,36 @@ void Interpreter::visit(MemberAccessNode *node)
             return;
         }
 
+        shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
+        if (!classBody)
+        {
+            error("class '" + classValue->getName() + "' has no body", node->getRange());
+            returnValue = nullptr;
+            return;
+        }
+
+        env = make_shared<Environment>(env); // Inherit from current environment to access imports
+
         try
         {
-            shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
-            if (!classBody)
-            {
-                error("class '" + classValue->getName() + "' has no body", node->getRange());
-                returnValue = nullptr;
-                return;
-            }
-
-            shared_ptr<Environment> oldEnv = env;
-            env = make_shared<Environment>(oldEnv); // Inherit from current environment to access imports
-
             // we don't want to push extra scope for class body, so we just visit the statements directly
             if (classBody->getStatements())
             {
                 classBody->getStatements()->visit(this);
             }
-
-            // lookup the member in the class environment
-            returnValue = env->lookupLocal(node->getIdentifier().getValue());
-            env = oldEnv;
-            if (!returnValue)
-            {
-                errorAtToken("member '" + node->getIdentifier().getValue() + "' not found in class", node->getIdentifier(), node->getRange());
-            }
         }
         catch (const ErrorException &e)
         {
+            env = env->getParent();
             throw e;
+        }
+
+        // lookup the member in the class environment
+        returnValue = env->lookupLocal(node->getIdentifier().getValue());
+        env = env->getParent();
+        if (!returnValue)
+        {
+            errorAtToken("member '" + node->getIdentifier().getValue() + "' not found in class", node->getIdentifier(), node->getRange());
         }
     }
 }
