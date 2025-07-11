@@ -517,7 +517,12 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
 
     auto funcDecl = make_shared<FuncDeclNode>(identifier, params, bodyResult.value);
     funcDecl->setRangeStart(fnToken.getRange().getStart());
-    //funcDecl->setRangeEnd(closeParenToken.getRange().getEnd());
+
+    if (bodyResult.value == nullptr)
+    {
+        // If no body, set range end to the close parenthesis
+        funcDecl->setRangeEnd(closeParenToken.getRange().getEnd());
+    }
 
     accept(funcDecl);
 }
