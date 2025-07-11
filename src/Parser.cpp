@@ -119,7 +119,7 @@ Result<Node> Parser::parse(const string &input, const string &filename)
         tokenizer = Tokenizer();
         reject();
     }
-    
+
     // Clear tokenizer before successful return
     tokenizer = Tokenizer();
     accept(result.value);
@@ -693,8 +693,6 @@ Result<ContinueNode> Parser::parseContinueStmt()
     Token semicolonToken = expectToken(';');
 
     auto continueNode = make_shared<ContinueNode>(continueToken);
-    continueNode->setRangeStart(continueToken.getRange().getStart());
-    continueNode->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(continueNode);
 }

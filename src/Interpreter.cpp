@@ -326,21 +326,15 @@ void Interpreter::visit(StatementsNode *node)
     {
         if (auto funcDecl = dynamic_pointer_cast<FuncDeclNode>(statement))
         {
-            shared_ptr<Value> value = env->lookupLocal(funcDecl->getName());
-            // Only declare if not already declared (to avoid redeclaration error)
-            if (value)
-            {
-                alreadyDefined(funcDecl);
-                continue;
-            }
-
+            // Note: Redeclaration checking is now handled by semantic analysis
+            // during hoisting, just use redeclare to allow proper scoping
             auto function = make_shared<FunctionValue>(
                 funcDecl->getName(),
                 funcDecl->getParams(),
                 funcDecl->getBody(),
                 env
             );
-            env->declare(funcDecl->getName(), function, funcDecl->isConst());
+            env->redeclare(funcDecl->getName(), function, funcDecl->isConst());
         }
     }
 
@@ -1076,11 +1070,10 @@ void Interpreter::visit(VarDeclNode *node)
         return;
     }
 
-    returnValue = env->declare(node->getName(), returnValue, node->isConst());
-    if (!returnValue)
-    {
-        alreadyDefined(node);
-    }
+    // Note: Redeclaration checking is now handled by semantic analysis
+    // Use redeclare to allow shadowing in nested scopes but semantic analysis
+    // will catch actual redeclarations in the same scope
+    returnValue = env->redeclare(node->getName(), returnValue, node->isConst());
 
     returnValue = nullptr;
 }
@@ -1880,12 +1873,11 @@ void Interpreter::visit(ClassNode *node)
 {
     // Create a new class value and declare it in the environment
     auto classValue = make_shared<ClassValue>(node->getName(), node->getBody());
-    auto result = env->declare(node->getName(), classValue, node->isConst());
-    if (!result)
-    {
-        alreadyDefined(node);
-        return;
-    }
+    
+    // Note: Redeclaration checking is now handled by semantic analysis
+    // Use redeclare to allow shadowing in nested scopes but semantic analysis
+    // will catch actual redeclarations in the same scope
+    env->redeclare(node->getName(), classValue, node->isConst());
 
     returnValue = nullptr; // No return value for class declaration
 }

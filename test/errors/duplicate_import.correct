@@ -1,0 +1,4 @@
+error: duplicate_import.li:2:1: module 'io' is already imported
+│ import <io>
+│ ~~~~~~~~~~~
+│ ^

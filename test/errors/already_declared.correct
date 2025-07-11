@@ -1,4 +1,4 @@
-error: already_declared.li:6:4: 'test' is already defined
+error: already_declared.li:6:4: function 'test' is already declared in this scope
 │ fn test()
 │ ~~~~~~~~~
 │    ^

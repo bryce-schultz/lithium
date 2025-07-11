@@ -1,4 +1,8 @@
-error: redeclare_variable.li:2:5: 'x' is already defined
+error: redeclare_variable.li:2:5: variable 'x' is already declared in this scope
 │ let x = 2;
 │ ~~~~~~~~~
 │     ^
+error: redeclare_variable.li:4:7: variable 'y' is already declared in this scope
+│ const y = 4;
+│ ~~~~~~~~~~~
+│       ^

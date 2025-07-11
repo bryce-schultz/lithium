@@ -1,0 +1,4 @@
+error: function_redeclaration.li:5:4: function 'test' is already declared in this scope
+│ fn test() {
+│ ~~~~~~~~~~~
+│    ^

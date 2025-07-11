@@ -1,0 +1,4 @@
+error: variable_redeclaration.li:2:5: variable 'x' is already declared in this scope
+│ let x = 10;
+│ ~~~~~~~~~~
+│     ^

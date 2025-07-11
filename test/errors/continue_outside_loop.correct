@@ -1,0 +1,4 @@
+error: continue_outside_loop.li:1:1: 'continue' used outside of a loop
+│ continue;
+│ ~~~~~~~~
+│ ^

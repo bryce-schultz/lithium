@@ -1,0 +1,4 @@
+error: class_redeclaration.li:4:7: class 'Test' is already declared
+│ class Test {
+│ ~~~~~~~~~~~~
+│       ^

@@ -30,13 +30,30 @@ bool SemanticErrorVisitor::hasErrors() const
     return errorCount > 0;
 }
 
+void SemanticErrorVisitor::resetErrorCount()
+{
+    errorCount = 0;
+}
+
 void SemanticErrorVisitor::visit(FuncDeclNode *node)
 {
     functionDepth++;
 
+    std::string funcName = node->getName();
+
+    // Check for function redeclaration in the same immediate scope
+    if (localFunctions.find(funcName) != localFunctions.end())
+    {
+        errorAt("function '" + funcName + "' is already declared in this scope", node->getToken().getRange().getStart(), node->getRange());
+    }
+
+    // Track this function in the current scope
+    localFunctions.insert(funcName);
+    declaredFunctions.insert(funcName);
+
     // Track function name for recursion detection
     std::string prevFunctionName = currentFunctionName;
-    currentFunctionName = node->getName();
+    currentFunctionName = funcName;
 
     // Check for immediate self-recursion in function body
     if (currentFunctionStack.find(currentFunctionName) != currentFunctionStack.end())
@@ -51,7 +68,27 @@ void SemanticErrorVisitor::visit(FuncDeclNode *node)
     if (!node->getBody()) {
         errorAt("function '" + currentFunctionName + "' has no body", node->getToken().getRange().getStart(), node->getRange());
     } else {
+        // Create new scope for function body
+        auto prevLocalVars = localVariables;
+        auto prevLocalFuncs = localFunctions;
+
+        // Clear local scope trackers for the function body
+        localVariables.clear();
+        localFunctions.clear();
+
+        // Parameters are in the function's local scope
+        if (node->getParams()) {
+            for (int i = 0; i < node->getParams()->getParamCount(); i++) {
+                std::string paramName = node->getParams()->getParam(i)->getName();
+                localVariables.insert(paramName);
+            }
+        }
+
         node->getBody()->visit(this);
+
+        // Restore previous scope
+        localVariables = prevLocalVars;
+        localFunctions = prevLocalFuncs;
     }
 
     currentFunctionStack.erase(currentFunctionName);
@@ -70,6 +107,15 @@ void SemanticErrorVisitor::visit(ReturnStatementNode *node)
 void SemanticErrorVisitor::visit(ForStatementNode *node)
 {
     loopDepth++;
+
+    // Create new scope for the for loop (including the loop variable)
+    auto prevLocalVars = localVariables;
+    auto prevLocalFuncs = localFunctions;
+
+    // Clear local scope for the for loop
+    localVariables.clear();
+    localFunctions.clear();
+
     if (node->getInit())
     {
         node->getInit()->visit(this);
@@ -86,6 +132,11 @@ void SemanticErrorVisitor::visit(ForStatementNode *node)
     {
         node->getBody()->visit(this);
     }
+
+    // Restore previous scope
+    localVariables = prevLocalVars;
+    localFunctions = prevLocalFuncs;
+
     loopDepth--;
 }
 
@@ -111,8 +162,53 @@ void SemanticErrorVisitor::visit(BreakNode *node)
     }
 }
 
+void SemanticErrorVisitor::visit(ContinueNode *node)
+{
+    if (loopDepth == 0)
+    {
+        error("'continue' used outside of a loop", node->getRange());
+    }
+}
+
+void SemanticErrorVisitor::visit(ForEachNode *node)
+{
+    loopDepth++;
+
+    // Create new scope for the foreach loop
+    auto prevLocalVars = localVariables;
+    auto prevLocalFuncs = localFunctions;
+
+    // Clear local scope for the foreach loop
+    localVariables.clear();
+    localFunctions.clear();
+
+    // Visit the iterable expression
+    if (node->getIterable())
+    {
+        node->getIterable()->visit(this);
+    }
+
+    // Visit the body
+    if (node->getBody())
+    {
+        node->getBody()->visit(this);
+    }
+
+    // Restore previous scope
+    localVariables = prevLocalVars;
+    localFunctions = prevLocalFuncs;
+
+    loopDepth--;
+}
+
 void SemanticErrorVisitor::visit(CallNode *node)
 {
+    // Check for excessive recursion depth in static analysis
+    if (currentFunctionStack.size() > 50)  // Arbitrary deep recursion threshold
+    {
+        error("potential stack overflow: excessive recursion depth detected", node->getRange());
+    }
+
     // visit arguments and callee as normal
     if (node->getArgs())
     {
@@ -133,13 +229,26 @@ void SemanticErrorVisitor::visit(ClassNode *node)
         errorAt("class '" + node->getName() + "' must be declared at global scope", node->getToken().getRange().getStart(), node->getRange());
     }
 
-    // Track that this class is declared
-    declaredClasses.insert(node->getName());
+    // Check for class redeclaration
+    std::string className = node->getName();
+    if (declaredClasses.find(className) != declaredClasses.end())
+    {
+        errorAt("class '" + className + "' is already declared", node->getToken().getRange().getStart(), node->getRange());
+    }
 
-    // Visit the class body
+    // Track that this class is declared
+    declaredClasses.insert(className);
+
+    // Visit the class body with fresh scope
     if (node->getBody())
     {
+        auto prevLocalVars = localVariables;
+        auto prevLocalFuncs = localFunctions;
+
         node->getBody()->visit(this);
+
+        localVariables = prevLocalVars;
+        localFunctions = prevLocalFuncs;
     }
 }
 
@@ -147,8 +256,20 @@ void SemanticErrorVisitor::visit(BlockNode *node)
 {
     blockDepth++;
 
+    // Create new scope for block-level variables and functions
+    auto prevLocalVars = localVariables;
+    auto prevLocalFuncs = localFunctions;
+
+    // Start with fresh local scope for this block
+    localVariables.clear();
+    localFunctions.clear();
+
     // Visit all statements in the block
     Visitor::visit(node);
+
+    // Restore previous scope
+    localVariables = prevLocalVars;
+    localFunctions = prevLocalFuncs;
 
     blockDepth--;
 }
@@ -189,4 +310,49 @@ void SemanticErrorVisitor::visit(ArrayAccessNode *node)
     {
         node->getIndex()->visit(this);
     }
+
+    // Note: Array bounds checking must be done at runtime
+    // but we could add static analysis for obvious cases like negative literals
+}
+
+void SemanticErrorVisitor::visit(VarDeclNode *node)
+{
+    std::string varName = node->getName();
+
+    // Check for variable redeclaration in the same immediate scope
+    if (localVariables.find(varName) != localVariables.end())
+    {
+        errorAt("variable '" + varName + "' is already declared in this scope", node->getToken().getRange().getStart(), node->getRange());
+    }
+
+    // Track this variable in the current scope
+    localVariables.insert(varName);
+    declaredVariables.insert(varName);
+
+    // Visit the initializer expression if present
+    if (node->getExpr())
+    {
+        node->getExpr()->visit(this);
+    }
+}
+
+void SemanticErrorVisitor::visit(ImportNode *node)
+{
+    // Check if import is at global scope
+    if (functionDepth > 0 || blockDepth > 0)
+    {
+        error("import statements must be at global scope", node->getRange());
+    }
+
+    // Track imported modules to prevent duplicates
+    std::string moduleName = node->getModuleName();
+    if (importedModules.find(moduleName) != importedModules.end())
+    {
+        error("module '" + moduleName + "' is already imported", node->getRange());
+    }
+
+    importedModules.insert(moduleName);
+    importDepth++;
+
+    importDepth--;
 }

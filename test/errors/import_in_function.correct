@@ -1,0 +1,4 @@
+error: import_in_function.li:2:5: import statements must be at global scope
+│ import <io>
+│ ~~~~~~~~~~~
+│ ^
