@@ -18,3 +18,4 @@ println(type(test2()));
 println(type(10 + 10));
 println(type("Hello" + " World"));
 println(type("number: " + 10));
+println(type(type));

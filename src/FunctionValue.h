@@ -57,6 +57,8 @@ public:
     shared_ptr<Value> bind(const shared_ptr<Value> &thisPtr);
 
     string toString() const override;
+
+    virtual string typeAsString() const override;
 public:
 private:
     BuiltinFunction func;

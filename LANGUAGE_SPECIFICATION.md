@@ -241,6 +241,108 @@ pre code::first-line {
 
 ---
 
+## 📚 Table of Contents
+
+### Core Language
+- [📖 Language Reference](#-language-reference)
+  - [🔤 Lexical Structure](#-lexical-structure)
+    - [Comments](#comments)
+    - [Identifiers](#identifiers)
+    - [Literals](#literals)
+    - [String Escape Sequences](#string-escape-sequences)
+  - [🔧 Operators and Expressions](#-operators-and-expressions)
+    - [Operator Precedence](#operator-precedence-highest-to-lowest)
+    - [Arithmetic Operators](#arithmetic-operators)
+    - [Assignment Operators](#assignment-operators)
+    - [Comparison Operators](#comparison-operators)
+    - [Logical Operators](#logical-operators)
+    - [Increment/Decrement Operators](#incrementdecrement-operators)
+  - [📊 Data Types](#-data-types)
+    - [Primitive Types](#primitive-types)
+    - [Composite Types](#composite-types)
+    - [Type Conversion](#type-conversion)
+  - [🗂️ Variables and Scoping](#️-variables-and-scoping)
+    - [Variable Declarations](#variable-declarations)
+    - [Scoping Rules](#scoping-rules)
+    - [Variable Shadowing](#variable-shadowing)
+
+### Functions and Classes
+- [🔧 Functions](#-functions)
+  - [Function Declaration](#function-declaration)
+  - [Function Calls](#function-calls)
+  - [Closures](#closures)
+  - [Function Hoisting](#function-hoisting)
+- [🏛️ Classes and Objects](#️-classes-and-objects)
+  - [Class Declaration](#class-declaration)
+  - [Class Example](#class-example)
+  - [Object Instantiation](#object-instantiation)
+  - [Class Scope Rules](#class-scope-rules)
+  - [Member Access](#member-access)
+
+### Data Structures
+- [📋 Arrays](#-arrays)
+  - [Array Creation](#array-creation)
+  - [Array Access](#array-access)
+  - [Array Concatenation](#array-concatenation)
+  - [Adding Arrays as Elements](#adding-arrays-as-elements-nested-arrays)
+  - [Array Properties](#array-properties)
+  - [String Indexing](#string-indexing)
+  - [String Properties](#string-properties)
+
+### Control Flow
+- [🔄 Control Flow](#-control-flow)
+  - [Conditional Statements](#conditional-statements)
+  - [While Loops](#while-loops)
+  - [For Loops](#for-loops)
+  - [Foreach Loops](#foreach-loops)
+  - [Break and Continue](#break-and-continue)
+
+### Modules and Built-ins
+- [🌐 Module System](#-module-system)
+  - [Built-in Modules](#built-in-modules)
+  - [Import Syntax](#import-syntax)
+  - [Module Search Order](#module-search-order)
+  - [Always Available](#always-available)
+  - [User Modules](#user-modules)
+- [🧪 Built-in Functions](#-built-in-functions)
+  - [Core Functions](#core-functions)
+  - [Type Function](#type-function)
+  - [I/O Functions](#io-functions-require-import-io)
+  - [Mathematical Constants](#mathematical-constants-require-import-math)
+  - [Command Line Arguments](#command-line-arguments-require-import-args)
+  - [Random Numbers](#random-numbers-require-import-random)
+  - [Operating System Functions](#operating-system-functions-require-import-os)
+  - [Socket Operations](#socket-operations-require-import-socket)
+  - [Time Functions](#time-functions-require-import-time)
+  - [Color Module](#color-module-require-import-color)
+
+### Advanced Topics
+- [✅ Assertions](#-assertions)
+  - [Basic Assertions](#basic-assertions)
+  - [Assertion Examples](#assertion-examples)
+- [🎯 Type System Details](#-type-system-details)
+  - [Object Equality](#object-equality)
+  - [Truthiness](#truthiness)
+
+### Reference Materials
+- [📝 Grammar Reference](#-grammar-reference)
+- [🚨 Error Handling](#-error-handling)
+  - [Common Error Types](#common-error-types)
+  - [Error Message Format](#error-message-format)
+- [🎮 Interactive REPL](#-interactive-repl)
+  - [Starting the REPL](#starting-the-repl)
+  - [REPL Features](#repl-features)
+  - [REPL Examples](#repl-examples)
+- [🔧 Best Practices](#-best-practices)
+  - [Code Style](#code-style)
+  - [Array Operations](#array-operations)
+  - [Random Number Generation](#random-number-generation)
+  - [Error Handling](#error-handling-1)
+  - [Class Design](#class-design)
+- [🏁 Conclusion](#-conclusion)
+
+---
+
 ## 📖 Language Reference
 
 <div class="section-header">
@@ -1049,6 +1151,7 @@ Lithium provides several built-in modules that must be explicitly imported:
 | `<os>` | Operating system functions | `open()`, `close()`, `read()`, `write()`, `shell()` |
 | `<socket>` | Network socket operations | `socket()`, `listen()`, `accept()`, `connect()`, `send()`, `receive()` |
 | `<time>` | Time and sleep functions | `time()`, `sleep()` |
+| `<color>` | Terminal color codes | `Color` object with ANSI escape sequences |
 
 #### **Import Syntax**
 
@@ -1072,7 +1175,7 @@ When you use `import <moduleName>`, Lithium searches for modules in this specifi
 3. **`$HOME/modules/` directory** - User's home modules folder (if HOME environment variable exists)
 
 **Phase 2: Built-in Modules (if no file found)**
-4. **Built-in modules** - Hardcoded modules: `args`, `io`, `math`, `random`, `os`, `socket`, `time`
+4. **Built-in modules** - Hardcoded modules: `args`, `io`, `math`, `random`, `os`, `socket`, `time`, `color`
 
 **Path Resolution:**
 - Dot notation (`.`) becomes forward slash (`/`) in file paths
@@ -1262,6 +1365,41 @@ println("Current timestamp: " + currentTime);
 sleep(1000);  # Sleep for 1000 milliseconds
 ```
 
+#### **Color Module** (require `import <color>`)
+
+The color module provides ANSI escape sequences for terminal text coloring:
+
+```lithium
+import <color>
+
+# Available colors
+println(Color.red + "This text is red" + Color.reset);
+println(Color.green + "This text is green" + Color.reset);
+println(Color.yellow + "This text is yellow" + Color.reset);
+println(Color.blue + "This text is blue" + Color.reset);
+println(Color.magenta + "This text is magenta" + Color.reset);
+println(Color.cyan + "This text is cyan" + Color.reset);
+println(Color.white + "This text is white" + Color.reset);
+
+# Example: Colored output
+println(Color.green + "SUCCESS: " + Color.reset + "Operation completed");
+println(Color.red + "ERROR: " + Color.reset + "Something went wrong");
+println(Color.yellow + "WARNING: " + Color.reset + "Please check this");
+
+# Multiple colors in one line
+println(Color.blue + "Hello " + Color.red + "World" + Color.reset);
+```
+
+**Available Color Properties:**
+- `Color.red` - Red text
+- `Color.green` - Green text  
+- `Color.yellow` - Yellow text
+- `Color.blue` - Blue text
+- `Color.magenta` - Magenta text
+- `Color.cyan` - Cyan text
+- `Color.white` - White text
+- `Color.reset` - Reset to default color
+
 ---
 
 <div class="section-header">
@@ -1413,9 +1551,8 @@ expr           → assign expr'
 expr'          → , assign expr' | ε
 
 assign         → or assign'
-assign'        → = or assign' | PLUS_EQUAL or assign'
-               | MINUS_EQUAL or assign' | MUL_EQUAL or assign'
-               | DIV_EQUAL or assign' | MOD_EQUAL or assign' | ε
+assign'        → = or assign' | PLUS_EQUAL or assign' | MINUS_EQUAL or assign'
+               | MUL_EQUAL or assign' | DIV_EQUAL or assign' | MOD_EQUAL or assign' | ε
 
 or             → and or'
 or'            → OR and or' | ε
@@ -1544,156 +1681,4 @@ fn calculateArea(width, height) {
 # ✅ good: meaningful variable names
 let userAge = 25;
 let isLoggedIn = true;
-
-# ✅ good: consistent indentation
-if (condition) {
-    doSomething();
-    doSomethingElse();
-}
-
-# ✅ good: comments for complex logic
-fn fibonacci(n) {
-    # handle base cases
-    if (n <= 1) {
-        return n;
-    }
-    
-    # recursive case
-    return fibonacci(n - 1) + fibonacci(n - 2);
-}
 ```
-
-#### **Array Operations**
-
-```lithium
-# ✅ good: use += for array concatenation
-let items = [];
-items += "first";               # add single element
-items += ["second", "third"];   # add multiple elements
-
-# ✅ good: add arrays as elements (nested arrays)
-let records = [];
-let record = ["name", "email", "phone"];
-records += [record];            # add array as single element
-# result: records = [["name", "email", "phone"]]
-
-# ✅ good: use len() to check array size
-if (len(items) > 0) {
-    println("Array has elements");
-}
-
-# ❌ avoid: manual array index management
-let items = [];
-items[len(items)] = "item";     # error-prone, use += instead
-
-# ❌ avoid: adding array directly when you want it as an element
-let records = [];
-let record = ["name", "email", "phone"];
-records += record;              # wrong! adds individual elements
-# result: records = ["name", "email", "phone"] (flattened)
-```
-
-#### **Random Number Generation**
-
-```lithium
-import <random>
-
-# ✅ good: generate random numbers in a specific range
-fn randomRange(min, max) {
-    let range = max - min + 1;
-    let randomValue = random() % range;
-    if (randomValue < 0) {
-        randomValue = -randomValue;  # handle negative values
-    }
-    return min + randomValue;
-}
-
-# ✅ good: generate random floating-point values
-fn randomFloat() {
-    # generate float between 0 and 1 with reasonable precision
-    return (random() % 1000000) / 1000000.0;
-}
-
-# ✅ good: use for dice rolls, game mechanics
-let diceRoll = randomRange(1, 6);
-let percentChance = randomRange(1, 100);
-
-# ❌ avoid: assuming random() returns a float
-let badRandom = random() * 100;  # wrong! random() returns 64-bit integer
-```
-
-#### **Error Handling**
-
-```lithium
-# ✅ Good: Validate inputs
-fn divide(a, b) {
-    assert b != 0, "Division by zero";
-    return a / b;
-}
-
-# ✅ Good: Check array bounds
-fn getElement(array, index) {
-    assert index >= 0 && index < array.length(), "Index out of bounds";
-    return array[index];
-}
-```
-
-#### **Class Design**
-
-```lithium
-# ✅ Good: Clear constructor parameters
-class Rectangle {
-    let width = 0;
-    let height = 0;
-    
-    fn Rectangle(w, h) {
-        assert w > 0 && h > 0, "Dimensions must be positive";
-        width = w;
-        height = h;
-    }
-    
-    fn area() {
-        return width * height;
-    }
-    
-    fn toString() {
-        return "Rectangle(" + width + "x" + height + ")";
-    }
-}
-```
-
----
-
-<div class="section-header">
-
-### 🏁 Conclusion
-
-</div>
-
-Lithium provides a clean, intuitive programming environment suitable for:
-
-- **🎓 Learning Programming**: Simple syntax with modern features
-- **🚀 Rapid Prototyping**: Quick script development and testing
-- **🔧 Embedded Scripting**: Easy integration into larger applications
-- **📊 Data Processing**: Built-in array support and string manipulation
-- **🎯 Educational Projects**: Clear error messages and interactive REPL
-
-The language balances simplicity with power, offering familiar C-like syntax while providing modern programming constructs like closures, classes, and a comprehensive module system.
-
----
-
-<div style="text-align: center; padding: 20px; background-color: #5a2c2c; border: 2px solid #b85555; border-radius: 8px; margin-bottom: 20px; color: #ff9999; box-shadow: 0 2px 8px rgba(90,44,44,0.4);">
-
-**🐛 Security Disclaimer**
-
-*Lithium is experimental software and has not undergone thorough security testing. Do not use Lithium for security-critical applications or in production environments where security vulnerabilities could pose risks. There may be undiscovered bugs and security issues.*
-
-</div>
-
-<div style="text-align: center; padding: 20px; background-color: #2c3e50; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-
-**📋 Lithium Language Specification v1.1** 
-  
-*For the latest updates and examples, visit the project repository*
-
-</div>
