@@ -56,15 +56,15 @@ int runInteractiveMode(const vector<string> &args)
 {
     Parser parser;
     shared_ptr<Environment> env = make_shared<Environment>();
-    Interpreter interpreter(true, env, args); // Create interpreter once, reuse it
-    SemanticErrorVisitor semanticVisitor; // Create semantic visitor once, reuse it to maintain state
+    Interpreter interpreter(true, env, args);
+    SemanticErrorVisitor semanticVisitor;
 
     string line;
     while ((line = Utils::getInputLine()) != "exit")
     {
-        clearErrorLocations(); // Clear error cache before parsing each new input
-        semanticVisitor.resetErrorCount(); // Reset error count but preserve semantic state
-        
+        clearErrorLocations();
+        semanticVisitor.resetErrorCount();
+
         Result<Node> result = parser.parse(line, "cin");
         if (!result.status)
         {
@@ -88,15 +88,10 @@ int runInteractiveMode(const vector<string> &args)
             clearErrorLocations();
             return e.exitCode;
         }
-        catch (const exception &e)
-        {
-            // Exception caught during interpretation, ensure cleanup
-            // The shared_ptr in result.value will automatically clean up when result goes out of scope
-        }
-        
+
         line.clear();
         clearErrorLocations();
-        
+
         // Explicitly reset the result to ensure immediate cleanup
         result.value.reset();
     }
