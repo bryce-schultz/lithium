@@ -251,6 +251,22 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
             imported(module);
             return true;
         }
+        else if (module == "color")
+        {
+            shared_ptr<ObjectValue> colorObject = make_shared<ObjectValue>("Color", make_shared<Environment>());
+            colorObject->addMember("red", make_shared<StringValue>("\033[31m"), true);
+            colorObject->addMember("green", make_shared<StringValue>("\033[32m"), true);
+            colorObject->addMember("yellow", make_shared<StringValue>("\033[33m"), true);
+            colorObject->addMember("blue", make_shared<StringValue>("\033[34m"), true);
+            colorObject->addMember("magenta", make_shared<StringValue>("\033[35m"), true);
+            colorObject->addMember("cyan", make_shared<StringValue>("\033[36m"), true);
+            colorObject->addMember("white", make_shared<StringValue>("\033[37m"), true);
+            colorObject->addMember("reset", make_shared<StringValue>("\033[0m"), true);
+            env->declare("Color", colorObject, true);
+
+            imported(module);
+            return true;
+        }
 
         couldNotFindModule(moduleName, range);
     }
