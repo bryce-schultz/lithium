@@ -5,10 +5,9 @@ class Math
     const PI = 3.141592653589793;
     const E = 2.718281828459045;
 
+
     fn min(a, b)
     {
-        typeguard(a, "number");
-        typeguard(b, "number");
         if (a < b)
         {
             return a;

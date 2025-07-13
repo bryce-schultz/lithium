@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <set>
+#include <functional>
 
 #include "Visitor.h"
 #include "Environment.h"
@@ -77,6 +78,7 @@ private:
     Parser moduleParser;
     set<string> importedModules; // to avoid re-importing the same module
     vector<string> args; // command line arguments passed to the interpreter
+    string currentFunctionName;
     
     // Recursion depth tracking to prevent stack overflow
     int recursionDepth;
@@ -87,4 +89,7 @@ private:
     
     // Helper to clean up any temporary environments
     void cleanupTempEnvironments();
+    
+    // Function pointer for interrupt checking
+    static std::function<void()> interruptChecker;
 };

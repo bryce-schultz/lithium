@@ -80,7 +80,12 @@
         "iomanip": "cpp",
         "format": "cpp",
         "chrono": "cpp",
-        "charconv": "cpp"
+        "charconv": "cpp",
+        "cstring": "cpp",
+        "span": "cpp",
+        "variant": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp"
     },
     "makefile.makefilePath": "",
     "makefile.makePath": "src/make"

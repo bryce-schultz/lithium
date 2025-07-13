@@ -68,7 +68,7 @@ string ObjectValue::toString() const
 {
     if (env->getMembers().empty())
     {
-        return "{ }";
+        return "{}";
     }
 
     string result = "{ ";

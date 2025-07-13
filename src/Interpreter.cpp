@@ -66,6 +66,7 @@ Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const 
     moduleParser(),
     importedModules(),
     args(args),
+    currentFunctionName(""),
     recursionDepth(0)
 {
     if (!env)
@@ -231,7 +232,7 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
         }
         else if (module == "socket")
         {
-            env->declare("socket", make_shared<BuiltinFunctionValue>(Builtins::openSocket), true);
+            env->declare("socket", make_shared<BuiltinFunctionValue>(Builtins::socket), true);
             env->declare("close", make_shared<BuiltinFunctionValue>(Builtins::closeFd), true);
             env->declare("listen", make_shared<BuiltinFunctionValue>(Builtins::listenSocket), true);
             env->declare("accept", make_shared<BuiltinFunctionValue>(Builtins::acceptSocket), true);
@@ -267,7 +268,7 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
         // Normalize the module path by removing ./ prefix
         string normalizedModulePath = modulePath;
         Utils::removePrefix(normalizedModulePath, "./");
-        
+
         auto moduleNode = moduleParser.parse(moduleContent, normalizedModulePath);
         if (!moduleNode.status)
         {
@@ -788,23 +789,26 @@ void Interpreter::visit(CallNode *node)
         }
         auto previousEnv = env;
         env = scope;
-        
+
         // Track this function call scope for cleanup
         tempEnvironments.push_back(scope);
-        
+
         // Increment recursion depth
         recursionDepth++;
-        
+        string oldFunctionName = currentFunctionName;
+        currentFunctionName = function->getName();
+
+        if (!function->getBody())
+        {
+            errorAt("function '" + function->getName() + "' has no body", node->getCallee()->getRange().getStart(), node->getRange());
+            returnValue = nullptr;
+            recursionDepth--;
+            env = previousEnv;
+            return;
+        }
+
         try
         {
-            if (!function->getBody()) {
-                errorAt("function '" + function->getName() + "' has no body", node->getCallee()->getRange().getStart(), node->getRange());
-                returnValue = nullptr;
-                recursionDepth--;
-                env = previousEnv;
-                return;
-            }
-            
             function->getBody()->visit(this);
             returnValue = nullptr;
         }
@@ -812,40 +816,24 @@ void Interpreter::visit(CallNode *node)
         {
             returnValue = e.value;
         }
-        catch (const BreakException &e)
+        catch (const BaseException &e)
         {
             recursionDepth--;
+            currentFunctionName = oldFunctionName;
             env = previousEnv;
             throw;
         }
-        catch (const ContinueException &e)
-        {
-            recursionDepth--;
-            env = previousEnv;
-            throw;
-        }
-        catch (const ExitException &e)
-        {
-            recursionDepth--;
-            env = previousEnv;
-            throw;
-        }
-        catch (const ErrorException &e)
-        {
-            recursionDepth--;
-            env = previousEnv;
-            throw;
-        }
-        
+
         // Decrement recursion depth
         recursionDepth--;
-        
+        currentFunctionName = oldFunctionName;
+
         // If the returned value is a function, check if it has a closure environment
         // that might create a circular reference with the current scope
-        if (returnValue && returnValue->getType() == Value::Type::function) 
+        if (returnValue && returnValue->getType() == Value::Type::function)
         {
             auto returnedFunc = dynamic_pointer_cast<FunctionValue>(returnValue);
-            if (returnedFunc && returnedFunc->getEnvironment() == scope) 
+            if (returnedFunc && returnedFunc->getEnvironment() == scope)
             {
                 // The returned function was declared in this call's scope
                 // This can create a circular reference (scope -> function -> scope)
@@ -853,8 +841,7 @@ void Interpreter::visit(CallNode *node)
                 returnedFunc->clearClosureEnv();
             }
         }
-        
-        // Don't clear the scope in normal flow - let RAII handle it  
+
         env = previousEnv;
     }
     else if (callee->getType() == Value::Type::builtin)
@@ -867,7 +854,14 @@ void Interpreter::visit(CallNode *node)
             return;
         }
 
-        returnValue = builtin->call(args, env, node->getRange());
+        // For member access (e.g., obj.method()), use the identifier range to point to the method name
+        Range callRange = calleeNode->getRange();
+        if (auto memberAccess = dynamic_cast<MemberAccessNode*>(calleeNode.get()))
+        {
+            callRange = memberAccess->getIdentifier().getRange();
+        }
+        
+        returnValue = builtin->call(args, env, callRange);
     }
     else if (callee->getType() == Value::Type::class_)
     {
@@ -883,7 +877,7 @@ void Interpreter::visit(CallNode *node)
         auto previousEnv = env;
         shared_ptr<Environment> classEnv = make_shared<Environment>(env);
         env = classEnv;
-        
+
         try
         {
             shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
@@ -955,7 +949,7 @@ void Interpreter::visit(CallNode *node)
                         env = constructorPrevEnv;
                         return;
                     }
-                    
+
                     constructor->getBody()->visit(this);
                 }
                 catch (const ReturnException& e)
@@ -985,7 +979,7 @@ void Interpreter::visit(CallNode *node)
                     env = constructorPrevEnv;
                     throw;
                 }
-                
+
                 // Don't clear the scope in normal flow - let RAII handle it
                 env = constructorPrevEnv;
             }
@@ -1037,20 +1031,17 @@ void Interpreter::visit(CallNode *node)
 void Interpreter::visit(ReturnStatementNode *node)
 {
     auto expr = node->getExpression();
-    if (expr)
-    {
-        expr->visit(this);
-        if (!returnValue)
-        {
-            error("return expression evaluated to null", node->getRange());
-            throw ReturnException(make_shared<NullValue>(), node->getRange());
-        }
-        throw ReturnException(returnValue, node->getRange());
-    }
-    else
+    if (!expr)
     {
         throw ReturnException(make_shared<NullValue>(), node->getRange());
     }
+
+    expr->visit(this);
+    if (!returnValue)
+    {
+        error("return expression evaluated to null", node->getRange());
+    }
+    throw ReturnException(returnValue, node->getRange());
 }
 
 void Interpreter::visit(VarDeclNode *node)
@@ -1087,14 +1078,21 @@ void Interpreter::visit(VarExprNode *node)
         returnValue->setRange(node->getRange());
         return;
     }
-    
+
     if (node->getName() == "LINE")
     {
         returnValue = make_shared<NumberValue>(node->getRange().getStart().getLine());
         returnValue->setRange(node->getRange());
         return;
     }
-    
+
+    if (node->getName() == "FUNCTION")
+    {
+        returnValue = make_shared<StringValue>(currentFunctionName);
+        returnValue->setRange(node->getRange());
+        return;
+    }
+
     returnValue = env->lookup(node->getName());
     if (!returnValue)
     {
@@ -1116,12 +1114,14 @@ void Interpreter::visit(AssignNode *node)
         returnValue = nullptr;
         return;
     }
+
     if (!node->getAsignee()->isLval())
     {
         error("cannot assign to a non-variable expression", node->getRange());
         returnValue = nullptr;
         return;
     }
+
     auto asignee = dynamic_pointer_cast<VarExprNode>(node->getAsignee());
     if (asignee)
     {
@@ -1158,47 +1158,59 @@ void Interpreter::visit(AssignNode *node)
             string leftType, rightType;
             auto assigneeValue = env->lookup(asignee->getName());
             string assigneeType = assigneeValue ? assigneeValue->typeAsString() : "unknown";
-            
+
             switch (node->getOp())
             {
                 case Token::PLUS_EQUAL:
+                {
                     opName = "add";
                     preposition = "to";
                     leftType = returnValue->typeAsString();
                     rightType = assigneeType;
                     break;
+                }
                 case Token::MINUS_EQUAL:
+                {
                     opName = "subtract";
                     preposition = "from";
                     leftType = returnValue->typeAsString();
                     rightType = assigneeType;
                     break;
+                }
                 case Token::MUL_EQUAL:
+                {
                     opName = "multiply";
                     preposition = "with";
                     leftType = assigneeType;
                     rightType = returnValue->typeAsString();
                     break;
+                }
                 case Token::DIV_EQUAL:
+                {
                     opName = "divide";
                     preposition = "by";
                     leftType = assigneeType;
                     rightType = returnValue->typeAsString();
                     break;
+                }
                 case Token::MOD_EQUAL:
+                {
                     opName = "mod";
                     preposition = "by";
                     leftType = assigneeType;
                     rightType = returnValue->typeAsString();
                     break;
+                }
                 default:
+                {
                     opName = "operate";
                     preposition = "with";
                     leftType = assigneeType;
                     rightType = returnValue->typeAsString();
                     break;
+                }
             }
-            
+
             errorAtToken("invalid assignment type, can't " + opName + " " + leftType + " " + preposition + " " + rightType, node->getToken(), node->getRange());
             returnValue = nullptr;
             return;
@@ -1376,10 +1388,10 @@ void Interpreter::visit(BlockNode *node)
     shared_ptr<Environment> prevEnv = env; // Save previous environment
     shared_ptr<Environment> blockEnv = make_shared<Environment>(env); // Create block environment
     env = blockEnv; // push a new environment for the block
-    
+
     // Track this as a temporary environment for later cleanup
     tempEnvironments.push_back(blockEnv);
-    
+
     try
     {
         node->getStatements()->visit(this);
@@ -1462,8 +1474,11 @@ void Interpreter::visit(FuncDeclNode *node)
 
 void Interpreter::visit(WhileNode *node)
 {
+    shared_ptr<Environment> originalEnv = env;
+    
     while (true)
     {
+        // Evaluate condition in the original environment
         node->getCondition()->visit(this);
         if (!returnValue)
         {
@@ -1481,24 +1496,52 @@ void Interpreter::visit(WhileNode *node)
         bool condition = returnValue->toBoolean();
         if (!condition) break;
 
-        // don't visit an empty body
-        if (node->getBody())
+        // Create a new environment for this iteration
         {
-            try
+            shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
+            env = iterationEnv;
+
+            // don't visit an empty body
+            if (node->getBody())
             {
-                node->getBody()->visit(this);
+                try
+                {
+                    node->getBody()->visit(this);
+                }
+                catch (const BreakException &)
+                {
+                    env = originalEnv;
+                    break;
+                }
+                catch (const ContinueException &)
+                {
+                    env = originalEnv;
+                    continue;
+                }
+                catch (const ReturnException &e)
+                {
+                    env = originalEnv;
+                    throw;
+                }
+                catch (const ErrorException &e)
+                {
+                    env = originalEnv;
+                    throw;
+                }
             }
-            catch (const BreakException &)
-            {
-                // handle break statement
-                break;
-            }
-            catch (const ContinueException &)
-            {
-                // handle continue statement
-                continue;
-            }
-        }
+            
+            // Clear any references that might be holding onto values
+            returnValue = nullptr;
+            
+            // Clean up temporary environments created during this iteration
+            cleanupTempEnvironments();
+            
+            // Explicitly clear the iteration environment to trigger immediate cleanup
+            iterationEnv->clear();
+            
+            // Restore original environment - iterationEnv goes out of scope here
+            env = originalEnv;
+        } // iterationEnv is destroyed here, allowing immediate cleanup
     }
 
     returnValue = nullptr; // reset return value after the loop
@@ -1506,8 +1549,9 @@ void Interpreter::visit(WhileNode *node)
 
 void Interpreter::visit(ForEachNode *node)
 {
-    env = make_shared<Environment>(env);
+    shared_ptr<Environment> originalEnv = env;
 
+    // Evaluate the iterable expression in the original environment
     node->getIterable()->visit(this);
 
     if (node->isArrayLike())
@@ -1527,23 +1571,45 @@ void Interpreter::visit(ForEachNode *node)
 
         for (int i = 0; i < arrayValue->getElementCount(); ++i)
         {
-            env->redeclare(node->getKeyDecl()->getName(), arrayValue->getElement(i), node->getKeyDecl()->isConst());
+            // Create a new environment for this iteration
+            {
+                shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
+                env = iterationEnv;
+                
+                env->redeclare(node->getKeyDecl()->getName(), arrayValue->getElement(i), node->getKeyDecl()->isConst());
 
-            try
-            {
-                node->getBody()->visit(this);
-            }
-            catch (const BreakException &)
-            {
-                break;
-            }
-            catch (const ContinueException &)
-            {
-                continue;
-            }
+                try
+                {
+                    node->getBody()->visit(this);
+                }
+                catch (const BreakException &)
+                {
+                    env = originalEnv;
+                    break;
+                }
+                catch (const ContinueException &)
+                {
+                    env = originalEnv;
+                    continue;
+                }
+                catch (const ReturnException &e)
+                {
+                    env = originalEnv;
+                    throw;
+                }
+                catch (const ErrorException &e)
+                {
+                    env = originalEnv;
+                    throw;
+                }
+                
+                // Clear any references that might be holding onto values
+                returnValue = nullptr;
+                
+                // Environment is automatically cleaned up when iterationEnv goes out of scope
+                env = originalEnv;
+            } // iterationEnv is destroyed here, allowing immediate cleanup
         }
-
-        // Reset the environment after the loo
     }
     else if (node->isMapLike())
     {
@@ -1567,26 +1633,50 @@ void Interpreter::visit(ForEachNode *node)
                 continue; // skip functions in the object
             }
 
-            if (pair.first == "LINE" || pair.first == "FILE")
+            // Create a new environment for this iteration
             {
-                continue; // skip special variables
-            }
+                shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
+                env = iterationEnv;
 
-            env->redeclare(node->getKeyDecl()->getName(), make_shared<StringValue>(pair.first), node->getKeyDecl()->isConst());
-            env->redeclare(node->getValueDecl()->getName(), pair.second, node->getValueDecl()->isConst());
+                env->redeclare(node->getKeyDecl()->getName(), make_shared<StringValue>(pair.first, Range{}), node->getKeyDecl()->isConst());
+                env->redeclare(node->getValueDecl()->getName(), pair.second, node->getValueDecl()->isConst());
 
-            try
-            {
-                node->getBody()->visit(this);
-            }
-            catch (const BreakException &)
-            {
-                break;
-            }
-            catch (const ContinueException &)
-            {
-                continue;
-            }
+                try
+                {
+                    node->getBody()->visit(this);
+                }
+                catch (const BreakException &)
+                {
+                    env = originalEnv;
+                    break;
+                }
+                catch (const ContinueException &)
+                {
+                    env = originalEnv;
+                    continue;
+                }
+                catch (const ReturnException &e)
+                {
+                    env = originalEnv;
+                    throw;
+                }
+                catch (const ErrorException &e)
+                {
+                    env = originalEnv;
+                    throw;
+                }
+                
+                // Clear any references that might be holding onto values
+                returnValue = nullptr;
+                
+                // Clean up temporary environments created during this iteration
+                cleanupTempEnvironments();
+                
+                // Explicitly clear the iteration environment to trigger immediate cleanup
+                iterationEnv->clear();
+                
+                env = originalEnv;
+            } // iterationEnv is destroyed here, allowing immediate cleanup
         }
     }
     else
@@ -1594,69 +1684,127 @@ void Interpreter::visit(ForEachNode *node)
         error("for-each loop iterable must be an array or an object", node->getIterable()->getRange());
     }
 
-    env = env->getParent();
+    env = originalEnv;
     returnValue = nullptr;
 }
 
 void Interpreter::visit(ForStatementNode *node)
 {
-    shared_ptr<Environment> forEnv = make_shared<Environment>(env);
+    shared_ptr<Environment> originalEnv = env;
+    
+    // Create environment for the entire for loop (for init variable)
+    shared_ptr<Environment> forEnv = make_shared<Environment>(originalEnv);
     env = forEnv;
-    // Initialize the loop variable
-    if (node->getInit())
+    
+    try
     {
-        node->getInit()->visit(this);
+        // Initialize the loop variable
+        if (node->getInit())
+        {
+            node->getInit()->visit(this);
+        }
+
+        while (true)
+        {
+            // Evaluate condition in the for environment
+            if (node->getCondition())
+            {
+                node->getCondition()->visit(this);
+                if (!returnValue)
+                {
+                    error("for loop condition evaluation failed", node->getCondition()->getRange());
+                    break;
+                }
+
+                if (returnValue->getType() != Value::Type::boolean &&
+                    returnValue->getType() != Value::Type::number)
+                {
+                    error("for loop condition must be a boolean expression", node->getCondition()->getRange());
+                    break;
+                }
+
+                bool condition = returnValue->toBoolean();
+                if (!condition) break;
+            }
+
+            // Create a new environment for this iteration's body
+            {
+                shared_ptr<Environment> iterationEnv = make_shared<Environment>(forEnv);
+                env = iterationEnv;
+
+                // don't visit an empty body
+                if (node->getBody())
+                {
+                    try
+                    {
+                        node->getBody()->visit(this);
+                    }
+                    catch (const BreakException &)
+                    {
+                        env = originalEnv;
+                        return;
+                    }
+                    catch (const ContinueException &)
+                    {
+                        // Restore for environment and execute increment
+                        env = forEnv;
+                        if (node->getIncrement())
+                        {
+                            node->getIncrement()->visit(this);
+                        }
+                        continue;
+                    }
+                    catch (const ReturnException &e)
+                    {
+                        env = originalEnv;
+                        throw;
+                    }
+                    catch (const ErrorException &e)
+                    {
+                        env = originalEnv;
+                        throw;
+                    }
+                }
+
+                // Clear any references that might be holding onto values
+                returnValue = nullptr;
+                
+                // Clean up temporary environments created during this iteration
+                cleanupTempEnvironments();
+                
+                // Explicitly clear the iteration environment to trigger immediate cleanup
+                iterationEnv->clear();
+                
+                // Restore for environment - iterationEnv goes out of scope here
+                env = forEnv;
+            } // iterationEnv is destroyed here, allowing immediate cleanup
+            if (node->getIncrement())
+            {
+                node->getIncrement()->visit(this);
+            }
+        }
     }
-
-    while (true)
+    catch (const BreakException &)
     {
-        if (node->getCondition())
-        {
-            node->getCondition()->visit(this);
-            if (!returnValue)
-            {
-                error("for loop condition evaluation failed", node->getCondition()->getRange());
-                break;
-            }
-
-            if (returnValue->getType() != Value::Type::boolean &&
-                returnValue->getType() != Value::Type::number)
-            {
-                error("for loop condition must be a boolean expression", node->getCondition()->getRange());
-                break;
-            }
-
-            bool condition = returnValue->toBoolean();
-            if (!condition) break;
-        }
-
-        // don't visit an empty body
-        if (node->getBody())
-        {
-            try
-            {
-                node->getBody()->visit(this);
-            }
-            catch (const BreakException &)
-            {
-                // handle break statement
-                break;
-            }
-            catch (const ContinueException &)
-            {
-                // handle continue statement
-                continue;
-            }
-        }
-
-        if (node->getIncrement())
-        {
-            node->getIncrement()->visit(this);
-        }
+        // handle break statement
+    }
+    catch (const ContinueException &)
+    {
+        // handle continue statement
+    }
+    catch (const ReturnException &e)
+    {
+        env = originalEnv;
+        throw;
+    }
+    catch (const ErrorException &e)
+    {
+        env = originalEnv;
+        throw;
     }
 
     // Reset the environment after the loop
-    env = env->getParent();
+    env = originalEnv;
     returnValue = nullptr; // reset return value after the loop
 }
 
@@ -1919,7 +2067,7 @@ void Interpreter::visit(ClassNode *node)
 {
     // Create a new class value and declare it in the environment
     auto classValue = make_shared<ClassValue>(node->getName(), node->getBody());
-    
+
     // Note: Redeclaration checking is now handled by semantic analysis
     // Use redeclare to allow shadowing in nested scopes but semantic analysis
     // will catch actual redeclarations in the same scope

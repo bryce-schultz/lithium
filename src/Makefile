@@ -335,6 +335,6 @@ SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  ReturnStatementNode.h WhileNode.h Error.h Color.h
 
 # Options from .mk file:
-CXXFLAGS += -O0 -g#3 -Wall -Wextra -Wpedantic -Werror
+CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -Werror
 MAIN_EXE = li
 

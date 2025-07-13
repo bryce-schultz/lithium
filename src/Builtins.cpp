@@ -454,8 +454,8 @@ shared_ptr<Value> Builtins::openFile(const vector<shared_ptr<Value>> &args, shar
     return make_shared<NumberValue>(static_cast<double>(fd), range);
 }
 
-// number open(type, address, port) - opens a socket connection to the given address and port
-shared_ptr<Value> Builtins::openSocket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+// number socket(type, address, port) - opens a socket connection to the given address and port
+shared_ptr<Value> Builtins::socket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
     UNUSED(env);
 
@@ -770,7 +770,10 @@ shared_ptr<Value> Builtins::receiveSocket(const vector<shared_ptr<Value>> &args,
         return nullptr;
     }
 
-    return make_shared<StringValue>(string(buffer, bytesReceived), range);
+    auto result = make_shared<StringValue>(string(buffer, bytesReceived), range);
+    delete[] buffer; // clean up the buffer
+
+    return result;
 }
 
 shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)

@@ -12,22 +12,22 @@ using std::make_shared;
 class ObjectValue : public Value
 {
 public:
-    // takes the variables out of the environment and uses them as members
+    // Takes the variables out of the environment and uses them as members
     ObjectValue(const string &name, shared_ptr<Environment> env);
-    
+
     // Destructor to break reference cycles
     virtual ~ObjectValue();
 
     // Get the class name of this object instance
     inline const string& getClassName() const { return name; }
 
-    // intercept the getMember and setMember calls to use the environment
+    // Intercept the getMember and setMember calls to use the environment
     virtual shared_ptr<Value> getMember(const string &name) const override;
 
     // intercept the setMember call to use the environment
     virtual Result<Value> setMember(const string &name, const shared_ptr<Value> &value) override;
 
-    // add a member to the environment, returns true if successful
+    // Add a member to the environment, returns true if successful
     virtual bool addMember(const string &name, const shared_ptr<Value> &value, bool isConst) override;
 
     virtual const std::map<string, shared_ptr<Value>> &getMembers() const override;

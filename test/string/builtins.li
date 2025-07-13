@@ -1,0 +1,3 @@
+println("1234.567".match("\\d+\\.\\d+"));
+println("Hello, World!".find("World"));
+println("Hello, World!".find("world"));

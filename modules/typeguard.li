@@ -1,8 +1,8 @@
-fn typeguard(value, expectedType)
+fn typeguard(value, expectedType, file, line)
 {
     if (type(value) != expectedType)
     {
-        println("Expected type " + expectedType + ", but got " + type(value));
+        println("Expected type " + expectedType + ", but got " + type(value) + " at " + file + ":" + line);
         exit(1);
     }
 }

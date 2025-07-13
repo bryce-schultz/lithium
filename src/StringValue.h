@@ -7,6 +7,7 @@ class StringValue : public Value
 public:
     StringValue(char c, const Range &range = {});
     StringValue(const string &value, const Range &range = {});
+    ~StringValue() override;
 
     void registerBuiltins();
 

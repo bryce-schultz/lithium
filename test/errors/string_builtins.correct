@@ -1,0 +1,5 @@
+error: string_builtins.li:1:25: find() expects exactly 1 argument, got 2
+│ println("Hello, World!".find("World", 10));
+│                         ~~~~
+│                         ^
+
