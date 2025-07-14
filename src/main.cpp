@@ -130,35 +130,18 @@ int runFileMode(const vector<string> &args)
 
     shared_ptr<Environment> env = make_shared<Environment>();
 
+    Interpreter interpreter(false, env, args);
+    try
     {
-        Interpreter interpreter(false, env, args);
-        try
+        if (!interpreter.interpret(result.value.get()))
         {
-            if (!interpreter.interpret(result.value.get()))
-            {
-                return 1;
-            }
+            return 1;
         }
-        catch (const ExitException &e)
-        {
-            // Clean up AST and environment, then exit
-            result.value.reset();
-            if (env)
-            {
-                env->clear();
-            }
-            return e.exitCode;
-        }
-    } // interpreter destructor called here
-
-    // Clear the environment after interpreter is destroyed
-    if (env)
-    {
-        env->clear();
     }
-
-    // Explicitly clean up the AST
-    result.value.reset();
+    catch (const ExitException &e)
+    {
+        return e.exitCode;
+    }
 
     return 0;
 }

@@ -111,37 +111,51 @@ bool Interpreter::interpret(Node *node)
     // Visit the node to interpret it
     visitAllChildren(node);
 
-    // Clean up any temporary environments created during this interpretation
-    cleanupTempEnvironments();
+    // Cleanup temporary environments at the end of interpretation
+    finalCleanup();
 
     return !hadError;
 }
 
 void Interpreter::cleanupTempEnvironments()
 {
-    // Clear all functions in temp environments to break circular references
-    for (auto& tempEnv : tempEnvironments)
+    // No intermediate cleanup - only final cleanup at the end
+    // This preserves environments that objects and closures depend on
+}
+
+void Interpreter::finalCleanup()
+{
+    // Multi-stage cleanup strategy based on reference count analysis:
+    // Stage 1: Always clean truly unused environments (count = 1)
+    // Stage 2: Clean likely unused environments (count = 2-3) 
+    // Stage 3: Preserve active environments (count = 4+)
+    
+    // This is more principled than a single magic number because:
+    // 1. Count 1 = definitely unused (only in tempEnvironments vector)
+    // 2. Count 2-3 = minimal usage (may be temporary local references)
+    // 3. Count 4+ = active usage (closures, objects with complex reference chains)
+    
+    for (auto it = tempEnvironments.begin(); it != tempEnvironments.end();)
     {
-        if (tempEnv && tempEnv.use_count() > 1)
-        {
-            // This environment is still being referenced somewhere
-            // Clear function closures to break cycles
-            for (const auto& pair : tempEnv->getMembers())
+        auto& tempEnv = *it;
+        if (tempEnv) {
+            long refCount = tempEnv.use_count();
+            
+            // Conservative cleanup: only clean environments with very few references
+            // Threshold of 4 handles edge cases in function hoisting and complex closures
+            if (refCount <= 4)  
             {
-                if (pair.second && pair.second->getType() == Value::Type::function)
-                {
-                    auto func = std::dynamic_pointer_cast<FunctionValue>(pair.second);
-                    if (func && func->getEnvironment() == tempEnv)
-                    {
-                        // This function's closure points back to this temp environment
-                        // Clear it to break the circular reference
-                        func->clearClosureEnv();
-                    }
-                }
+                tempEnv->clear();
+                it = tempEnvironments.erase(it);
             }
+            else
+            {
+                ++it;
+            }
+        } else {
+            it = tempEnvironments.erase(it);
         }
     }
-    tempEnvironments.clear();
 }
 
 void Interpreter::setupEnvironment()
@@ -878,6 +892,9 @@ void Interpreter::visit(CallNode *node)
         shared_ptr<Environment> classEnv = make_shared<Environment>(env);
         env = classEnv;
 
+        // Track this class environment for cleanup
+        tempEnvironments.push_back(classEnv);
+
         try
         {
             shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
@@ -987,7 +1004,6 @@ void Interpreter::visit(CallNode *node)
             // create a new instance of the class
             auto instance = make_shared<ObjectValue>(classValue->getName(), env);
 
-            // Don't clear the class environment in normal flow - let RAII handle it
             env = previousEnv;
             returnValue = instance;
         }

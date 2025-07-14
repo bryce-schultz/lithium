@@ -1,0 +1,9 @@
+class Test
+{ }
+
+fn main()
+{
+    let test = Test();
+}
+
+main();

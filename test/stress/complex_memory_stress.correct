@@ -1,0 +1,6 @@
+Starting reference counting stress test...
+Stress test completed with results array
+Sample: data_25_block_nested_deep
+Creating many closures to stress reference counting...
+Sample closure result: captured: round_5_item_10
+Memory stress test completed successfully!

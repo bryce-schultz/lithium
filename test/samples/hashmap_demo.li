@@ -188,74 +188,70 @@ class HashMap
 }
 
 # Demo the HashMap
-fn main() {
-    println("🗂️  HashMap Demo in Lithium");
-    println("============================");
-    
-    let map = HashMap();
-    
-    # Add some data
-    println("\n📝 Adding data:");
-    map.set("name", "John Doe");
-    map.set("Age", 30);  # Test case sensitivity (should be normalized)
-    map.set("CITY", "New York");  # Test case sensitivity
-    map.set("email", "john@example.com");
-    map.set(42, "The Answer");  # Number as key
-    map.set("special-chars", "Testing!@#$%");  # Special characters
-    map.set("émojis", "🚀✨🎯");  # Unicode test
-    
-    map.print();
-    
-    # Test new methods
-    println("\n🔍 Testing new methods:");
-    printf("Is empty: %\n", map.isEmpty());
-    printf("Size: %\n", map.getSize());
-    
-    # Test entries
-    println("\n📋 All entries:");
-    let entries = map.getEntries();
-    for (let i = 0; i < len(entries); i++) {
-        printf("  [%]: %\n", entries[i][0], entries[i][1]);
-    }
-    
-    # Test retrieval
-    println("\n🔍 Retrieving data:");
-    printf("Name: %\n", map.get("name"));
-    printf("Age (lowercase): %\n", map.get("age"));  # Should find "Age" due to normalization
-    printf("City (lowercase): %\n", map.get("city"));  # Should find "CITY" due to normalization
-    printf("Unknown key: %\n", map.get("unknown"));
-    printf("Number key (42): %\n", map.get(42));
-    
-    # Test existence
-    println("\n✅ Testing key existence:");
-    printf("Has 'name': %\n", map.has("name"));
-    printf("Has 'unknown': %\n", map.has("unknown"));
-    
-    # Show all keys and values
-    println("\n📋 All keys:");
-    let allKeys = map.keys();
-    for (let i = 0; i < len(allKeys); i++) {
-        printf("  %\n", allKeys[i]);
-    }
-    
-    println("\n📋 All values:");
-    let allValues = map.values();
-    for (let i = 0; i < len(allValues); i++) {
-        printf("  %\n", allValues[i]);
-    }
-    
-    # Update existing key
-    println("\n🔄 Updating age:");
-    map.set("AGE", 31);  # Test case normalization on update
-    printf("New age: %\n", map.get("age"));
-    
-    # Remove a key
-    println("\n🗑️  Removing 'city':");
-    let removed = map.remove("CITY");  # Test case normalization on removal
-    printf("Removed: %\n", removed);
-    map.print();
-    
-    printf("\nFinal size: %\n", map.getSize());
+println("🗂️  HashMap Demo in Lithium");
+println("============================");
+
+let map = HashMap();
+
+# Add some data
+println("\n📝 Adding data:");
+map.set("name", "John Doe");
+map.set("Age", 30);  # Test case sensitivity (should be normalized)
+map.set("CITY", "New York");  # Test case sensitivity
+map.set("email", "john@example.com");
+map.set(42, "The Answer");  # Number as key
+map.set("special-chars", "Testing!@#$%");  # Special characters
+map.set("émojis", "🚀✨🎯");  # Unicode test
+
+map.print();
+
+# Test new methods
+println("\n🔍 Testing new methods:");
+printf("Is empty: %\n", map.isEmpty());
+printf("Size: %\n", map.getSize());
+
+# Test entries
+println("\n📋 All entries:");
+let entries = map.getEntries();
+for (let i = 0; i < len(entries); i++) {
+    printf("  [%]: %\n", entries[i][0], entries[i][1]);
 }
 
-main();
+# Test retrieval
+println("\n🔍 Retrieving data:");
+printf("Name: %\n", map.get("name"));
+printf("Age (lowercase): %\n", map.get("age"));  # Should find "Age" due to normalization
+printf("City (lowercase): %\n", map.get("city"));  # Should find "CITY" due to normalization
+printf("Unknown key: %\n", map.get("unknown"));
+printf("Number key (42): %\n", map.get(42));
+
+# Test existence
+println("\n✅ Testing key existence:");
+printf("Has 'name': %\n", map.has("name"));
+printf("Has 'unknown': %\n", map.has("unknown"));
+
+# Show all keys and values
+println("\n📋 All keys:");
+let allKeys = map.keys();
+for (let i = 0; i < len(allKeys); i++) {
+    printf("  %\n", allKeys[i]);
+}
+
+println("\n📋 All values:");
+let allValues = map.values();
+for (let i = 0; i < len(allValues); i++) {
+    printf("  %\n", allValues[i]);
+}
+
+# Update existing key
+println("\n🔄 Updating age:");
+map.set("AGE", 31);  # Test case normalization on update
+printf("New age: %\n", map.get("age"));
+
+# Remove a key
+println("\n🗑️  Removing 'city':");
+let removed = map.remove("CITY");  # Test case normalization on removal
+printf("Removed: %\n", removed);
+map.print();
+
+printf("\nFinal size: %\n", map.getSize());

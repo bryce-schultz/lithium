@@ -89,6 +89,7 @@ private:
     
     // Helper to clean up any temporary environments
     void cleanupTempEnvironments();
+    void finalCleanup();
     
     // Function pointer for interrupt checking
     static std::function<void()> interruptChecker;

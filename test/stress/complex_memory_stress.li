@@ -1,0 +1,64 @@
+class TestClass
+{
+    let name = "";
+
+    fn TestClass(name_) {
+        name = name_;
+    }
+
+    fn greet() {
+        return "Hello from " + name;
+    }
+}
+
+fn createClosure(value) {
+    fn closure() {
+        return "captured: " + value;
+    }
+    return closure;
+}
+
+fn stressTest() {
+    let results = [];
+    
+    for (let i = 0; i < 50; i++) {
+        let data = "data_" + i;
+        
+        let blockVar = data + "_block";
+        
+        fn nestedClosure() {
+            let inner = blockVar + "_nested";
+            
+            fn deeperClosure() {
+                return inner + "_deep";
+            }
+            
+            return deeperClosure;
+        }
+        
+        let closure = nestedClosure();
+        let result = closure();
+        results.push(result);
+    }
+    
+    return results;
+}
+
+println("Starting reference counting stress test...");
+
+let results = stressTest();
+println("Stress test completed with results array");
+println("Sample: " + results[25]);
+
+println("Creating many closures to stress reference counting...");
+for (let round = 0; round < 10; round++) {
+    for (let i = 0; i < 20; i++) {
+        let closure = createClosure("round_" + round + "_item_" + i);
+        let result = closure();
+        if (round == 5 && i == 10) {
+            println("Sample closure result: " + result);
+        }
+    }
+}
+
+println("Memory stress test completed successfully!");
