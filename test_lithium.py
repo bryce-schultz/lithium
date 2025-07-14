@@ -73,6 +73,8 @@ def run_lithium_test(test_id, li_file, correct_file):
             expected_output = f.read()
 
         # Compare outputs (normalize whitespace)
+        actual_output = actual_output.strip()
+        expected_output = expected_output.strip()
         actual_lines = [line.rstrip() for line in actual_output.splitlines()]
         expected_lines = [line.rstrip() for line in expected_output.splitlines()]
 

@@ -265,6 +265,23 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
             imported(module);
             return true;
         }
+        else if (module == "color")
+        {
+            shared_ptr<ObjectValue> colorObject = make_shared<ObjectValue>("Color", make_shared<Environment>());
+            colorObject->addMember("red", make_shared<StringValue>("\033[31m"), true);
+            colorObject->addMember("green", make_shared<StringValue>("\033[32m"), true);
+            colorObject->addMember("yellow", make_shared<StringValue>("\033[33m"), true);
+            colorObject->addMember("blue", make_shared<StringValue>("\033[34m"), true);
+            colorObject->addMember("magenta", make_shared<StringValue>("\033[35m"), true);
+            colorObject->addMember("cyan", make_shared<StringValue>("\033[36m"), true);
+            colorObject->addMember("white", make_shared<StringValue>("\033[37m"), true);
+            colorObject->addMember("reset", make_shared<StringValue>("\033[0m"), true);
+            colorObject->addMember("rgb", make_shared<BuiltinFunctionValue>(Builtins::rgb), true);
+            env->declare("Color", colorObject, true);
+
+            imported(module);
+            return true;
+        }
 
         couldNotFindModule(moduleName, range);
     }
@@ -1572,59 +1589,115 @@ void Interpreter::visit(ForEachNode *node)
 
     if (node->isArrayLike())
     {
-        if (!returnValue || returnValue->getType() != Value::Type::array)
+        if (!returnValue || (returnValue->getType() != Value::Type::array && returnValue->getType() != Value::Type::string))
         {
-            error("for-each loop iterable must be an array", node->getIterable()->getRange());
+            error("for-each loop iterable must be an array or string", node->getIterable()->getRange());
             return;
         }
 
-        auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
-        if (!arrayValue)
+        if (returnValue->getType() == Value::Type::array)
         {
-            error("for-each loop iterable could not be cast to ArrayValue", node->getIterable()->getRange());
-            return;
-        }
-
-        for (int i = 0; i < arrayValue->getElementCount(); ++i)
-        {
-            // Create a new environment for this iteration
+            auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
+            if (!arrayValue)
             {
-                shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
-                env = iterationEnv;
-                
-                env->redeclare(node->getKeyDecl()->getName(), arrayValue->getElement(i), node->getKeyDecl()->isConst());
+                error("for-each loop iterable could not be cast to ArrayValue", node->getIterable()->getRange());
+                return;
+            }
 
-                try
+            for (int i = 0; i < arrayValue->getElementCount(); ++i)
+            {
+                // Create a new environment for this iteration
                 {
-                    node->getBody()->visit(this);
-                }
-                catch (const BreakException &)
-                {
+                    shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
+                    env = iterationEnv;
+                    
+                    env->redeclare(node->getKeyDecl()->getName(), arrayValue->getElement(i), node->getKeyDecl()->isConst());
+
+                    try
+                    {
+                        node->getBody()->visit(this);
+                    }
+                    catch (const BreakException &)
+                    {
+                        env = originalEnv;
+                        break;
+                    }
+                    catch (const ContinueException &)
+                    {
+                        env = originalEnv;
+                        continue;
+                    }
+                    catch (const ReturnException &e)
+                    {
+                        env = originalEnv;
+                        throw;
+                    }
+                    catch (const ErrorException &e)
+                    {
+                        env = originalEnv;
+                        throw;
+                    }
+                    
+                    // Clear any references that might be holding onto values
+                    returnValue = nullptr;
+                    
+                    // Environment is automatically cleaned up when iterationEnv goes out of scope
                     env = originalEnv;
-                    break;
-                }
-                catch (const ContinueException &)
+                } // iterationEnv is destroyed here, allowing immediate cleanup
+            }
+        }
+        else if (returnValue->getType() == Value::Type::string)
+        {
+            auto stringValue = dynamic_pointer_cast<StringValue>(returnValue);
+            if (!stringValue)
+            {
+                error("for-each loop iterable could not be cast to StringValue", node->getIterable()->getRange());
+                return;
+            }
+
+            for (int i = 0; i < static_cast<int>(stringValue->length()); ++i)
+            {
+                // Create a new environment for this iteration
                 {
+                    shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
+                    env = iterationEnv;
+                    
+                    // Create a StringValue for the character at position i
+                    auto charValue = make_shared<StringValue>(stringValue->getCharAt(i));
+                    env->redeclare(node->getKeyDecl()->getName(), charValue, node->getKeyDecl()->isConst());
+
+                    try
+                    {
+                        node->getBody()->visit(this);
+                    }
+                    catch (const BreakException &)
+                    {
+                        env = originalEnv;
+                        break;
+                    }
+                    catch (const ContinueException &)
+                    {
+                        env = originalEnv;
+                        continue;
+                    }
+                    catch (const ReturnException &e)
+                    {
+                        env = originalEnv;
+                        throw;
+                    }
+                    catch (const ErrorException &e)
+                    {
+                        env = originalEnv;
+                        throw;
+                    }
+                    
+                    // Clear any references that might be holding onto values
+                    returnValue = nullptr;
+                    
+                    // Environment is automatically cleaned up when iterationEnv goes out of scope
                     env = originalEnv;
-                    continue;
-                }
-                catch (const ReturnException &e)
-                {
-                    env = originalEnv;
-                    throw;
-                }
-                catch (const ErrorException &e)
-                {
-                    env = originalEnv;
-                    throw;
-                }
-                
-                // Clear any references that might be holding onto values
-                returnValue = nullptr;
-                
-                // Environment is automatically cleaned up when iterationEnv goes out of scope
-                env = originalEnv;
-            } // iterationEnv is destroyed here, allowing immediate cleanup
+                } // iterationEnv is destroyed here, allowing immediate cleanup
+            }
         }
     }
     else if (node->isMapLike())

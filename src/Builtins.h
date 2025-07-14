@@ -40,4 +40,5 @@ namespace Builtins
     shared_ptr<Value> dumpEnv(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> sleep(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> time(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> rgb(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
 }

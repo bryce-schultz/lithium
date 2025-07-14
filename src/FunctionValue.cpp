@@ -121,3 +121,8 @@ string BuiltinFunctionValue::toString() const
 {
     return "<builtin function>";
 }
+
+string BuiltinFunctionValue::typeAsString() const
+{
+    return "builtin";
+}
