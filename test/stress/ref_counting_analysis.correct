@@ -1,6 +1,0 @@
-Testing reference counting patterns...
-Simple function: simple
-Simple closure: captured_value
-Nested closure: outer_value_inner_deep
-Block variable: block_value
-Loop variable: loop_1

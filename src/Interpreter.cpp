@@ -119,8 +119,29 @@ bool Interpreter::interpret(Node *node)
 
 void Interpreter::cleanupTempEnvironments()
 {
-    // No intermediate cleanup - only final cleanup at the end
-    // This preserves environments that objects and closures depend on
+    // Incremental cleanup during execution - safe to clean environments
+    // that are no longer referenced by active code
+    for (auto it = tempEnvironments.begin(); it != tempEnvironments.end();)
+    {
+        auto& tempEnv = *it;
+        if (tempEnv) {
+            long refCount = tempEnv.use_count();
+            
+            // During execution, only clean environments with very minimal references
+            // Be more conservative than final cleanup to avoid breaking active closures
+            if (refCount <= 1)  // Only in tempEnvironments vector = definitely unused
+            {
+                tempEnv->clear();
+                it = tempEnvironments.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        } else {
+            it = tempEnvironments.erase(it);
+        }
+    }
 }
 
 void Interpreter::finalCleanup()

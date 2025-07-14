@@ -1,0 +1,8 @@
+let count = 0;
+while (count < 50000) {
+    {
+        let a = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    }
+    count = count + 1;
+}
+println("Survived 50000 iterations!");
