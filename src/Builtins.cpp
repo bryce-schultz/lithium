@@ -941,3 +941,31 @@ shared_ptr<Value> Builtins::time(const vector<shared_ptr<Value>> &args, shared_p
 
     return make_shared<NumberValue>(static_cast<double>(now), range);
 }
+
+// string rgb(r, g, b) - creates a color value from RGB components
+shared_ptr<Value> Builtins::rgb(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 3)
+    {
+        error("rgb() expects exactly 3 arguments, but got " + to_string(args.size()), range);
+        return nullptr;
+    }
+
+    for (const auto &arg : args)
+    {
+        if (arg->getType() != Value::Type::number)
+        {
+            error("rgb() expects all arguments to be numbers", arg->getRange());
+            return nullptr;
+        }
+    }
+
+    double r = dynamic_pointer_cast<NumberValue>(args[0])->getValue();
+    double g = dynamic_pointer_cast<NumberValue>(args[1])->getValue();
+    double b = dynamic_pointer_cast<NumberValue>(args[2])->getValue();
+
+    // create ansi rgb string and return it
+    return make_shared<StringValue>("\033[38;2;" + to_string(static_cast<int>(r)) + ";" + to_string(static_cast<int>(g)) + ";" + to_string(static_cast<int>(b)) + "m", range);
+}

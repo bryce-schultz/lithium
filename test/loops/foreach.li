@@ -10,6 +10,34 @@ foreach (item : b)
     println(item);
 }
 
+# Test string iteration with foreach
+let str = "hello";
+foreach (char : str)
+{
+    println(char);
+}
+
+# Test empty string iteration
+let empty = "";
+foreach (c : empty)
+{
+    println("This should not print");
+}
+
+# Test single character string
+let single = "a";
+foreach (ch : single)
+{
+    println(ch);
+}
+
+# Test string with spaces and numbers
+let mixed = "hi 42";
+foreach (character : mixed)
+{
+    println("'" + character + "'");
+}
+
 class Pair
 {
     let x = 0;

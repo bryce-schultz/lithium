@@ -1,0 +1,34 @@
+# Test string iteration with foreach loops
+let greeting = "Hello";
+foreach (char : greeting)
+{
+    println("Character: " + char);
+}
+
+# Test with special characters and numbers
+let special = "Hi!123";
+foreach (c : special)
+{
+    println(c);
+}
+
+# Test empty string (should not iterate)
+let empty = "";
+foreach (x : empty)
+{
+    println("Should not print");
+}
+
+# Test single character
+let single = "X";
+foreach (s : single)
+{
+    println("Single: " + s);
+}
+
+# Test whitespace characters
+let whitespace = " \t\n";
+foreach (ws : whitespace)
+{
+    println("Whitespace: '" + ws + "'");
+}
