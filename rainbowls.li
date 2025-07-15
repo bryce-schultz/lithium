@@ -1,0 +1,13 @@
+import <color>
+import <os>
+
+let colors = [Color.red, Color.yellow, Color.green, Color.blue, Color.cyan, Color.magenta];
+
+let files = shell("ls");
+files = files.split("\n");
+
+for (let i = 0; i < files.length; i++) 
+{
+    if (files[i] == "") continue;  # Skip empty lines
+    println(colors[i % colors.length()] + files[i] + Color.reset);
+}

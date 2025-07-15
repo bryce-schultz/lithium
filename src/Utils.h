@@ -48,5 +48,7 @@ namespace Utils
 
     void printArgs(int argc, char **argv);
 
+    string ltrim(const string &str);
+
     void removePrefix(string &str, const string &prefix);
 }

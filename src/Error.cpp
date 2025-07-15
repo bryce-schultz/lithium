@@ -13,6 +13,7 @@
 #include <string>
 
 #include "Error.h"
+#include "Utils.h"
 
 using std::set;
 
@@ -39,18 +40,9 @@ void clearErrorLocations()
     errorLocations.clear();
 }
 
-static string ltrim(const string &str)
-{
-    size_t start = str.find_first_not_of(" \t");
-    if (start == string::npos) return ""; // string is all whitespace
-    size_t end = str.find_last_not_of(" \t");
-    return str.substr(start, end - start + 1);
-}
-
-
 string getErrorLineSquiggles(const Range &range)
 {
-    string line = ltrim(range.getStart().getSourceLine());
+    string line = Utils::ltrim(range.getStart().getSourceLine());
     size_t amountTrimmed = range.getStart().getSourceLine().length() - line.length();
     size_t start = range.getStart().getColumn() - 1; // Convert to 0-based index
     size_t end = range.getEnd().getColumn() - 1; // Convert to 0-based index
@@ -91,7 +83,7 @@ string getErrorLineSquiggles(const Range &range)
 
 string getErrorLineLocationSquiggles(const Location &location, const Range &range)
 {
-    string line = ltrim(range.getStart().getSourceLine());
+    string line = Utils::ltrim(range.getStart().getSourceLine());
     size_t amountTrimmed = range.getStart().getSourceLine().length() - line.length();
 
     size_t start = range.getStart().getColumn() - 1; // Convert to 0-based index

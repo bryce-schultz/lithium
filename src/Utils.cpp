@@ -237,6 +237,13 @@ void Utils::printArgs(int argc, char **argv)
     cout << endl;
 }
 
+string Utils::ltrim(const string &str)
+{
+    size_t start = str.find_first_not_of(" \t");
+    if (start == string::npos) return ""; // string is all whitespace
+    return str.substr(start);
+}
+
 void Utils::removePrefix(string &str, const string &prefix)
 {
     if (str.find(prefix) == 0)
