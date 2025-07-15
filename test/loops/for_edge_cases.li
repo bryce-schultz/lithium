@@ -1,0 +1,37 @@
+# Test for loop edge cases
+
+# Test for loop with no condition (would be infinite, so we break immediately)
+let counter = 0;
+for (;;)
+{
+    counter++;
+    if (counter >= 2) break;
+}
+println("Infinite loop test: " + counter);
+
+# Test for loop with only condition
+for (; counter < 4;)
+{
+    counter++;
+}
+println("Only condition test: " + counter);
+
+# Test for loop with only init
+let x = 0;
+for (x = 10;;)
+{
+    if (x >= 12) break;
+    x++;
+}
+println("Only init test: " + x);
+
+# Test empty for loop with all parts missing
+let y = 0;
+for (;;)
+{
+    y++;
+    if (y >= 3) break;
+}
+println("All parts missing test: " + y);
+
+println("All edge case tests completed");

@@ -1636,7 +1636,10 @@ void Interpreter::visit(ForEachNode *node)
 
                     try
                     {
-                        node->getBody()->visit(this);
+                        if (node->getBody())
+                        {
+                            node->getBody()->visit(this);
+                        }
                     }
                     catch (const BreakException &)
                     {
@@ -1689,7 +1692,10 @@ void Interpreter::visit(ForEachNode *node)
 
                     try
                     {
-                        node->getBody()->visit(this);
+                        if (node->getBody())
+                        {
+                            node->getBody()->visit(this);
+                        }
                     }
                     catch (const BreakException &)
                     {
@@ -1753,7 +1759,11 @@ void Interpreter::visit(ForEachNode *node)
 
                 try
                 {
-                    node->getBody()->visit(this);
+                    if (node->getBody())
+                    {
+                        // Visit the body of the for-each loop
+                        node->getBody()->visit(this);
+                    }
                 }
                 catch (const BreakException &)
                 {

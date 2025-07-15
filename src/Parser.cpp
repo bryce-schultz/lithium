@@ -315,10 +315,17 @@ Result<ForStatementNode> Parser::parseForStmt()
         reject();
     }
 
-    auto incrementResult = parseExpr();
-    if (!incrementResult.status)
+    Token token = peekToken();
+    shared_ptr<ExpressionNode> increment = nullptr;
+    if (token != ')')
     {
-        reject();
+        auto incrementResult = parseExpr();
+        if (!incrementResult.status)
+        {
+            reject();
+        }
+
+        increment = incrementResult.value;
     }
 
     Token closeParenToken = expectToken(')');
@@ -329,7 +336,7 @@ Result<ForStatementNode> Parser::parseForStmt()
         reject();
     }
 
-    auto forNode = make_shared<ForStatementNode>(initResult.value, conditionResult.value, incrementResult.value, bodyResult.value);
+    auto forNode = make_shared<ForStatementNode>(initResult.value, conditionResult.value, increment, bodyResult.value);
     forNode->setRangeStart(forToken.getRange().getStart());
 
     accept(forNode);

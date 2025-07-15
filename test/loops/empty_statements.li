@@ -1,0 +1,54 @@
+# Test empty statement loops and conditionals
+
+# Empty foreach loop with array
+let arr = [1, 2, 3];
+foreach (item : arr);
+println("After empty foreach with array");
+
+# Empty foreach loop with string
+let str = "abc";
+foreach (char : str);
+println("After empty foreach with string");
+
+# Empty foreach loop with object
+class TestObj
+{
+    let x = 1;
+    let y = 2;
+}
+let obj = TestObj();
+foreach (key, value : obj);
+println("After empty foreach with object");
+
+# Empty for loop
+for (let i = 0; i < 3; i++);
+println("After empty for loop");
+
+# Empty while loop
+let counter = 0;
+while (counter < 2)
+{
+    counter++;
+}
+println("After while loop setup");
+
+counter = 0;
+while (counter < 2) counter++;
+println("After empty while loop");
+
+# Empty if statement
+let condition = true;
+if (condition);
+println("After empty if");
+
+# Empty if-else
+if (false);
+else;
+println("After empty if-else");
+
+# Nested empty statements
+if (true)
+{
+    for (let j = 0; j < 2; j++);
+}
+println("After nested empty statements");

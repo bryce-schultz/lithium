@@ -1,0 +1,17 @@
+Standard: 0
+Standard: 1
+Standard: 2
+No increment: 0
+No increment: 1
+No increment: 2
+Empty body no increment: 2
+Complex: 0
+Complex: 1
+Complex: 2
+No init, no increment: 0
+No init, no increment: 1
+Break test: 0
+Break test: 1
+Continue test: 1
+Continue test: 3
+All for loop increment tests completed

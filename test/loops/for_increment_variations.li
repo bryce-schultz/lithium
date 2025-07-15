@@ -1,0 +1,53 @@
+# Test for loop increment variations
+
+# Standard for loop with increment
+for (let i = 0; i < 3; i++)
+{
+    println("Standard: " + i);
+}
+
+# For loop without increment - manual increment in body
+for (let j = 0; j < 3;)
+{
+    println("No increment: " + j);
+    j++;
+}
+
+# For loop without increment - empty body (infinite loop prevention)
+let k = 0;
+for (; k < 2;) k++;
+println("Empty body no increment: " + k);
+
+# For loop with complex increment expression (when we had it)
+for (let m = 0; m < 3; m++)
+{
+    println("Complex: " + m);
+}
+
+# For loop with no init, no increment
+let n = 0;
+for (; n < 2;)
+{
+    println("No init, no increment: " + n);
+    n++;
+}
+
+# For loop testing break with no increment
+let p = 0;
+for (;;)
+{
+    if (p >= 2) break;
+    println("Break test: " + p);
+    p++;
+}
+
+# For loop testing continue with no increment
+for (let q = 0; q < 4;)
+{
+    q++;
+    if (q == 2) continue;
+    println("Continue test: " + q);
+    if (q >= 3) break;
+}
+
+println("All for loop increment tests completed");

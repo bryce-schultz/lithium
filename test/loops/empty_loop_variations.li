@@ -1,0 +1,44 @@
+# Test various empty loop constructs
+
+# Empty for loop variations
+for (let i = 0; i < 3; i++);
+println("After basic empty for");
+
+# Empty for with no init
+let j = 0;
+for (; j < 2; j++);
+println("After for with no init");
+
+# Empty for with no increment
+let m = 0;
+for (; m < 2;)
+{
+    m++;
+}
+println("After for with no increment setup");
+
+# Empty for with no increment - single statement
+let n = 0;
+for (; n < 2;) n++;
+println("After empty for with no increment");
+
+# Empty while variations
+let x = 0;
+while (x < 2) x++;
+println("After empty while");
+
+# Test break and continue in empty loops
+for (let i = 0; i < 5; i++)
+{
+    if (i == 2) continue;
+    if (i == 4) break;
+}
+println("After for with break/continue");
+
+# Empty loop with complex condition
+let a = 5;
+let b = 10;
+while (a < b && a > 0) a++;
+println("After while with complex condition");
+
+println("All empty loop tests completed");

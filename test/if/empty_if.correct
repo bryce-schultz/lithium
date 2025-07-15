@@ -1,0 +1,10 @@
+After simple empty if
+After empty if with false
+After empty if-else both
+Non-empty else executed
+Non-empty if executed
+After chained empty if-else
+After number condition
+After string condition
+After empty string condition
+After nested empty conditionals

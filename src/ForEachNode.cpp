@@ -9,7 +9,27 @@ ForEachNode::ForEachNode(shared_ptr<VarDeclNode> keyDecl, shared_ptr<VarDeclNode
     body(body)
 {
     setRangeStart(keyDecl->getRange().getStart());
-    setRangeEnd(body->getRange().getEnd());
+    if (valueDecl)
+    {
+        setRangeEnd(valueDecl->getRange().getEnd());
+    }
+    else
+    {
+        setRangeEnd(keyDecl->getRange().getEnd());
+    }
+
+    if (body)
+    {
+        setRangeEnd(body->getRange().getEnd());
+    }
+    else if (iterable)
+    {
+        setRangeEnd(iterable->getRange().getEnd());
+    }
+    else
+    {
+        setRangeEnd(keyDecl->getRange().getEnd());
+    }
 }
 
 shared_ptr<VarDeclNode> ForEachNode::getKeyDecl() const

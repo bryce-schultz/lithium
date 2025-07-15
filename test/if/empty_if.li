@@ -1,0 +1,49 @@
+# Test empty conditional statements
+
+# Simple empty if
+if (true);
+println("After simple empty if");
+
+# Empty if with false condition
+if (false);
+println("After empty if with false");
+
+# Empty if-else both branches
+if (true);
+else;
+println("After empty if-else both");
+
+# Empty if with non-empty else
+if (false);
+else
+    println("Non-empty else executed");
+
+# Non-empty if with empty else
+if (true)
+    println("Non-empty if executed");
+else;
+
+# Chained empty if-else
+if (false);
+else if (false);
+else if (true);
+else;
+println("After chained empty if-else");
+
+# Empty statements with different condition types
+if (1);  # number condition
+println("After number condition");
+
+if ("hello");  # string condition
+println("After string condition");
+
+if ("");  # empty string condition
+println("After empty string condition");
+
+# Empty nested conditionals
+if (true)
+{
+    if (true);
+    else;
+}
+println("After nested empty conditionals");
