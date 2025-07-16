@@ -273,6 +273,9 @@ bool Interpreter::import(const Token &moduleName, const Range &range)
             env->declare("read", make_shared<BuiltinFunctionValue>(Builtins::readFd), true);
             env->declare("write", make_shared<BuiltinFunctionValue>(Builtins::writeFd), true);
             env->declare("shell", make_shared<BuiltinFunctionValue>(Builtins::runShellCommand), true);
+            env->declare("getcwd", make_shared<BuiltinFunctionValue>(Builtins::getcwd), true);
+            env->declare("chdir", make_shared<BuiltinFunctionValue>(Builtins::chdir), true);
+            env->declare("getpid", make_shared<BuiltinFunctionValue>(Builtins::getpid), true);
             imported(module);
             return true;
         }
@@ -1547,11 +1550,6 @@ void Interpreter::visit(IfStatementNode *node)
 
 void Interpreter::visit(FuncDeclNode *node)
 {
-    /*if (env->lookup(node->getName()))
-    {
-        alreadyDefined(node);
-        return;
-    }*/
     auto function = make_shared<FunctionValue>(node->getName(), node->getParams(), node->getBody(), env);
     env->redeclare(node->getName(), function, node->isConst());
     returnValue = nullptr;
@@ -2236,10 +2234,6 @@ void Interpreter::visit(ClassNode *node)
 {
     // Create a new class value and declare it in the environment
     auto classValue = make_shared<ClassValue>(node->getName(), node->getBody());
-
-    // Note: Redeclaration checking is now handled by semantic analysis
-    // Use redeclare to allow shadowing in nested scopes but semantic analysis
-    // will catch actual redeclarations in the same scope
     env->redeclare(node->getName(), classValue, node->isConst());
 
     returnValue = nullptr; // No return value for class declaration

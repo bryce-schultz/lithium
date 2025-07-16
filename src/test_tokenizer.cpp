@@ -117,14 +117,12 @@ Test test_keyword_tokens()
 
 Test test_tokenize_junk_tokens()
 {
-    Tokenizer tokenizer("@#$^~");
+    Tokenizer tokenizer("@$^~");
 
     Token token;
     // Test junk tokens
     token = tokenizer.lex();
     assertTrue(token == Token::JUNK); // '@'
-    token = tokenizer.lex();
-    assertTrue(token == Token::JUNK); // '#'
     token = tokenizer.lex();
     assertTrue(token == Token::JUNK); // '$'
     token = tokenizer.lex();

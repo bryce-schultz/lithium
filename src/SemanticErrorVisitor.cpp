@@ -65,32 +65,28 @@ void SemanticErrorVisitor::visit(FuncDeclNode *node)
 
     currentFunctionStack.insert(currentFunctionName);
 
-    // Check if function has a body
-    if (!node->getBody()) {
-        errorAt("function '" + currentFunctionName + "' has no body", node->getToken().getRange().getStart(), node->getRange());
-    } else {
-        // Create new scope for function body
-        auto prevLocalVars = localVariables;
-        auto prevLocalFuncs = localFunctions;
+    // Function body is guaranteed to exist by parser
+    // Create new scope for function body
+    auto prevLocalVars = localVariables;
+    auto prevLocalFuncs = localFunctions;
 
-        // Clear local scope trackers for the function body
-        localVariables.clear();
-        localFunctions.clear();
+    // Clear local scope trackers for the function body
+    localVariables.clear();
+    localFunctions.clear();
 
-        // Parameters are in the function's local scope
-        if (node->getParams()) {
-            for (int i = 0; i < node->getParams()->getParamCount(); i++) {
-                std::string paramName = node->getParams()->getParam(i)->getName();
-                localVariables.insert(paramName);
-            }
+    // Parameters are in the function's local scope
+    if (node->getParams()) {
+        for (int i = 0; i < node->getParams()->getParamCount(); i++) {
+            std::string paramName = node->getParams()->getParam(i)->getName();
+            localVariables.insert(paramName);
         }
-
-        node->getBody()->visit(this);
-
-        // Restore previous scope
-        localVariables = prevLocalVars;
-        localFunctions = prevLocalFuncs;
     }
+
+    node->getBody()->visit(this);
+
+    // Restore previous scope
+    localVariables = prevLocalVars;
+    localFunctions = prevLocalFuncs;
 
     currentFunctionStack.erase(currentFunctionName);
     currentFunctionName = prevFunctionName;

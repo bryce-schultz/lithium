@@ -196,6 +196,42 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
         },
         getRange()
     ), true);
+
+    addMember("join", make_shared<BuiltinFunctionValue>(
+        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(env);
+            if (args.size() > 1)
+            {
+                errorAt("join() expects at most one argument", range.getStart(), range);
+                return nullptr;
+            }
+            
+            string separatorStr = "";
+            if (args.size() == 1)
+            {
+                auto separator = dynamic_pointer_cast<StringValue>(args[0]);
+                if (!separator)
+                {
+                    errorAt("join() expects a string as the first argument", args[0]->getRange().getStart(), range);
+                    return nullptr;
+                }
+                separatorStr = separator->getValue();
+            }
+            
+            string result;
+            for (size_t i = 0; i < elements.size(); ++i)
+            {
+                result += elements[i]->toString();
+                if (i + 1 < elements.size())
+                {
+                    result += separatorStr;
+                }
+            }
+            return make_shared<StringValue>(result, range);
+        },
+        getRange()
+    ), true);
 }
 
 string ArrayValue::toString() const

@@ -19,6 +19,9 @@
 #include <sys/types.h>  // for pid_t, ssize_t, mode_t
 #include <cstdint>  // for uint16_t
 #include <ctime>    // for time_t
+#include <memory>   // for shared_ptr
+#include <iostream> // for std::cout, std::cin
+#include <algorithm> // for std::max
 
 #ifdef _WIN32
     // Windows-specific types would go here
@@ -26,6 +29,10 @@
 #else
     // Unix-like system types
     #include <sys/socket.h>  // for socklen_t
+    #include <unistd.h>      // for read, write, close
+    #include <fcntl.h>       // for open flags
+    #include <sys/wait.h>    // for waitpid
+    #include <arpa/inet.h>   // for inet_pton, htons
 #endif
 
 // macros for unused parameters to avoid compiler warnings
@@ -55,6 +62,8 @@ namespace Utils
     string getLithiumFileExtension();
 
     string getCurrentDirectory();
+
+    bool changeDirectory(const string &path);
 
     vector<string> listDirectory(const string &path);
 
@@ -99,4 +108,6 @@ namespace Utils
     string ltrim(const string &str);
 
     void removePrefix(string &str, const string &prefix);
+
+    int getpid();
 }

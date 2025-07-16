@@ -212,6 +212,19 @@ string Utils::getCurrentDirectory()
     return fs::current_path().string();
 }
 
+bool Utils::changeDirectory(const string &path)
+{
+    try
+    {
+        fs::current_path(path);
+        return true;
+    }
+    catch (const fs::filesystem_error &e)
+    {
+        return false;
+    }
+}
+
 vector<string> Utils::listDirectory(const string &path)
 {
     vector<string> files;
@@ -267,6 +280,15 @@ void Utils::removePrefix(string &str, const string &prefix)
     {
         str.erase(0, prefix.length());
     }
+}
+
+int Utils::getpid()
+{
+#ifdef _WIN32
+    return _getpid(); // Windows-specific implementation
+#else
+    return ::getpid(); // POSIX implementation
+#endif
 }
 
 // Platform-specific system call wrappers

@@ -995,3 +995,56 @@ shared_ptr<Value> Builtins::listdir(const vector<shared_ptr<Value>> &args, share
     }
     return make_shared<ArrayValue>(items, range);
 }
+
+shared_ptr<Value> Builtins::getcwd(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+    UNUSED(args);
+
+    if (args.size() != 0)
+    {
+        error("getcwd() expects no arguments, but got " + to_string(args.size()), range);
+        return nullptr;
+    }
+
+    string cwd = Utils::getCurrentDirectory();
+    if (cwd.empty())
+    {
+        error("failed to get current working directory", range);
+        return nullptr;
+    }
+
+    return make_shared<StringValue>(cwd, range);
+}
+
+shared_ptr<Value> Builtins::chdir(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+
+    if (args.size() != 1)
+    {
+        error("chdir() expects exactly 1 argument, but got " + to_string(args.size()), range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::string)
+    {
+        error("chdir() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange());
+        return nullptr;
+    }
+
+    string path = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+    if (!Utils::changeDirectory(path))
+    {
+        error("failed to change directory to '" + path + "'", range);
+        return nullptr;
+    }
+    return make_shared<NullValue>(range);
+}
+
+shared_ptr<Value> Builtins::getpid(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(args);
+    UNUSED(env);
+    return make_shared<NumberValue>(static_cast<double>(Utils::getpid()), range);
+}

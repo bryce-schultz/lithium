@@ -347,6 +347,6 @@ SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  Color.h Utils.h
 
 # Options from .mk file:
-CXXFLAGS += -O0 -g #3 -Wall -Wextra -Wpedantic -Werror
+CXXFLAGS += -O3 -Wall -Wextra -Wpedantic -Werror
 MAIN_EXE = li
 

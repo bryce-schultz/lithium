@@ -526,7 +526,8 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
 
     Token closeParenToken = expectToken(')');
 
-    auto bodyResult = parseStmt();
+    // Function must have a body (block statement)
+    auto bodyResult = parseBlock();
     if (!bodyResult.status)
     {
         reject();
@@ -534,12 +535,7 @@ Result<FuncDeclNode> Parser::parseFuncDecl()
 
     auto funcDecl = make_shared<FuncDeclNode>(identifier, params, bodyResult.value);
     funcDecl->setRangeStart(fnToken.getRange().getStart());
-
-    if (bodyResult.value == nullptr)
-    {
-        // If no body, set range end to the close parenthesis
-        funcDecl->setRangeEnd(closeParenToken.getRange().getEnd());
-    }
+    funcDecl->setRangeEnd(bodyResult.value->getRange().getEnd());
 
     accept(funcDecl);
 }

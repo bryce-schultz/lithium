@@ -931,6 +931,30 @@ println(len(numbers));        # 5 (same result)
 <strong>📘 Array Length:</strong> Arrays support both <code>array.length()</code> method and the built-in <code>len(array)</code> function. Both return the same result - use whichever style you prefer.
 </div>
 
+#### **Array Methods**
+
+```lithium
+let fruits = ["apple", "banana", "cherry"];
+
+# join() - Join array elements into a string
+let result1 = fruits.join();        # "applebananacherry" (no separator)
+let result2 = fruits.join(", ");    # "apple, banana, cherry" (with separator)
+let result3 = fruits.join(" | ");   # "apple | banana | cherry" (custom separator)
+
+# Works with mixed types
+let mixed = ["Hello", 42, true, null];
+let message = mixed.join(" ");      # "Hello 42 true null"
+
+# Empty arrays
+let empty = [];
+println(empty.join(","));           # "" (empty string)
+```
+
+**Available Methods:**
+- `array.join()` - Join elements with no separator (empty string)
+- `array.join(separator)` - Join elements with the specified separator string
+- `array.length()` - Get the number of elements in the array
+
 #### **String Indexing**
 
 Strings support array-like indexing:
@@ -1386,12 +1410,44 @@ println("Random float 0-1: " + randomFloat);
 ```lithium
 import <os>
 
+# File operations
 let fd = open("file.txt", "r");
 let content = read(fd, 100);
 close(fd);
 
+# Directory operations
+let currentDir = getcwd();
+println("Current directory: " + currentDir);
+
+chdir("/tmp");
+println("Changed to: " + getcwd());
+
+# List directory contents
+let files = listdir(".");
+println("Files in current directory:");
+foreach (file : files) {
+    println("  " + file);
+}
+
+# Process information
+let processId = getpid();
+println("Process ID: " + processId);
+
+# Shell commands
 let result = shell("ls -la");
+println("Command output: " + result);
 ```
+
+**Available Functions:**
+- `open(filename, mode)` - Open a file for reading/writing
+- `read(fd, size)` - Read data from a file descriptor
+- `write(fd, data)` - Write data to a file descriptor
+- `close(fd)` - Close a file descriptor
+- `getcwd()` - Get current working directory
+- `chdir(path)` - Change current working directory
+- `getpid()` - Get process ID
+- `shell(command)` - Execute a shell command and return output
+- `listdir(path)` - List directory contents
 
 #### **Socket Operations** (require `import <socket>`)
 
