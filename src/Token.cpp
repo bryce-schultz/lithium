@@ -24,6 +24,7 @@ string Token::tokenTypeToString(int type)
         case ELSE:          return "keyword (else)";
         case END:           return "eof";
         case EQ:            return "operator (==)";
+        case FALSE:         return "keyword (false)";
         case FN:            return "keyword (fn)";
         case FOR:           return "keyword (for)";
         case FOREACH:       return "keyword (foreach)";
@@ -40,11 +41,13 @@ string Token::tokenTypeToString(int type)
         case MUL_EQUAL:     return "operator (*=)";
         case NE:            return "operator (!=)";
         case NONE:          return "none";
+        case NULL_TOKEN:    return "keyword (null)";
         case NUMBER:        return "number";
         case OR:            return "operator (||)";
         case PLUS_EQUAL:    return "operator (+=)";
         case RETURN:        return "keyword (return)";
         case STRING:        return "string";
+        case TRUE:          return "keyword (true)";
         case WHILE:         return "keyword (while)";
         default:
         {

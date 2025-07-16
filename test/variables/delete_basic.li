@@ -1,0 +1,7 @@
+let x = 42;
+let y = 100;
+println(x);
+println(y);
+delete x;
+println(y);
+println("x deleted successfully");

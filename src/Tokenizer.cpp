@@ -294,14 +294,18 @@ Token Tokenizer::lex()
         if (identifier == "class") return Token(Token::CLASS, Range(start, location), identifier);
         if (identifier == "const") return Token(Token::CONST, Range(start, location), identifier);
         if (identifier == "continue") return Token(Token::CONTINUE, Range(start, location), identifier);
+        if (identifier == "delete") return Token(Token::DELETE, Range(start, location), identifier);
         if (identifier == "else") return Token(Token::ELSE, Range(start, location), identifier);
+        if (identifier == "false") return Token(Token::FALSE, Range(start, location), identifier);
         if (identifier == "fn") return Token(Token::FN, Range(start, location), identifier);
         if (identifier == "for") return Token(Token::FOR, Range(start, location), identifier);
         if (identifier == "foreach") return Token(Token::FOREACH, Range(start, location), identifier);
         if (identifier == "if") return Token(Token::IF, Range(start, location), identifier);
         if (identifier == "import") return Token(Token::IMPORT, Range(start, location), identifier);
         if (identifier == "let") return Token(Token::LET, Range(start, location), identifier);
+        if (identifier == "null") return Token(Token::NULL_TOKEN, Range(start, location), identifier);
         if (identifier == "return") return Token(Token::RETURN, Range(start, location), identifier);
+        if (identifier == "true") return Token(Token::TRUE, Range(start, location), identifier);
         if (identifier == "while") return Token(Token::WHILE, Range(start, location), identifier);
 
         //-----------------------------------------------------------

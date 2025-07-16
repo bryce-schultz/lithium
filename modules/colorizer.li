@@ -1,0 +1,24 @@
+import <color>
+
+fn colorizer() {
+    const colors = [
+        Color.red,
+        Color.yellow,
+        Color.green,
+        Color.cyan,
+        Color.blue,
+        Color.magenta
+    ];
+
+    let index = 0;
+
+    fn next() {
+        const color = colors[index++];
+        if (index >= colors.length()) {
+            index = 0;
+        }
+        return color;
+    };
+
+    return next;
+}

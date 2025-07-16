@@ -57,6 +57,22 @@
             }
         },
         {
+            "label": "Regenerate Makefile",
+            "type": "shell",
+            "command": "mk",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Run Single Test",
             "type": "shell",
             "command": "./run_test",

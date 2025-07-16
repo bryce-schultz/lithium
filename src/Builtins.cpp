@@ -6,18 +6,21 @@
 #include <stdexcept>
 #include <ios>
 
-#include <fcntl.h> // platform-specific header for file operations
-#include <unistd.h> // platform-specific header for file operations
-#include <sys/socket.h> // platform-specific header for socket operations
-#include <netinet/in.h> // platform-specific header for socket operations
-#include <arpa/inet.h> // platform-specific header for socket operations
-#include <sys/wait.h>
-
 #include "Builtins.h"
 #include "Environment.h"
 #include "Values.h"
 #include "Utils.h"
 #include "Error.h"
+
+#ifdef _WIN32
+    // Windows-specific includes would go here
+#else
+    // Unix-like system includes for socket structures
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <fcntl.h>
+#endif
 
 using std::shared_ptr;
 using std::make_shared;
@@ -338,7 +341,7 @@ shared_ptr<Value> Builtins::readFd(const vector<shared_ptr<Value>> &args, shared
     }
 
     string buffer(size, '\0'); // create a buffer of the specified size
-    ssize_t bytesRead = read(fd, &buffer[0], size);
+    ssize_t bytesRead = Utils::readFromFd(fd, &buffer[0], size);
     if (bytesRead < 0)
     {
         error("failed to read from file descriptor " + to_string(fd), range);
@@ -374,7 +377,7 @@ shared_ptr<Value> Builtins::writeFd(const vector<shared_ptr<Value>> &args, share
         return nullptr;
     }
 
-    ssize_t bytesWritten = write(fd, data.c_str(), data.size());
+    ssize_t bytesWritten = Utils::writeToFd(fd, data.c_str(), data.size());
     if (bytesWritten < 0)
     {
         error("failed to write to file descriptor " + to_string(fd), range);
@@ -407,7 +410,7 @@ shared_ptr<Value> Builtins::closeFd(const vector<shared_ptr<Value>> &args, share
         return nullptr;
     }
 
-    if (close(fd) < 0)
+    if (Utils::closeFd(fd) < 0)
     {
         error("failed to close file descriptor " + to_string(fd), range);
         return nullptr;
@@ -437,15 +440,7 @@ shared_ptr<Value> Builtins::openFile(const vector<shared_ptr<Value>> &args, shar
     const string &mode = modeValue->getValue();
 
     int flags = Utils::parseOpenMode(mode);
-    int fd;
-    
-    // If O_CREAT is set, we need to provide file permissions
-    if (flags & O_CREAT) {
-        // Use 0644 permissions (rw-r--r--) for created files
-        fd = open(filename.c_str(), flags, 0644);
-    } else {
-        fd = open(filename.c_str(), flags);
-    }
+    int fd = Utils::openFile(filename, flags, 0644);
     
     if (fd < 0)
     {
@@ -502,7 +497,7 @@ shared_ptr<Value> Builtins::socket(const vector<shared_ptr<Value>> &args, shared
         return nullptr;
     }
 
-    int sockfd = socket(AF_INET, (type == "tcp" ? SOCK_STREAM : SOCK_DGRAM), 0);
+    int sockfd = Utils::createSocket(AF_INET, (type == "tcp" ? SOCK_STREAM : SOCK_DGRAM), 0);
     if (sockfd < 0)
     {
         error("failed to create socket", range);
@@ -511,28 +506,28 @@ shared_ptr<Value> Builtins::socket(const vector<shared_ptr<Value>> &args, shared
 
     // set SO_REUSEADDR
     int optval = 1;
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
+    if (Utils::setSocketOption(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
     {
         error("failed to set SO_REUSEADDR on socket", range);
-        close(sockfd);
+        Utils::closeFd(sockfd);
         return nullptr;
     }
 
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(port);
-    if (inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr) <= 0)
+    serverAddr.sin_port = Utils::hostToNetworkShort(port);
+    if (Utils::convertAddress(AF_INET, address.c_str(), &serverAddr.sin_addr) <= 0)
     {
         error("invalid address: '" + address + "'", range);
-        close(sockfd);
+        Utils::closeFd(sockfd);
         return nullptr;
     }
 
     // bind the socket to the address and port
-    if (bind(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
+    if (Utils::bindSocket(sockfd, &serverAddr, sizeof(serverAddr)) < 0)
     {
         error("failed to bind socket to " + address + ":" + to_string(port), range);
-        close(sockfd);
+        Utils::closeFd(sockfd);
         return nullptr;
     }
 
@@ -582,7 +577,7 @@ shared_ptr<Value> Builtins::listenSocket(const vector<shared_ptr<Value>> &args, 
     int backlog = (args.size() == 2 && args[1]->getType() == Value::Type::number)
                       ? static_cast<int>(dynamic_pointer_cast<NumberValue>(args[1])->getValue())
                       : SOMAXCONN;
-    if (listen(sockfd, backlog) < 0)
+    if (Utils::listenSocket(sockfd, backlog) < 0)
     {
         error("failed to listen on socket " + to_string(sockfd), range);
         return nullptr;
@@ -617,7 +612,7 @@ shared_ptr<Value> Builtins::acceptSocket(const vector<shared_ptr<Value>> &args, 
 
     struct sockaddr_in clientAddr;
     socklen_t addrLen = sizeof(clientAddr);
-    int clientSockfd = accept(sockfd, (struct sockaddr *)&clientAddr, &addrLen);
+    int clientSockfd = Utils::acceptSocket(sockfd, &clientAddr, &addrLen);
     if (clientSockfd < 0)
     {
         error("failed to accept connection on socket " + to_string(sockfd), range);
@@ -670,17 +665,17 @@ shared_ptr<Value> Builtins::connectSocket(const vector<shared_ptr<Value>> &args,
 
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(port);
-    if (inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr) <= 0)
+    serverAddr.sin_port = Utils::hostToNetworkShort(port);
+    if (Utils::convertAddress(AF_INET, address.c_str(), &serverAddr.sin_addr) <= 0)
     {
         error("invalid address: " + address, range);
         return nullptr;
     }
 
-    if (connect(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
+    if (Utils::connectSocket(sockfd, &serverAddr, sizeof(serverAddr)) < 0)
     {
         error("failed to connect to " + address + ":" + to_string(port), range);
-        close(sockfd);
+        Utils::closeFd(sockfd);
         return nullptr;
     }
 
@@ -719,7 +714,7 @@ shared_ptr<Value> Builtins::sendSocket(const vector<shared_ptr<Value>>& args, sh
     }
 
     const auto &data = dynamic_pointer_cast<StringValue>(args[1])->getValue();
-    ssize_t bytesSent = send(sockfd, data.c_str(), data.size(), 0);
+    ssize_t bytesSent = Utils::sendSocket(sockfd, data.c_str(), data.size(), 0);
     if (bytesSent < 0)
     {
         error("failed to send data on socket " + to_string(sockfd), range);
@@ -762,7 +757,7 @@ shared_ptr<Value> Builtins::receiveSocket(const vector<shared_ptr<Value>> &args,
 
     int size = static_cast<int>(dynamic_pointer_cast<NumberValue>(args[1])->getValue());
     char *buffer = new char[size];
-    ssize_t bytesReceived = recv(sockfd, buffer, size, 0);
+    ssize_t bytesReceived = Utils::receiveSocket(sockfd, buffer, size, 0);
     if (bytesReceived < 0)
     {
         error("failed to receive data on socket " + to_string(sockfd), range);
@@ -802,25 +797,25 @@ shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &arg
 
     // use execvp to run the command and pipe to get the string output
     int pipefd[2];
-    if (pipe(pipefd) < 0)
+    if (Utils::createPipe(pipefd) < 0)
     {
         error("failed to create pipe for command execution", range);
         return nullptr;
     }
-    pid_t pid = fork();
+    pid_t pid = Utils::forkProcess();
     if (pid < 0)
     {
         error("failed to fork process for command execution", range);
-        close(pipefd[0]);
-        close(pipefd[1]);
+        Utils::closeFd(pipefd[0]);
+        Utils::closeFd(pipefd[1]);
         return nullptr;
     }
     if (pid == 0) // child process
     {
-        close(pipefd[0]); // close read end of the pipe
+        Utils::closeFd(pipefd[0]); // close read end of the pipe
         dup2(pipefd[1], STDOUT_FILENO); // redirect stdout to the pipe
         dup2(pipefd[1], STDERR_FILENO); // redirect stderr to the pipe
-        close(pipefd[1]); // close write end of the pipe after duplicating
+        Utils::closeFd(pipefd[1]); // close write end of the pipe after duplicating
 
         // split command into argv format
         vector<char*> argv;
@@ -840,16 +835,16 @@ shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &arg
             ::exit(EXIT_FAILURE);
         }
 
-        execvp(argv[0], argv.data());
+        Utils::executeProgram(argv[0], argv.data());
         perror("execvp failed"); // execvp only returns on error
         ::exit(EXIT_FAILURE);
     }
 
-    close(pipefd[1]); // close write end of the pipe in the parent process
+    Utils::closeFd(pipefd[1]); // close write end of the pipe in the parent process
     string output;
     char buffer[1024];
     ssize_t bytesRead;
-    while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer) - 1)) > 0)
+    while ((bytesRead = Utils::readFromFd(pipefd[0], buffer, sizeof(buffer) - 1)) > 0)
     {
         buffer[bytesRead] = '\0'; // null-terminate the buffer
         output += buffer; // append to output string
@@ -857,12 +852,12 @@ shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &arg
     if (bytesRead < 0)
     {
         error("failed to read from pipe", range);
-        close(pipefd[0]);
+        Utils::closeFd(pipefd[0]);
         return nullptr;
     }
-    close(pipefd[0]); // close read end of the pipe
+    Utils::closeFd(pipefd[0]); // close read end of the pipe
     int status;
-    if (waitpid(pid, &status, 0) < 0)
+    if (Utils::waitForProcess(pid, &status, 0) < 0)
     {
         error("failed to wait for child process", range);
         return nullptr;
@@ -917,7 +912,7 @@ shared_ptr<Value> Builtins::sleep(const vector<shared_ptr<Value>> &args, shared_
         return nullptr;
     }
 
-    usleep(static_cast<useconds_t>(seconds * 1000000)); // convert seconds to microseconds
+    Utils::sleepSeconds(seconds);
     return nullptr;
 }
 
@@ -932,7 +927,7 @@ shared_ptr<Value> Builtins::time(const vector<shared_ptr<Value>> &args, shared_p
     }
 
     // get the current time in seconds since the epoch
-    time_t now = ::time(nullptr);
+    time_t now = Utils::getCurrentTime();
     if (now == -1)
     {
         error("failed to get current time", range);
@@ -968,4 +963,35 @@ shared_ptr<Value> Builtins::rgb(const vector<shared_ptr<Value>> &args, shared_pt
 
     // create ansi rgb string and return it
     return make_shared<StringValue>("\033[38;2;" + to_string(static_cast<int>(r)) + ";" + to_string(static_cast<int>(g)) + ";" + to_string(static_cast<int>(b)) + "m", range);
+}
+
+// [string] listdir(path) - lists the contents of the directory at the given path
+shared_ptr<Value> Builtins::listdir(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+    if (args.size() != 1)
+    {
+        error("listdir() expects exactly 1 argument, but got " + to_string(args.size()), range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::string)
+    {
+        error("listdir() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange());
+        return nullptr;
+    }
+
+    string path = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+    vector<string> contents = Utils::listDirectory(path);
+    if (contents.empty())
+    {
+        return make_shared<ArrayValue>(vector<shared_ptr<Value>>{}, range);
+    }
+
+    vector<shared_ptr<Value>> items;
+    for (const auto &item : contents)
+    {
+        items.push_back(make_shared<StringValue>(item, range));
+    }
+    return make_shared<ArrayValue>(items, range);
 }

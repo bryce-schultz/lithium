@@ -17,32 +17,32 @@
 #include "SemanticErrorVisitor.h"
 #include "ArrayBuilder.h"
 
-using std::shared_ptr;
-using std::string;
 using std::cout;
+using std::dynamic_pointer_cast;
 using std::endl;
 using std::exception;
-using std::dynamic_pointer_cast;
-using std::make_shared;
 using std::fmod;
-using std::vector;
+using std::make_shared;
+using std::shared_ptr;
+using std::string;
 using std::to_string;
+using std::vector;
 
 #define MAX_PEEK 25
 
-#define error(msg, range) \
+#define error(msg, range)                       \
     rangeError(msg, range, __FILE__, __LINE__); \
-    hadError = true; \
+    hadError = true;                            \
     throw ErrorException(msg, range)
 
-#define errorAt(msg, location, range) \
+#define errorAt(msg, location, range)                             \
     locationRangeError(msg, location, range, __FILE__, __LINE__); \
-    hadError = true; \
+    hadError = true;                                              \
     throw ErrorException(msg, range)
 
-#define errorAtToken(msg, token, range) \
+#define errorAtToken(msg, token, range)                     \
     tokenRangeError(msg, token, range, __FILE__, __LINE__); \
-    hadError = true; \
+    hadError = true;                                        \
     throw ErrorException(msg, range)
 
 #define alreadyDefined(node) \
@@ -51,23 +51,22 @@ using std::to_string;
 #define notDefined(node) \
     errorAtToken("'" + Utils::truncate(node->getName(), MAX_PEEK) + "' is not defined", node->getToken(), node->getRange())
 
-#define failedToLoadModule(token, range) \
+#define failedToLoadModule(token, range)                                            \
     errorAtToken("failed to load module '" + token.getValue() + "'", token, range); \
     return false
 
-#define couldNotFindModule(token, range) \
+#define couldNotFindModule(token, range)                                            \
     errorAtToken("could not find module '" + token.getValue() + "'", token, range); \
     return false
 
-Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const vector<string> &args):
-    isInteractive(isInteractive),
-    hadError(false),
-    returnValue(nullptr),
-    moduleParser(),
-    importedModules(),
-    args(args),
-    currentFunctionName(""),
-    recursionDepth(0)
+Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const vector<string> &args) : isInteractive(isInteractive),
+                                                                                                        hadError(false),
+                                                                                                        returnValue(nullptr),
+                                                                                                        moduleParser(),
+                                                                                                        importedModules(),
+                                                                                                        args(args),
+                                                                                                        currentFunctionName(""),
+                                                                                                        recursionDepth(0)
 {
     if (!env)
     {
@@ -85,10 +84,12 @@ Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const 
 Interpreter::~Interpreter()
 {
     // Break circular references by clearing environment
-    if (env) {
+    if (env)
+    {
         // Clear all environments in the chain to break cycles
         auto current = env;
-        while (current) {
+        while (current)
+        {
             auto parent = current->getParent();
             current->clear();
             current = parent;
@@ -105,6 +106,9 @@ bool Interpreter::interpret(Node *node)
         return false; // Nothing to interpret
     }
 
+    // Reset error state for each interpretation
+    hadError = false;
+    
     // Reset the return value for each interpretation
     returnValue.reset();
 
@@ -123,13 +127,14 @@ void Interpreter::cleanupTempEnvironments()
     // that are no longer referenced by active code
     for (auto it = tempEnvironments.begin(); it != tempEnvironments.end();)
     {
-        auto& tempEnv = *it;
-        if (tempEnv) {
+        auto &tempEnv = *it;
+        if (tempEnv)
+        {
             long refCount = tempEnv.use_count();
-            
+
             // During execution, only clean environments with very minimal references
             // Be more conservative than final cleanup to avoid breaking active closures
-            if (refCount <= 1)  // Only in tempEnvironments vector = definitely unused
+            if (refCount <= 1) // Only in tempEnvironments vector = definitely unused
             {
                 tempEnv->clear();
                 it = tempEnvironments.erase(it);
@@ -138,7 +143,9 @@ void Interpreter::cleanupTempEnvironments()
             {
                 ++it;
             }
-        } else {
+        }
+        else
+        {
             it = tempEnvironments.erase(it);
         }
     }
@@ -148,23 +155,24 @@ void Interpreter::finalCleanup()
 {
     // Multi-stage cleanup strategy based on reference count analysis:
     // Stage 1: Always clean truly unused environments (count = 1)
-    // Stage 2: Clean likely unused environments (count = 2-3) 
+    // Stage 2: Clean likely unused environments (count = 2-3)
     // Stage 3: Preserve active environments (count = 4+)
-    
+
     // This is more principled than a single magic number because:
     // 1. Count 1 = definitely unused (only in tempEnvironments vector)
     // 2. Count 2-3 = minimal usage (may be temporary local references)
     // 3. Count 4+ = active usage (closures, objects with complex reference chains)
-    
+
     for (auto it = tempEnvironments.begin(); it != tempEnvironments.end();)
     {
-        auto& tempEnv = *it;
-        if (tempEnv) {
+        auto &tempEnv = *it;
+        if (tempEnv)
+        {
             long refCount = tempEnv.use_count();
-            
+
             // Conservative cleanup: only clean environments with very few references
             // Threshold of 4 handles edge cases in function hoisting and complex closures
-            if (refCount <= 4)  
+            if (refCount <= 4)
             {
                 tempEnv->clear();
                 it = tempEnvironments.erase(it);
@@ -173,7 +181,9 @@ void Interpreter::finalCleanup()
             {
                 ++it;
             }
-        } else {
+        }
+        else
+        {
             it = tempEnvironments.erase(it);
         }
     }
@@ -208,7 +218,7 @@ void Interpreter::setupRuntimeValues()
     env->declare("VERSION", make_shared<StringValue>(INTERPRETER_VERSION), true);
 }
 
-bool Interpreter::import(const Token& moduleName, const Range &range)
+bool Interpreter::import(const Token &moduleName, const Range &range)
 {
     string module = moduleName.getValue();
     string modulePath = Utils::getModulePath(module);
@@ -258,6 +268,7 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
         else if (module == "os")
         {
             env->declare("open", make_shared<BuiltinFunctionValue>(Builtins::openFile), true);
+            env->declare("listdir", make_shared<BuiltinFunctionValue>(Builtins::listdir), true);
             env->declare("close", make_shared<BuiltinFunctionValue>(Builtins::closeFd), true);
             env->declare("read", make_shared<BuiltinFunctionValue>(Builtins::readFd), true);
             env->declare("write", make_shared<BuiltinFunctionValue>(Builtins::writeFd), true);
@@ -274,8 +285,8 @@ bool Interpreter::import(const Token& moduleName, const Range &range)
             env->declare("connect", make_shared<BuiltinFunctionValue>(Builtins::connectSocket), true);
             env->declare("send", make_shared<BuiltinFunctionValue>(Builtins::sendSocket), true);
             env->declare("receive", make_shared<BuiltinFunctionValue>(Builtins::receiveSocket), true);
-            //env->declare("sock_addr", make_shared<BuiltinFunctionValue>(Builtins::getSocketAddress), true);
-            //env->declare("sock_port", make_shared<BuiltinFunctionValue>(Builtins::getSocketPort), true);
+            // env->declare("sock_addr", make_shared<BuiltinFunctionValue>(Builtins::getSocketAddress), true);
+            // env->declare("sock_port", make_shared<BuiltinFunctionValue>(Builtins::getSocketPort), true);
             imported(module);
             return true;
         }
@@ -385,8 +396,7 @@ void Interpreter::visit(StatementsNode *node)
                 funcDecl->getName(),
                 funcDecl->getParams(),
                 funcDecl->getBody(),
-                env
-            );
+                env);
             env->redeclare(funcDecl->getName(), function, funcDecl->isConst());
         }
     }
@@ -394,7 +404,8 @@ void Interpreter::visit(StatementsNode *node)
     // Second pass: execute all statements
     for (auto &statement : node->getStatements())
     {
-        if (!statement) continue;
+        if (!statement)
+            continue;
         returnValue = nullptr;
         statement->visit(this);
         if (returnValue && isInteractive)
@@ -461,50 +472,50 @@ shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> l
     }
 
     returnValue = nullptr;
-    switch(opNode->getType())
+    switch (opNode->getType())
     {
-        case '+':
-            returnValue = leftValue->add(rightValue);
-            break;
-        case '-':
-            returnValue = leftValue->sub(rightValue);
-            break;
-        case '*':
-            returnValue = leftValue->mul(rightValue);
-            break;
-        case '/':
-            returnValue = leftValue->div(rightValue);
-            break;
-        case '%':
-            returnValue = leftValue->mod(rightValue);
-            break;
-        case Token::EQ:
-            returnValue = leftValue->eq(rightValue);
-            break;
-        case Token::NE:
-            returnValue = leftValue->ne(rightValue);
-            break;
-        case Token::LE:
-            returnValue = leftValue->le(rightValue);
-            break;
-        case Token::GE:
-            returnValue = leftValue->ge(rightValue);
-            break;
-        case '<':
-            returnValue = leftValue->lt(rightValue);
-            break;
-        case '>':
-            returnValue = leftValue->gt(rightValue);
-            break;
-        case Token::AND:
-            returnValue = leftValue->logicalAnd(rightValue);
-            break;
-        case Token::OR:
-            returnValue = leftValue->logicalOr(rightValue);
-            break;
-        default:
-            error("unsupported binary operation: " + opNode->getToken().getValue(), opNode->getRange());
-            return nullptr;
+    case '+':
+        returnValue = leftValue->add(rightValue);
+        break;
+    case '-':
+        returnValue = leftValue->sub(rightValue);
+        break;
+    case '*':
+        returnValue = leftValue->mul(rightValue);
+        break;
+    case '/':
+        returnValue = leftValue->div(rightValue);
+        break;
+    case '%':
+        returnValue = leftValue->mod(rightValue);
+        break;
+    case Token::EQ:
+        returnValue = leftValue->eq(rightValue);
+        break;
+    case Token::NE:
+        returnValue = leftValue->ne(rightValue);
+        break;
+    case Token::LE:
+        returnValue = leftValue->le(rightValue);
+        break;
+    case Token::GE:
+        returnValue = leftValue->ge(rightValue);
+        break;
+    case '<':
+        returnValue = leftValue->lt(rightValue);
+        break;
+    case '>':
+        returnValue = leftValue->gt(rightValue);
+        break;
+    case Token::AND:
+        returnValue = leftValue->logicalAnd(rightValue);
+        break;
+    case Token::OR:
+        returnValue = leftValue->logicalOr(rightValue);
+        break;
+    default:
+        error("unsupported binary operation: " + opNode->getToken().getValue(), opNode->getRange());
+        return nullptr;
     }
 
     if (returnValue && returnValue->getType() != Value::Type::null)
@@ -538,174 +549,174 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
         return nullptr;
     }
 
-    switch(opNode->getType())
+    switch (opNode->getType())
     {
-        case Token::INC:
-        case Token::DEC:
+    case Token::INC:
+    case Token::DEC:
+    {
+        if (!expression->isLval())
         {
-            if (!expression->isLval())
-            {
-                error("expected a modifiable expression", expression->getRange());
-                return nullptr;
-            }
-
-            shared_ptr<VarExprNode> varExpr = dynamic_pointer_cast<VarExprNode>(expression);
-            if (varExpr)
-            {
-                return evalVariableUnaryExpression(varExpr, opNode, prefix);
-            }
-
-            shared_ptr<ArrayAccessNode> arrayAccess = dynamic_pointer_cast<ArrayAccessNode>(expression);
-            if (arrayAccess)
-            {
-                arrayAccess->getArray()->visit(this);
-                if (!returnValue)
-                {
-                    error("array access left-hand side evaluated to null", arrayAccess->getArray()->getRange());
-                    returnValue = nullptr;
-                    return nullptr;
-                }
-
-                if (returnValue->getType() != Value::Type::array)
-                {
-                    error("left-hand side of array access is not an array, it is " + returnValue->typeAsString(), arrayAccess->getArray()->getRange());
-                    returnValue = nullptr;
-                    return nullptr;
-                }
-
-                auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
-                if (!arrayValue)
-                {
-                    error("left-hand side of array access could not be cast to ArrayValue", arrayAccess->getArray()->getRange());
-                    returnValue = nullptr;
-                    return nullptr;
-                }
-
-                auto indexValue = arrayAccess->getIndex();
-                indexValue->visit(this);
-                auto index = returnValue;
-                if (!index || index->getType() != Value::Type::number)
-                {
-                    error("index in array access must be a number", indexValue->getRange());
-                    return nullptr;
-                }
-
-                auto array = dynamic_pointer_cast<ArrayValue>(arrayValue);
-                if (!array)
-                {
-                    error("array access expression is not an ArrayValue", expression->getRange());
-                    return nullptr;
-                }
-
-                int indexInt = static_cast<int>(dynamic_pointer_cast<NumberValue>(index)->getValue());
-                if (indexInt < 0 || indexInt >= array->getElementCount())
-                {
-                    error("array index out of bounds: " + to_string(indexInt) + " for array of size " + to_string(array->getElementCount()), indexValue->getRange());
-                    return nullptr;
-                }
-
-                shared_ptr<Value> elementValue = array->getElement(indexInt);
-                if (!elementValue)
-                {
-                    error("array element at index " + to_string(indexInt) + " is null", indexValue->getRange());
-                    return nullptr;
-                }
-
-                if (opNode->getType() == Token::INC)
-                {
-                    if (elementValue->getType() != Value::Type::number)
-                    {
-                        error("array element at index " + to_string(indexInt) + " is not a number", indexValue->getRange());
-                        return nullptr;
-                    }
-                    auto numberValue = dynamic_pointer_cast<NumberValue>(elementValue);
-                    auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
-                    array->setElement(indexInt, tmp);
-                    return prefix ? tmp : numberValue; // return the incremented value if prefix, otherwise the original value
-                }
-                else if (opNode->getType() == Token::DEC)
-                {
-                    if (elementValue->getType() != Value::Type::number)
-                    {
-                        error("array element at index " + to_string(indexInt) + " is not a number", indexValue->getRange());
-                        return nullptr;
-                    }
-                    auto numberValue = dynamic_pointer_cast<NumberValue>(elementValue);
-                    auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
-                    array->setElement(indexInt, tmp);
-                    return prefix ? tmp : numberValue; // return the decremented value if prefix, otherwise the original value
-                }
-            }
-
-            shared_ptr<MemberAccessNode> memberAccess = dynamic_pointer_cast<MemberAccessNode>(expression);
-            if (memberAccess)
-            {
-                memberAccess->getExpression()->visit(this);
-                if (!returnValue)
-                {
-                    error("member access left-hand side evaluated to null", memberAccess->getExpression()->getRange());
-                    returnValue = nullptr;
-                    return nullptr;
-                }
-
-                if (returnValue->getType() != Value::Type::object && returnValue->getType() != Value::Type::class_)
-                {
-                    error("left-hand side of member access is not an object or class, it is " + returnValue->typeAsString(), memberAccess->getExpression()->getRange());
-                    returnValue = nullptr;
-                    return nullptr;
-                }
-
-                auto objectValue = dynamic_pointer_cast<ObjectValue>(returnValue);
-                if (!objectValue)
-                {
-                    error("left-hand side of member access could not be cast to ObjectValue", memberAccess->getExpression()->getRange());
-                    returnValue = nullptr;
-                    return nullptr;
-                }
-
-                auto memberName = memberAccess->getIdentifier().getValue();
-                shared_ptr<Value> memberValue = objectValue->getMember(memberName);
-                if (!memberValue)
-                {
-                    error("member '" + memberName + "' not found in object", memberAccess->getIdentifier().getRange());
-                    return nullptr;
-                }
-
-                if (opNode->getType() == Token::INC)
-                {
-                    if (memberValue->getType() != Value::Type::number)
-                    {
-                        error("member '" + memberName + "' is not a number", memberAccess->getIdentifier().getRange());
-                        return nullptr;
-                    }
-                    auto numberValue = dynamic_pointer_cast<NumberValue>(memberValue);
-                    auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
-                    objectValue->setMember(memberName, tmp);
-                    return prefix ? tmp : numberValue; // return the incremented value if prefix, otherwise the original value
-                }
-                else if (opNode->getType() == Token::DEC)
-                {
-                    if (memberValue->getType() != Value::Type::number)
-                    {
-                        error("member '" + memberName + "' is not a number", memberAccess->getIdentifier().getRange());
-                        return nullptr;
-                    }
-                    auto numberValue = dynamic_pointer_cast<NumberValue>(memberValue);
-                    auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
-                    objectValue->setMember(memberName, tmp);
-                    return prefix ? tmp : numberValue; // return the decremented value if prefix, otherwise the original value
-                }
-            }
-
             error("expected a modifiable expression", expression->getRange());
             return nullptr;
         }
-        case '!':
-            returnValue = value->unaryNot();
-            break;
-        case '-':
-            returnValue = value->unaryMinus();
-            break;
+
+        shared_ptr<VarExprNode> varExpr = dynamic_pointer_cast<VarExprNode>(expression);
+        if (varExpr)
+        {
+            return evalVariableUnaryExpression(varExpr, opNode, prefix);
+        }
+
+        shared_ptr<ArrayAccessNode> arrayAccess = dynamic_pointer_cast<ArrayAccessNode>(expression);
+        if (arrayAccess)
+        {
+            arrayAccess->getArray()->visit(this);
+            if (!returnValue)
+            {
+                error("array access left-hand side evaluated to null", arrayAccess->getArray()->getRange());
+                returnValue = nullptr;
+                return nullptr;
+            }
+
+            if (returnValue->getType() != Value::Type::array)
+            {
+                error("left-hand side of array access is not an array, it is " + returnValue->typeAsString(), arrayAccess->getArray()->getRange());
+                returnValue = nullptr;
+                return nullptr;
+            }
+
+            auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
+            if (!arrayValue)
+            {
+                error("left-hand side of array access could not be cast to ArrayValue", arrayAccess->getArray()->getRange());
+                returnValue = nullptr;
+                return nullptr;
+            }
+
+            auto indexValue = arrayAccess->getIndex();
+            indexValue->visit(this);
+            auto index = returnValue;
+            if (!index || index->getType() != Value::Type::number)
+            {
+                error("index in array access must be a number", indexValue->getRange());
+                return nullptr;
+            }
+
+            auto array = dynamic_pointer_cast<ArrayValue>(arrayValue);
+            if (!array)
+            {
+                error("array access expression is not an ArrayValue", expression->getRange());
+                return nullptr;
+            }
+
+            int indexInt = static_cast<int>(dynamic_pointer_cast<NumberValue>(index)->getValue());
+            if (indexInt < 0 || indexInt >= array->getElementCount())
+            {
+                error("array index out of bounds: " + to_string(indexInt) + " for array of size " + to_string(array->getElementCount()), indexValue->getRange());
+                return nullptr;
+            }
+
+            shared_ptr<Value> elementValue = array->getElement(indexInt);
+            if (!elementValue)
+            {
+                error("array element at index " + to_string(indexInt) + " is null", indexValue->getRange());
+                return nullptr;
+            }
+
+            if (opNode->getType() == Token::INC)
+            {
+                if (elementValue->getType() != Value::Type::number)
+                {
+                    error("array element at index " + to_string(indexInt) + " is not a number", indexValue->getRange());
+                    return nullptr;
+                }
+                auto numberValue = dynamic_pointer_cast<NumberValue>(elementValue);
+                auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
+                array->setElement(indexInt, tmp);
+                return prefix ? tmp : numberValue; // return the incremented value if prefix, otherwise the original value
+            }
+            else if (opNode->getType() == Token::DEC)
+            {
+                if (elementValue->getType() != Value::Type::number)
+                {
+                    error("array element at index " + to_string(indexInt) + " is not a number", indexValue->getRange());
+                    return nullptr;
+                }
+                auto numberValue = dynamic_pointer_cast<NumberValue>(elementValue);
+                auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
+                array->setElement(indexInt, tmp);
+                return prefix ? tmp : numberValue; // return the decremented value if prefix, otherwise the original value
+            }
+        }
+
+        shared_ptr<MemberAccessNode> memberAccess = dynamic_pointer_cast<MemberAccessNode>(expression);
+        if (memberAccess)
+        {
+            memberAccess->getExpression()->visit(this);
+            if (!returnValue)
+            {
+                error("member access left-hand side evaluated to null", memberAccess->getExpression()->getRange());
+                returnValue = nullptr;
+                return nullptr;
+            }
+
+            if (returnValue->getType() != Value::Type::object && returnValue->getType() != Value::Type::class_)
+            {
+                error("left-hand side of member access is not an object or class, it is " + returnValue->typeAsString(), memberAccess->getExpression()->getRange());
+                returnValue = nullptr;
+                return nullptr;
+            }
+
+            auto objectValue = dynamic_pointer_cast<ObjectValue>(returnValue);
+            if (!objectValue)
+            {
+                error("left-hand side of member access could not be cast to ObjectValue", memberAccess->getExpression()->getRange());
+                returnValue = nullptr;
+                return nullptr;
+            }
+
+            auto memberName = memberAccess->getIdentifier().getValue();
+            shared_ptr<Value> memberValue = objectValue->getMember(memberName);
+            if (!memberValue)
+            {
+                error("member '" + memberName + "' not found in object", memberAccess->getIdentifier().getRange());
+                return nullptr;
+            }
+
+            if (opNode->getType() == Token::INC)
+            {
+                if (memberValue->getType() != Value::Type::number)
+                {
+                    error("member '" + memberName + "' is not a number", memberAccess->getIdentifier().getRange());
+                    return nullptr;
+                }
+                auto numberValue = dynamic_pointer_cast<NumberValue>(memberValue);
+                auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
+                objectValue->setMember(memberName, tmp);
+                return prefix ? tmp : numberValue; // return the incremented value if prefix, otherwise the original value
+            }
+            else if (opNode->getType() == Token::DEC)
+            {
+                if (memberValue->getType() != Value::Type::number)
+                {
+                    error("member '" + memberName + "' is not a number", memberAccess->getIdentifier().getRange());
+                    return nullptr;
+                }
+                auto numberValue = dynamic_pointer_cast<NumberValue>(memberValue);
+                auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
+                objectValue->setMember(memberName, tmp);
+                return prefix ? tmp : numberValue; // return the decremented value if prefix, otherwise the original value
+            }
+        }
+
+        error("expected a modifiable expression", expression->getRange());
+        return nullptr;
+    }
+    case '!':
+        returnValue = value->unaryNot();
+        break;
+    case '-':
+        returnValue = value->unaryMinus();
+        break;
     }
 
     if (returnValue && returnValue->getType() != Value::Type::null)
@@ -732,52 +743,52 @@ shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNod
         return nullptr;
     }
 
-    switch(opNode->getType())
+    switch (opNode->getType())
     {
-        case Token::INC:
+    case Token::INC:
+    {
+        if (value->getType() != Value::Type::number)
         {
-            if (value->getType() != Value::Type::number)
-            {
-                error("variable " + expression->getName() + " is not a number", expression->getRange());
-                return nullptr;
-            }
-            auto numberValue = dynamic_pointer_cast<NumberValue>(value);
-            auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
-            env->assign(expression->getName(), tmp);
-
-            if (prefix)
-            {
-                return tmp; // return the incremented value if prefix
-            }
-            else
-            {
-                return numberValue; // return the original value if postfix
-            }
-
-            break;
+            error("variable " + expression->getName() + " is not a number", expression->getRange());
+            return nullptr;
         }
-        case Token::DEC:
+        auto numberValue = dynamic_pointer_cast<NumberValue>(value);
+        auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
+        env->assign(expression->getName(), tmp);
+
+        if (prefix)
         {
-            if (value->getType() != Value::Type::number)
-            {
-                error("variable " + expression->getName() + " is not a number", expression->getRange());
-                return nullptr;
-            }
-            auto numberValue = dynamic_pointer_cast<NumberValue>(value);
-            auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
-            env->assign(expression->getName(), tmp);
-
-            if (prefix)
-            {
-                return tmp; // return the incremented value if prefix
-            }
-            else
-            {
-                return numberValue; // return the original value if postfix
-            }
-
-            break;
+            return tmp; // return the incremented value if prefix
         }
+        else
+        {
+            return numberValue; // return the original value if postfix
+        }
+
+        break;
+    }
+    case Token::DEC:
+    {
+        if (value->getType() != Value::Type::number)
+        {
+            error("variable " + expression->getName() + " is not a number", expression->getRange());
+            return nullptr;
+        }
+        auto numberValue = dynamic_pointer_cast<NumberValue>(value);
+        auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
+        env->assign(expression->getName(), tmp);
+
+        if (prefix)
+        {
+            return tmp; // return the incremented value if prefix
+        }
+        else
+        {
+            return numberValue; // return the original value if postfix
+        }
+
+        break;
+    }
     }
 
     return nullptr;
@@ -786,8 +797,10 @@ shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNod
 void Interpreter::visit(CallNode *node)
 {
     vector<shared_ptr<Value>> args;
-    if (node->getArgs()) {
-        for (auto &arg : node->getArgs()->getArgs()) {
+    if (node->getArgs())
+    {
+        for (auto &arg : node->getArgs()->getArgs())
+        {
             arg->visit(this);
             args.push_back(returnValue);
         }
@@ -814,8 +827,9 @@ void Interpreter::visit(CallNode *node)
         if (function->getParameters() && (size_t)function->getParameters()->getParamCount() != args.size())
         {
             error("function '" + function->getName() + "' expects " +
-                to_string(function->getParameters()->getParamCount()) +
-                " arguments, but got " + to_string(args.size()), node->getRange());
+                      to_string(function->getParameters()->getParamCount()) +
+                      " arguments, but got " + to_string(args.size()),
+                  node->getRange());
             returnValue = nullptr;
             return;
         }
@@ -864,7 +878,7 @@ void Interpreter::visit(CallNode *node)
             function->getBody()->visit(this);
             returnValue = nullptr;
         }
-        catch (const ReturnException& e)
+        catch (const ReturnException &e)
         {
             returnValue = e.value;
         }
@@ -908,11 +922,11 @@ void Interpreter::visit(CallNode *node)
 
         // For member access (e.g., obj.method()), use the identifier range to point to the method name
         Range callRange = calleeNode->getRange();
-        if (auto memberAccess = dynamic_cast<MemberAccessNode*>(calleeNode.get()))
+        if (auto memberAccess = dynamic_cast<MemberAccessNode *>(calleeNode.get()))
         {
             callRange = memberAccess->getIdentifier().getRange();
         }
-        
+
         returnValue = builtin->call(args, env, callRange);
     }
     else if (callee->getType() == Value::Type::class_)
@@ -976,8 +990,9 @@ void Interpreter::visit(CallNode *node)
                 if (constructor->getParameters() && (size_t)constructor->getParameters()->getParamCount() != args.size())
                 {
                     error("function '" + constructor->getName() + "' expects " +
-                        to_string(constructor->getParameters()->getParamCount()) +
-                        " arguments, but got " + to_string(args.size()), node->getRange());
+                              to_string(constructor->getParameters()->getParamCount()) +
+                              " arguments, but got " + to_string(args.size()),
+                          node->getRange());
                     returnValue = nullptr;
                     env = previousEnv;
                     return;
@@ -999,7 +1014,8 @@ void Interpreter::visit(CallNode *node)
                 env = scope;
                 try
                 {
-                    if (!constructor->getBody()) {
+                    if (!constructor->getBody())
+                    {
                         error("constructor '" + constructor->getName() + "' has no body", node->getRange());
                         env = constructorPrevEnv;
                         return;
@@ -1007,7 +1023,7 @@ void Interpreter::visit(CallNode *node)
 
                     constructor->getBody()->visit(this);
                 }
-                catch (const ReturnException& e)
+                catch (const ReturnException &e)
                 {
                     if (e.value && e.value->getType() != Value::Type::null)
                     {
@@ -1093,7 +1109,7 @@ void Interpreter::visit(ReturnStatementNode *node)
     expr->visit(this);
     if (!returnValue)
     {
-        error("return expression evaluated to null", node->getRange());
+        throw ReturnException(make_shared<NullValue>(), node->getRange());
     }
     throw ReturnException(returnValue, node->getRange());
 }
@@ -1106,7 +1122,14 @@ void Interpreter::visit(VarDeclNode *node)
     }
     else
     {
-       node->getExpr()->visit(this);
+        node->getExpr()->visit(this);
+        
+        // If an error occurred during expression evaluation, don't declare the variable
+        if (hadError)
+        {
+            returnValue = nullptr;
+            return;
+        }
     }
 
     if (!returnValue)
@@ -1115,10 +1138,13 @@ void Interpreter::visit(VarDeclNode *node)
         return;
     }
 
-    // Note: Redeclaration checking is now handled by semantic analysis
-    // Use redeclare to allow shadowing in nested scopes but semantic analysis
-    // will catch actual redeclarations in the same scope
-    returnValue = env->redeclare(node->getName(), returnValue, node->isConst());
+    // Check for redeclaration - this catches built-in constants and imported variables
+    auto result = env->declare(node->getName(), returnValue, node->isConst());
+    if (!result)
+    {
+        errorAt("variable '" + node->getName() + "' is already declared in this scope", node->getToken().getRange().getStart(), node->getRange());
+        return;
+    }
 
     returnValue = nullptr;
 }
@@ -1181,28 +1207,28 @@ void Interpreter::visit(AssignNode *node)
     {
         switch (node->getOp())
         {
-            case '=':
-                // No additional operation, just assign the value
-                break;
-            case Token::PLUS_EQUAL:
-                value = env->lookup(asignee->getName())->add(value);
-                break;
-            case Token::MINUS_EQUAL:
-                value = env->lookup(asignee->getName())->sub(value);
-                break;
-            case Token::MUL_EQUAL:
-                value = env->lookup(asignee->getName())->mul(value);
-                break;
-            case Token::DIV_EQUAL:
-                value = env->lookup(asignee->getName())->div(value);
-                break;
-            case Token::MOD_EQUAL:
-                value = env->lookup(asignee->getName())->mod(value);
-                break;
-            default:
-                error("invalid assignment operator", node->getRange());
-                returnValue = nullptr;
-                return;
+        case '=':
+            // No additional operation, just assign the value
+            break;
+        case Token::PLUS_EQUAL:
+            value = env->lookup(asignee->getName())->add(value);
+            break;
+        case Token::MINUS_EQUAL:
+            value = env->lookup(asignee->getName())->sub(value);
+            break;
+        case Token::MUL_EQUAL:
+            value = env->lookup(asignee->getName())->mul(value);
+            break;
+        case Token::DIV_EQUAL:
+            value = env->lookup(asignee->getName())->div(value);
+            break;
+        case Token::MOD_EQUAL:
+            value = env->lookup(asignee->getName())->mod(value);
+            break;
+        default:
+            error("invalid assignment operator", node->getRange());
+            returnValue = nullptr;
+            return;
         }
 
         if (!value)
@@ -1215,54 +1241,54 @@ void Interpreter::visit(AssignNode *node)
 
             switch (node->getOp())
             {
-                case Token::PLUS_EQUAL:
-                {
-                    opName = "add";
-                    preposition = "to";
-                    leftType = returnValue->typeAsString();
-                    rightType = assigneeType;
-                    break;
-                }
-                case Token::MINUS_EQUAL:
-                {
-                    opName = "subtract";
-                    preposition = "from";
-                    leftType = returnValue->typeAsString();
-                    rightType = assigneeType;
-                    break;
-                }
-                case Token::MUL_EQUAL:
-                {
-                    opName = "multiply";
-                    preposition = "with";
-                    leftType = assigneeType;
-                    rightType = returnValue->typeAsString();
-                    break;
-                }
-                case Token::DIV_EQUAL:
-                {
-                    opName = "divide";
-                    preposition = "by";
-                    leftType = assigneeType;
-                    rightType = returnValue->typeAsString();
-                    break;
-                }
-                case Token::MOD_EQUAL:
-                {
-                    opName = "mod";
-                    preposition = "by";
-                    leftType = assigneeType;
-                    rightType = returnValue->typeAsString();
-                    break;
-                }
-                default:
-                {
-                    opName = "operate";
-                    preposition = "with";
-                    leftType = assigneeType;
-                    rightType = returnValue->typeAsString();
-                    break;
-                }
+            case Token::PLUS_EQUAL:
+            {
+                opName = "add";
+                preposition = "to";
+                leftType = returnValue->typeAsString();
+                rightType = assigneeType;
+                break;
+            }
+            case Token::MINUS_EQUAL:
+            {
+                opName = "subtract";
+                preposition = "from";
+                leftType = returnValue->typeAsString();
+                rightType = assigneeType;
+                break;
+            }
+            case Token::MUL_EQUAL:
+            {
+                opName = "multiply";
+                preposition = "with";
+                leftType = assigneeType;
+                rightType = returnValue->typeAsString();
+                break;
+            }
+            case Token::DIV_EQUAL:
+            {
+                opName = "divide";
+                preposition = "by";
+                leftType = assigneeType;
+                rightType = returnValue->typeAsString();
+                break;
+            }
+            case Token::MOD_EQUAL:
+            {
+                opName = "mod";
+                preposition = "by";
+                leftType = assigneeType;
+                rightType = returnValue->typeAsString();
+                break;
+            }
+            default:
+            {
+                opName = "operate";
+                preposition = "with";
+                leftType = assigneeType;
+                rightType = returnValue->typeAsString();
+                break;
+            }
             }
 
             errorAtToken("invalid assignment type, can't " + opName + " " + leftType + " " + preposition + " " + rightType, node->getToken(), node->getRange());
@@ -1340,28 +1366,28 @@ void Interpreter::visit(AssignNode *node)
 
         switch (node->getOp())
         {
-            case '=':
-                // No additional operation, just assign the value
-                break;
-            case Token::PLUS_EQUAL:
-                value = arrayValue->getElement(index)->add(value);
-                break;
-            case Token::MINUS_EQUAL:
-                value = arrayValue->getElement(index)->sub(value);
-                break;
-            case Token::MUL_EQUAL:
-                value = arrayValue->getElement(index)->mul(value);
-                break;
-            case Token::DIV_EQUAL:
-                value = arrayValue->getElement(index)->div(value);
-                break;
-            case Token::MOD_EQUAL:
-                value = arrayValue->getElement(index)->mod(value);
-                break;
-            default:
-                error("invalid assignment operator", node->getRange());
-                returnValue = nullptr;
-                return;
+        case '=':
+            // No additional operation, just assign the value
+            break;
+        case Token::PLUS_EQUAL:
+            value = arrayValue->getElement(index)->add(value);
+            break;
+        case Token::MINUS_EQUAL:
+            value = arrayValue->getElement(index)->sub(value);
+            break;
+        case Token::MUL_EQUAL:
+            value = arrayValue->getElement(index)->mul(value);
+            break;
+        case Token::DIV_EQUAL:
+            value = arrayValue->getElement(index)->div(value);
+            break;
+        case Token::MOD_EQUAL:
+            value = arrayValue->getElement(index)->mod(value);
+            break;
+        default:
+            error("invalid assignment operator", node->getRange());
+            returnValue = nullptr;
+            return;
         }
 
         // assign the value to the specified index
@@ -1390,28 +1416,28 @@ void Interpreter::visit(AssignNode *node)
 
         switch (node->getOp())
         {
-            case '=':
-                // No additional operation, just assign the value
-                break;
-            case Token::PLUS_EQUAL:
-                value = returnValue->getMember(memberName)->add(value);
-                break;
-            case Token::MINUS_EQUAL:
-                value = returnValue->getMember(memberName)->sub(value);
-                break;
-            case Token::MUL_EQUAL:
-                value = returnValue->getMember(memberName)->mul(value);
-                break;
-            case Token::DIV_EQUAL:
-                value = returnValue->getMember(memberName)->div(value);
-                break;
-            case Token::MOD_EQUAL:
-                value = returnValue->getMember(memberName)->mod(value);
-                break;
-            default:
-                error("invalid assignment operator", node->getRange());
-                returnValue = nullptr;
-                return;
+        case '=':
+            // No additional operation, just assign the value
+            break;
+        case Token::PLUS_EQUAL:
+            value = returnValue->getMember(memberName)->add(value);
+            break;
+        case Token::MINUS_EQUAL:
+            value = returnValue->getMember(memberName)->sub(value);
+            break;
+        case Token::MUL_EQUAL:
+            value = returnValue->getMember(memberName)->mul(value);
+            break;
+        case Token::DIV_EQUAL:
+            value = returnValue->getMember(memberName)->div(value);
+            break;
+        case Token::MOD_EQUAL:
+            value = returnValue->getMember(memberName)->mod(value);
+            break;
+        default:
+            error("invalid assignment operator", node->getRange());
+            returnValue = nullptr;
+            return;
         }
 
         // assign the value to the specified member
@@ -1439,9 +1465,9 @@ void Interpreter::visit(BlockNode *node)
         return;
     }
 
-    shared_ptr<Environment> prevEnv = env; // Save previous environment
+    shared_ptr<Environment> prevEnv = env;                            // Save previous environment
     shared_ptr<Environment> blockEnv = make_shared<Environment>(env); // Create block environment
-    env = blockEnv; // push a new environment for the block
+    env = blockEnv;                                                   // push a new environment for the block
 
     // Track this as a temporary environment for later cleanup
     tempEnvironments.push_back(blockEnv);
@@ -1479,6 +1505,11 @@ void Interpreter::visit(BlockNode *node)
     env = prevEnv; // pop the environment after visiting the block
 
     returnValue = nullptr;
+}
+
+void Interpreter::visit(BooleanNode *node)
+{
+    returnValue = make_shared<BooleanValue>(node->getValue());
 }
 
 void Interpreter::visit(IfStatementNode *node)
@@ -1529,7 +1560,7 @@ void Interpreter::visit(FuncDeclNode *node)
 void Interpreter::visit(WhileNode *node)
 {
     shared_ptr<Environment> originalEnv = env;
-    
+
     while (true)
     {
         // Evaluate condition in the original environment
@@ -1548,7 +1579,8 @@ void Interpreter::visit(WhileNode *node)
         }
 
         bool condition = returnValue->toBoolean();
-        if (!condition) break;
+        if (!condition)
+            break;
 
         // Create a new environment for this iteration
         {
@@ -1583,16 +1615,16 @@ void Interpreter::visit(WhileNode *node)
                     throw;
                 }
             }
-            
+
             // Clear any references that might be holding onto values
             returnValue = nullptr;
-            
+
             // Clean up temporary environments created during this iteration
             cleanupTempEnvironments();
-            
+
             // Explicitly clear the iteration environment to trigger immediate cleanup
             iterationEnv->clear();
-            
+
             // Restore original environment - iterationEnv goes out of scope here
             env = originalEnv;
         } // iterationEnv is destroyed here, allowing immediate cleanup
@@ -1631,7 +1663,7 @@ void Interpreter::visit(ForEachNode *node)
                 {
                     shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
                     env = iterationEnv;
-                    
+
                     env->redeclare(node->getKeyDecl()->getName(), arrayValue->getElement(i), node->getKeyDecl()->isConst());
 
                     try
@@ -1661,10 +1693,10 @@ void Interpreter::visit(ForEachNode *node)
                         env = originalEnv;
                         throw;
                     }
-                    
+
                     // Clear any references that might be holding onto values
                     returnValue = nullptr;
-                    
+
                     // Environment is automatically cleaned up when iterationEnv goes out of scope
                     env = originalEnv;
                 } // iterationEnv is destroyed here, allowing immediate cleanup
@@ -1685,7 +1717,7 @@ void Interpreter::visit(ForEachNode *node)
                 {
                     shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
                     env = iterationEnv;
-                    
+
                     // Create a StringValue for the character at position i
                     auto charValue = make_shared<StringValue>(stringValue->getCharAt(i));
                     env->redeclare(node->getKeyDecl()->getName(), charValue, node->getKeyDecl()->isConst());
@@ -1717,10 +1749,10 @@ void Interpreter::visit(ForEachNode *node)
                         env = originalEnv;
                         throw;
                     }
-                    
+
                     // Clear any references that might be holding onto values
                     returnValue = nullptr;
-                    
+
                     // Environment is automatically cleaned up when iterationEnv goes out of scope
                     env = originalEnv;
                 } // iterationEnv is destroyed here, allowing immediate cleanup
@@ -1785,16 +1817,16 @@ void Interpreter::visit(ForEachNode *node)
                     env = originalEnv;
                     throw;
                 }
-                
+
                 // Clear any references that might be holding onto values
                 returnValue = nullptr;
-                
+
                 // Clean up temporary environments created during this iteration
                 cleanupTempEnvironments();
-                
+
                 // Explicitly clear the iteration environment to trigger immediate cleanup
                 iterationEnv->clear();
-                
+
                 env = originalEnv;
             } // iterationEnv is destroyed here, allowing immediate cleanup
         }
@@ -1811,11 +1843,11 @@ void Interpreter::visit(ForEachNode *node)
 void Interpreter::visit(ForStatementNode *node)
 {
     shared_ptr<Environment> originalEnv = env;
-    
+
     // Create environment for the entire for loop (for init variable)
     shared_ptr<Environment> forEnv = make_shared<Environment>(originalEnv);
     env = forEnv;
-    
+
     try
     {
         // Initialize the loop variable
@@ -1830,21 +1862,16 @@ void Interpreter::visit(ForStatementNode *node)
             if (node->getCondition())
             {
                 node->getCondition()->visit(this);
-                if (!returnValue)
-                {
-                    error("for loop condition evaluation failed", node->getCondition()->getRange());
-                    break;
-                }
-
-                if (returnValue->getType() != Value::Type::boolean &&
-                    returnValue->getType() != Value::Type::number)
+                if (!returnValue || (returnValue->getType() != Value::Type::boolean &&
+                    returnValue->getType() != Value::Type::number))
                 {
                     error("for loop condition must be a boolean expression", node->getCondition()->getRange());
                     break;
                 }
 
                 bool condition = returnValue->toBoolean();
-                if (!condition) break;
+                if (!condition)
+                    break;
             }
 
             // Create a new environment for this iteration's body
@@ -1888,13 +1915,13 @@ void Interpreter::visit(ForStatementNode *node)
 
                 // Clear any references that might be holding onto values
                 returnValue = nullptr;
-                
+
                 // Clean up temporary environments created during this iteration
                 cleanupTempEnvironments();
-                
+
                 // Explicitly clear the iteration environment to trigger immediate cleanup
                 iterationEnv->clear();
-                
+
                 // Restore for environment - iterationEnv goes out of scope here
                 env = forEnv;
             } // iterationEnv is destroyed here, allowing immediate cleanup
@@ -1956,7 +1983,7 @@ void Interpreter::visit(ImportNode *node)
 void Interpreter::visit(ArrayNode *node)
 {
     vector<shared_ptr<Value>> elements;
-for (const auto &element : node->getElements())
+    for (const auto &element : node->getElements())
     {
         element->visit(this);
         if (!returnValue)
@@ -2181,6 +2208,28 @@ void Interpreter::visit(ContinueNode *node)
 {
     UNUSED(node);
     throw ContinueException(node->getRange());
+}
+
+void Interpreter::visit(DeleteNode *node)
+{
+    const string &name = node->getName();
+    
+    // Check if the variable exists in this scope or any parent scope
+    if (!env->resolve(name))
+    {
+        error("variable '" + name + "' is not defined", node->getRange());
+        return;
+    }
+    
+    // Try to remove the variable
+    shared_ptr<Value> removedValue = env->remove(name);
+    if (!removedValue)
+    {
+        error("cannot delete constant variable '" + name + "'", node->getRange());
+        return;
+    }
+    
+    returnValue = nullptr;
 }
 
 void Interpreter::visit(ClassNode *node)

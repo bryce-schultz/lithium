@@ -27,6 +27,7 @@ public:
     virtual void visit(BlockNode *node) override;
     virtual void visit(AssignNode *node) override;
     virtual void visit(VarDeclNode *node) override;
+    virtual void visit(DeleteNode *node) override;
     virtual void visit(ImportNode *node) override;
     virtual void visit(MemberAccessNode *node) override;
     virtual void visit(ArrayAccessNode *node) override;

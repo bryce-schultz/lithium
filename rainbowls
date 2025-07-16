@@ -1,26 +1,23 @@
+#! /usr/bin/env li
+
 import <color> # for Color
 import <os> # for shell
 
 # create an array of the console colors
 const colors = [
-    Color.red, 
-    Color.yellow, 
-    Color.green, 
-    Color.cyan, 
-    Color.blue, 
+    Color.red,
+    Color.yellow,
+    Color.green,
+    Color.cyan,
+    Color.blue,
     Color.magenta
 ];
 
 # read the files in the current directory
-let files = shell("ls -a");
-files = files.split("\n");
+const files = listdir(".");
 
 # loop through the files
 for (let i = 0; i < files.length(); i++) {
-    if (files[i] == "") continue; # skip empty lines
-    if (files[i] == ".") continue; # skip current directory
-    if (files[i] == "..") continue; # skip parent directory
-
     # print the file name with a color
     println(colors[i % colors.length()] + files[i] + Color.reset);
 }

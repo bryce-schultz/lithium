@@ -73,7 +73,7 @@ Test test_two_character_tokens()
 
 Test test_keyword_tokens()
 {
-    Tokenizer tokenizer("let const if else for while fn return class import");
+    Tokenizer tokenizer("let const if else for while fn return class import delete");
     Token token;
 
     // Test keyword tokens
@@ -106,6 +106,9 @@ Test test_keyword_tokens()
 
     token = tokenizer.lex();
     assertTrue(token == Token::IMPORT);
+
+    token = tokenizer.lex();
+    assertTrue(token == Token::DELETE);
 
     // ensure we reach the end of the input
     token = tokenizer.lex();

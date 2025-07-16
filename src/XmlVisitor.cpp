@@ -132,6 +132,11 @@ void XmlVisitor::visit(BinaryExprNode *node)
     }
 }
 
+void XmlVisitor::visit(BooleanNode *node)
+{
+    openTag("Boolean", {"value=\"" + std::string(node->getValue() ? "true" : "false") + "\""}, true);
+}
+
 void XmlVisitor::visit(ArgListNode *node)
 {
     openTag("ArgList");
@@ -271,4 +276,9 @@ void XmlVisitor::visit(BreakNode *node)
 {
     UNUSED(node);
     openTag("Break", {}, true);
+}
+
+void XmlVisitor::visit(DeleteNode *node)
+{
+    openTag("Delete", {"identifier=\"" + node->getName() + "\""}, true);
 }

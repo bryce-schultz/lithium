@@ -1,0 +1,6 @@
+let x = 42;
+println(x);
+delete x;
+
+# This should cause an error
+println(x);

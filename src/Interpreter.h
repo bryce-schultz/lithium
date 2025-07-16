@@ -20,7 +20,7 @@ using std::make_shared;
 using std::set;
 using std::vector;
 
-constexpr const char *INTERPRETER_VERSION = "1.1";
+constexpr const char *INTERPRETER_VERSION = "0.3";
 
 class Interpreter : public Visitor
 {
@@ -39,10 +39,12 @@ public:
     virtual void visit(AssignNode *node) override;
     virtual void visit(BinaryExprNode *node) override;
     virtual void visit(BlockNode *node) override;
+    virtual void visit(BooleanNode *node) override;
     virtual void visit(BreakNode *node) override;
     virtual void visit(CallNode *node) override;
     virtual void visit(ClassNode *node) override;
     virtual void visit(ContinueNode *node) override;
+    virtual void visit(DeleteNode *node) override;
     virtual void visit(ForEachNode *node) override;
     virtual void visit(ForStatementNode *node) override;
     virtual void visit(FuncDeclNode *node) override;

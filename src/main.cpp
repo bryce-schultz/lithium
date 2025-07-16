@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     // if no file is specified, or args[0] is not a file, run interactive mode
     if (argc == 1 || !Utils::fileExists(args[0]))
     {
-        cout << "lithium v" << INTERPRETER_VERSION << " type 'exit' to quit." << endl;
+        cout << yellow << "lithium " << blue << INTERPRETER_VERSION << reset << "\ntype '" << cyan << "exit" << reset << "' to quit." << endl;
         return runInteractiveMode(args);
     }
 

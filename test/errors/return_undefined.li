@@ -1,0 +1,5 @@
+fn test() {
+    return println("This function returns undefined");
+}
+
+println(test());

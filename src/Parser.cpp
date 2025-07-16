@@ -32,6 +32,11 @@
     hadError = true; \
     reject()
 
+#define errorAt(msg, location, range) \
+    locationRangeError(msg, location, range, __FILE__, __LINE__); \
+    hadError = true; \
+    reject()
+
 #define expected(expected) \
     if (currentToken == Token::END) \
     { \
@@ -72,6 +77,7 @@ set<int> Parser::breakStmtFirsts = { Token::BREAK };
 set<int> Parser::classDeclFirsts = { Token::CLASS };
 set<int> Parser::constStmtFirsts = { Token::CONST };
 set<int> Parser::continueStmtFirsts = { Token::CONTINUE };
+set<int> Parser::deleteStmtFirsts = { Token::DELETE };
 set<int> Parser::equalityFirsts = { Token::EQ, Token::NE };
 set<int> Parser::exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', '-', '+', '!' };
 set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '-', '+', '!' };
@@ -208,6 +214,10 @@ Result<StatementNode> Parser::parseStmt()
     else if (isInFirstSet(token, continueStmtFirsts))
     {
         acceptNode(parseContinueStmt());
+    }
+    else if (isInFirstSet(token, deleteStmtFirsts))
+    {
+        acceptNode(parseDeleteStmt());
     }
     else if (isInFirstSet(token, importFirsts))
     {
@@ -668,7 +678,7 @@ Result<ReturnStatementNode> Parser::parseReturnStmt()
         advanceToken(); // consume ';'
 
         auto returnStmt = make_shared<ReturnStatementNode>();
-        returnStmt->setRangeStart(returnToken.getRange().getStart());
+        returnStmt->setRange(returnToken.getRange());
         accept(returnStmt);
     }
 
@@ -707,6 +717,22 @@ Result<ContinueNode> Parser::parseContinueStmt()
     auto continueNode = make_shared<ContinueNode>(continueToken);
 
     accept(continueNode);
+}
+
+// deleteStmt -> DELETE IDENT ;
+Result<DeleteNode> Parser::parseDeleteStmt()
+{
+    Token deleteToken = expectToken(Token::DELETE);
+
+    Token identifierToken = expectToken(Token::IDENT);
+
+    Token semicolonToken = expectToken(';');
+
+    auto deleteNode = make_shared<DeleteNode>(identifierToken);
+    deleteNode->setRangeStart(deleteToken.getRange().getStart());
+    deleteNode->setRangeEnd(semicolonToken.getRange().getEnd());
+
+    accept(deleteNode);
 }
 
 // importStmt -> IMPORT < moduleName >
@@ -1439,6 +1465,21 @@ Result<ExpressionNode> Parser::parsePrimary()
     {
         advanceToken(); // consume string
         accept(make_shared<StringNode>(token));
+    }
+    else if (token.getType() == Token::TRUE)
+    {
+        advanceToken(); // consume true
+        accept(make_shared<BooleanNode>(token));
+    }
+    else if (token.getType() == Token::FALSE)
+    {
+        advanceToken(); // consume false
+        accept(make_shared<BooleanNode>(token));
+    }
+    else if (token.getType() == Token::NULL_TOKEN)
+    {
+        advanceToken(); // consume null
+        accept(make_shared<NullNode>());
     }
 
     expected("primary expression");

@@ -32,9 +32,14 @@ echo 'println("Hello, Lithium!");' > hello.li
 
 # Or use interactive mode (REPL)
 ./src/li
+# lithium 0.3
+# type 'exit' to quit.
 # > println("Interactive mode!");
 # > let x = 5 + 3;
 # > println("Result:", x);
+# Interactive mode!
+# Result: 8
+# >
 ```
 
 ### 🧪 Testing
@@ -119,10 +124,68 @@ li
 You'll see:
 
 ```
-lithium v0.1. type 'exit' to quit.
+lithium 0.3
+type 'exit' to quit.
+> 
 ```
 
-Type code and see results immediately.
+Type code and see results immediately:
+
+```
+> let greeting = "Hello, Lithium!";
+> println(greeting);
+Hello, Lithium!
+> let x = 5 + 3;
+> println("Result:", x);
+Result: 8
+> exit
+```
+
+### Interactive Examples
+
+The REPL is perfect for experimenting with language features:
+
+**Functions and Closures:**
+```
+> fn createCounter() {
+>     let count = 0;
+>     fn increment() {
+>         count++;
+>         return count;
+>     }
+>     return increment;
+> }
+> let counter = createCounter();
+> counter();
+1
+> counter();
+2
+```
+
+**Arrays and Loops:**
+```
+> let numbers = [1, 2, 3, 4, 5];
+> for (let i = 0; i < numbers.length; i++) {
+>     println("Number:", numbers[i]);
+> }
+Number: 1
+Number: 2
+Number: 3
+Number: 4
+Number: 5
+```
+
+**Classes and Objects:**
+```
+> class Person {
+>     let name = "";
+>     fn Person(n) { name = n; }
+>     fn greet() { println("Hello, I'm", name); }
+> }
+> let person = Person("Alice");
+> person.greet();
+Hello, I'm Alice
+```
 
 ---
 

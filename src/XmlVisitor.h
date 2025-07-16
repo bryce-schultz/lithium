@@ -33,6 +33,7 @@ public:
     void visit(NumberNode *node) override;
     void visit(CallNode *node) override;
     void visit(BinaryExprNode *node) override;
+    void visit(BooleanNode *node) override;
     void visit(ArgListNode *node) override;
     void visit(OpNode *node) override;
     void visit(BlockNode *node) override;
@@ -45,6 +46,7 @@ public:
     void visit(ForStatementNode *node) override;
     void visit(NullNode *node) override;
     void visit(BreakNode *node) override;
+    void visit(DeleteNode *node) override;
 private:
     void openTag(const string &tagName, vector<string> attributes = {}, bool selfClosing = false);
     void closeTag(const string &tagName);

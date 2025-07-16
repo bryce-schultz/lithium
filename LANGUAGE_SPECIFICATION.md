@@ -542,7 +542,6 @@ let age = 30;
 
 # constants (must be initialized)
 const PI = 3.14159;
-const VERSION = "1.0";
 ```
 
 <div class="warning">
@@ -564,6 +563,22 @@ const LIMIT;        # error: expected '='
 <div class="warning">
 <strong>⚠️ Constants:</strong> Once declared, constants cannot be reassigned. Attempting to modify a constant will result in a runtime error.
 </div>
+
+<div class="warning">
+<strong>⚠️ Reserved Keywords:</strong> The keywords <code>true</code>, <code>false</code>, and <code>null</code> are reserved and cannot be used as variable names. Attempting to declare variables with these names will result in a syntax error.
+</div>
+
+```lithium
+# ❌ invalid - reserved keyword usage
+let true = false;   # error: expected 'identifier' but found 'keyword (true)'
+let false = true;   # error: expected 'identifier' but found 'keyword (false)'
+let null = 42;      # error: expected 'identifier' but found 'keyword (null)'
+
+# ✅ valid - using reserved keywords as literals
+let x = true;       # correct: true as literal value
+let y = false;      # correct: false as literal value
+let z = null;       # correct: null as literal value
+```
 
 #### **Scoping Rules**
 
@@ -1130,6 +1145,42 @@ if (true) {
 }
 ```
 
+#### **Delete Statement**
+
+The `delete` statement removes a variable from the current scope. Once deleted, the variable becomes undefined and cannot be accessed.
+
+```lithium
+let x = 42;
+let y = 100;
+println(x);           # output: 42
+println(y);           # output: 100
+
+delete x;             # removes variable x from scope
+println(y);           # output: 100
+println(x);           # error: 'x' is not defined
+```
+
+<div class="warning">
+<strong>⚠️ Delete Statement Restrictions:</strong>
+<ul>
+<li>Cannot delete <code>const</code> variables</li>
+<li>Cannot delete undefined variables</li>
+<li>Only works on variables in the current scope</li>
+</ul>
+</div>
+
+```lithium
+# ✅ valid usage
+let variable = 42;
+delete variable;      # valid: deletes a mutable variable
+
+# ❌ invalid usage
+const constant = 42;
+delete constant;      # error: cannot delete constant variable
+
+delete undefined_var; # error: variable 'undefined_var' is not defined
+```
+
 ---
 
 <div class="section-header">
@@ -1202,7 +1253,7 @@ Some constants and functions are always available without imports:
 
 ```lithium
 # built-in constants
-println(VERSION);    # lithium version ("1.1")
+println(VERSION);    # lithium version ("0.3")
 println(FILE);       # current file name (string)
 println(LINE);       # current line number (number)
 println(true);       # boolean true
@@ -1634,7 +1685,8 @@ error: main.li:5:7: 'x' is not defined
 
 ```bash
 $ li
-lithium v1.1 type 'exit' to quit.
+lithium 0.3
+type 'exit' to quit.
 >
 ```
 

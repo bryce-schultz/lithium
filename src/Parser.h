@@ -51,6 +51,7 @@ private:
     //       | returnStmt   - firsts: RETURN
     //       | breakStmt    - firsts: BREAK
     //       | continueStmt - firsts: CONTINUE
+    //       | deleteStmt   - firsts: DELETE
     //       | importStmt   - firsts: IMPORT
     Result<StatementNode> parseStmt();
 
@@ -115,6 +116,9 @@ private:
 
     // continueStmt -> CONTINUE ;
     Result<ContinueNode> parseContinueStmt();
+
+    // deleteStmt -> DELETE IDENT ;
+    Result<DeleteNode> parseDeleteStmt();
 
     // importStmt -> IMPORT < moduleName > ;
     Result<ImportNode> parseImportStmt();
@@ -245,6 +249,7 @@ private:
     static set<int> classDeclFirsts;
     static set<int> constStmtFirsts;
     static set<int> continueStmtFirsts;
+    static set<int> deleteStmtFirsts;
     static set<int> equalityFirsts;
     static set<int> exprFirsts;
     static set<int> exprStmtFirsts;

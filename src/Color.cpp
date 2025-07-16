@@ -39,7 +39,7 @@ const Color reset = Color::fromCode("0");
 const Color bold = Color::fromCode("1");
 const Color underline = Color::fromCode("4");
 
-bool Color::enabled = isatty(fileno(stderr));
+bool Color::enabled = isatty(fileno(stderr)) && isatty(fileno(stdout));
 
 Color::Color():
     code("\033[0m")

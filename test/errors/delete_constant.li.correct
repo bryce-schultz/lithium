@@ -1,0 +1,4 @@
+error: delete_constant.li:2:1: cannot delete constant variable 'y'
+│ delete y;
+│ ~~~~~~~~~
+│ ^

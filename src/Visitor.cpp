@@ -93,6 +93,11 @@ void Visitor::visit(BlockNode *node)
     }
 }
 
+void Visitor::visit(BooleanNode *node)
+{
+    UNUSED(node);
+}
+
 void Visitor::visit(BreakNode *node)
 {
     UNUSED(node);
@@ -119,6 +124,11 @@ void Visitor::visit(ClassNode *node)
 }
 
 void Visitor::visit(ContinueNode *node)
+{
+    UNUSED(node);
+}
+
+void Visitor::visit(DeleteNode *node)
 {
     UNUSED(node);
 }

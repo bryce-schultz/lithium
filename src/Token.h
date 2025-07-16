@@ -27,10 +27,12 @@ public:
         CONST,
         CONTINUE,
         DEC,
+        DELETE,
         DIV_EQUAL,
         ELSE,
         END,
         EQ,
+        FALSE,
         FN,
         FOR,
         FOREACH,
@@ -46,11 +48,13 @@ public:
         MOD_EQUAL,
         MUL_EQUAL,
         NE,
+        NULL_TOKEN,
         NUMBER,
         OR,
         PLUS_EQUAL,
         RETURN,
         STRING,
+        TRUE,
         WHILE
     };
 
