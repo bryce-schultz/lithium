@@ -115,21 +115,11 @@ void XmlVisitor::visit(CallNode *node)
 
 void XmlVisitor::visit(BinaryExprNode *node)
 {
-    if (node->isUnary())
-    {
-        openTag("UnaryExpression", {"prefix=\"" + std::string(node->isPrefix() ? "true" : "false") + "\""});
-        node->getRight()->visit(this);
-        node->getOperator()->visit(this);
-        closeTag("UnaryExpression");
-    }
-    else
-    {
-        openTag("BinaryExpression", {"left_is_lval=\"" + std::string(node->getLeft()->isLval() ? "true" : "false") + "\""});
-        node->getLeft()->visit(this);
-        node->getOperator()->visit(this);
-        node->getRight()->visit(this);
-        closeTag("BinaryExpression");
-    }
+    openTag("BinaryExpression");
+    node->getLeft()->visit(this);
+    node->getOperator()->visit(this);
+    node->getRight()->visit(this);
+    closeTag("BinaryExpression");
 }
 
 void XmlVisitor::visit(BooleanNode *node)

@@ -1,0 +1,7 @@
+class pair {
+    let x = 0;
+    let y = 0;
+}
+let p = pair();
+println(type(p));
+println(p);

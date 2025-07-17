@@ -83,6 +83,9 @@ Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const 
 
 Interpreter::~Interpreter()
 {
+    // Run aggressive cleanup before destroying the interpreter
+    aggressiveCleanup();
+    
     // Break circular references by clearing environment
     if (env)
     {
@@ -171,8 +174,42 @@ void Interpreter::finalCleanup()
             long refCount = tempEnv.use_count();
 
             // Conservative cleanup: only clean environments with very few references
-            // Threshold of 4 handles edge cases in function hoisting and complex closures
-            if (refCount <= 4)
+            // Much more conservative - only clean environments with count 1
+            // This ensures ObjectValue environments are never cleaned
+            if (refCount == 1)  // Only clean truly unused environments
+            {
+                tempEnv->clear();
+                it = tempEnvironments.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        else
+        {
+            it = tempEnvironments.erase(it);
+        }
+    }
+}
+
+void Interpreter::aggressiveCleanup()
+{
+    // Final cleanup that runs only at the very end
+    // This is more aggressive than finalCleanup() but still preserves ObjectValue environments
+    
+    for (auto it = tempEnvironments.begin(); it != tempEnvironments.end();)
+    {
+        auto &tempEnv = *it;
+        if (tempEnv)
+        {
+            // More aggressive cleanup - only preserve environments with very high reference counts
+            // which are likely to be ObjectValue environments that are still in use
+            long refCount = tempEnv.use_count();
+            
+            // Only preserve environments that are very actively referenced
+            // This allows us to clean up function call environments and other temporary scopes
+            if (refCount <= 3)  // More aggressive than finalCleanup
             {
                 tempEnv->clear();
                 it = tempEnvironments.erase(it);
@@ -1119,6 +1156,7 @@ void Interpreter::visit(ReturnStatementNode *node)
 
 void Interpreter::visit(VarDeclNode *node)
 {
+    
     if (!node->getExpr())
     {
         returnValue = make_shared<NullValue>(); // If no expression, declare as null
@@ -1506,6 +1544,13 @@ void Interpreter::visit(BlockNode *node)
     }
 
     env = prevEnv; // pop the environment after visiting the block
+
+    // Clean up temporary environments created during this block
+    cleanupTempEnvironments();
+
+    // Explicitly clear the block environment to trigger immediate cleanup
+    // This is important for blocks with hoisted functions that create reference cycles
+    blockEnv->clear();
 
     returnValue = nullptr;
 }
