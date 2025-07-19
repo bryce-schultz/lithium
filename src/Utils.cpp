@@ -161,13 +161,9 @@ string Utils::getModulePath(const string &moduleName, const string &basePath)
     }
 
     vector<string> searchPaths;
-    
-    // Add basePath first if it's not empty
-    if (!basePath.empty())
-    {
-        searchPaths.push_back(basePath);
-    }
-    
+
+    searchPaths.push_back(basePath);
+
     // Add default path
     searchPaths.push_back("./modules/");
 
@@ -545,39 +541,39 @@ uint16_t Utils::hostToNetworkShort(uint16_t hostshort)
 /*
  * Windows Implementation Notes:
  * ============================
- * 
+ *
  * To implement Windows support, replace the #ifdef _WIN32 sections above with:
- * 
+ *
  * 1. File I/O operations:
  *    - Use CreateFile, ReadFile, WriteFile, CloseHandle instead of open/read/write/close
  *    - Map Unix file mode flags to Windows equivalents
- * 
+ *
  * 2. Socket operations:
  *    - Use WSAStartup/WSACleanup for socket initialization
  *    - Use Winsock2 functions: socket, bind, listen, accept, connect, send, recv
  *    - Handle SOCKET type vs int file descriptors
- * 
+ *
  * 3. Process operations:
  *    - Use CreateProcess instead of fork/exec
  *    - Use CreatePipe for pipe creation
  *    - Use WaitForSingleObject instead of waitpid
- * 
+ *
  * 4. Time operations:
  *    - Use Sleep(milliseconds) instead of usleep(microseconds)
  *    - Use GetSystemTime or time_t equivalents
- * 
+ *
  * 5. Network utilities:
  *    - Use InetPton instead of inet_pton
  *    - Use htons (available on Windows)
- * 
+ *
  * Example Windows implementation for readFromFd:
- * 
+ *
  * #ifdef _WIN32
  * ssize_t Utils::readFromFd(int fd, void *buffer, size_t size)
  * {
  *     HANDLE handle = (HANDLE)_get_osfhandle(fd);
  *     if (handle == INVALID_HANDLE_VALUE) return -1;
- *     
+ *
  *     DWORD bytesRead = 0;
  *     if (!ReadFile(handle, buffer, (DWORD)size, &bytesRead, NULL)) {
  *         return -1;

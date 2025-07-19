@@ -8,5 +8,5 @@ println("stdin:", stdin);
 println("stdout:", stdout);
 println("stderr:", stderr);
 
-print(getfile());
+println(getfile());
 println("local:", LOCAL);
