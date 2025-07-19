@@ -20,6 +20,7 @@ string Token::tokenTypeToString(int type)
         case CLASS:         return "keyword (class)";
         case CONST:         return "keyword (const)";
         case DEC:           return "operator (--)";
+        case DELETE:        return "keyword (delete)";
         case DIV_EQUAL:     return "operator (/=)";
         case ELSE:          return "keyword (else)";
         case END:           return "eof";
