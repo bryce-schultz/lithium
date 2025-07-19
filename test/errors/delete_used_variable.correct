@@ -1,0 +1,5 @@
+42
+error: delete_used_variable.li:6:9: 'x' is not defined
+│ println(x);
+│         ~
+│         ^

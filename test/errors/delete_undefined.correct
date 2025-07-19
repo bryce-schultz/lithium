@@ -1,0 +1,4 @@
+error: delete_undefined.li:1:8: cannot delete variable 'undefined_var' it is not defined
+│ delete undefined_var;
+│ ~~~~~~~~~~~~~~~~~~~~
+│        ^

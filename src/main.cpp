@@ -28,6 +28,10 @@ using std::make_shared;
 using std::exception;
 using std::vector;
 
+#define error(msg) \
+    generalError(msg, __FILE__, __LINE__); \
+    return 1;
+
 int runInteractiveMode(const vector<string> &args);
 int runFileMode(const vector<string> &args);
 
@@ -101,6 +105,11 @@ int runInteractiveMode(const vector<string> &args)
 
 int runFileMode(const vector<string> &args)
 {
+    if (args.empty())
+    {
+        error("no source file specified.");
+    }
+
     string input;
     string filename = args[0];
 
@@ -108,10 +117,9 @@ int runFileMode(const vector<string> &args)
     {
         input = Utils::readWholeFile(filename);
     }
-    catch (const exception &e)
+    catch (const std::runtime_error &e)
     {
-        cerr << e.what() << endl;
-        return 1;
+        error("failed to open source file: " + filename + "\n" + string(e.what()));
     }
 
     Parser parser;

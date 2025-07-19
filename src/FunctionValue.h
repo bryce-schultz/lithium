@@ -8,13 +8,15 @@
 #include "Value.h"
 #include "Environment.h"
 #include "Range.h"
+#include "Exceptions.h"
+#include "Interpreter.h"
 
 using std::shared_ptr;
 using std::string;
 using std::make_shared;
 using std::function;
 
-typedef function<shared_ptr<Value>(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)> BuiltinFunction;
+typedef function<shared_ptr<Value>(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)> BuiltinFunction;
 
 class FunctionValue : public Value
 {
@@ -53,7 +55,7 @@ class BuiltinFunctionValue : public Value
 public:
     BuiltinFunctionValue(BuiltinFunction func, Range range = {});
 
-    shared_ptr<Value> call(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range = {}) const;
+    shared_ptr<Value> call(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range = {}) const;
     shared_ptr<Value> bind(const shared_ptr<Value> &thisPtr);
 
     string toString() const override;

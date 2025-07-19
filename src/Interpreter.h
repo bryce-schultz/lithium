@@ -30,6 +30,9 @@ public:
 
     bool interpret(Node *node);
 
+    shared_ptr<Environment> getEnvironment() const { return env; }
+    void setEnvironment(shared_ptr<Environment> newEnv) { env = newEnv; }
+
     virtual void visitAllChildren(Node *node) override;
 public:
     // Override visit methods for different node types

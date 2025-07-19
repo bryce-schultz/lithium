@@ -74,11 +74,6 @@ shared_ptr<Value> Environment::remove(const string & name)
         return nullptr; // Variable not found
     }
 
-    if (env->hasConstant(name))
-    {
-        return nullptr; // Cannot remove a constant
-    }
-
     auto it = env->variables.find(name);
     if (it != env->variables.end())
     {

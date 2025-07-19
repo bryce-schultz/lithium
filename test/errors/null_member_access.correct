@@ -1,4 +1,4 @@
-error: null_member_access.li:2:3: member 'property' not found
+error: null_member_access.li:2:3: null has no member 'property'
 │ x.property;
 │ ~~~~~~~~~~
 │   ^

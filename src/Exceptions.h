@@ -42,4 +42,14 @@ struct ContinueException : public BaseException
 struct ErrorException : public BaseException
 {
     ErrorException(const string &message, Range range = {});
+
+    const char* what() const noexcept override
+    {
+        return (string("ErrorException: ") + message).c_str();
+    }
+
+    Range getRange() const { return range; }
+
+private:
+    string message;
 };

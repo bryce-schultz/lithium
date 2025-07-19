@@ -95,14 +95,14 @@ BuiltinFunctionValue::BuiltinFunctionValue(BuiltinFunction func, Range range):
     func(func)
 { }
 
-shared_ptr<Value> BuiltinFunctionValue::call(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range) const
+shared_ptr<Value> BuiltinFunctionValue::call(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range) const
 {
     if (!func)
     {
         return nullptr;
     }
 
-    return func(args, env, range);
+    return func(interpreter, args, env, range);
 }
 
 shared_ptr<Value> BuiltinFunctionValue::bind(const shared_ptr<Value> &thisPtr)

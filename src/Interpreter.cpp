@@ -59,14 +59,15 @@ using std::vector;
     errorAtToken("could not find module '" + token.getValue() + "'", token, range); \
     return false
 
-Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const vector<string> &args) : isInteractive(isInteractive),
-                                                                                                        hadError(false),
-                                                                                                        returnValue(nullptr),
-                                                                                                        moduleParser(),
-                                                                                                        importedModules(),
-                                                                                                        args(args),
-                                                                                                        currentFunctionName(""),
-                                                                                                        recursionDepth(0)
+Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const vector<string> &args):
+    isInteractive(isInteractive),
+    hadError(false),
+    returnValue(nullptr),
+    moduleParser(),
+    importedModules(),
+    args(args),
+    currentFunctionName(""),
+    recursionDepth(0)
 {
     if (!env)
     {
@@ -85,7 +86,7 @@ Interpreter::~Interpreter()
 {
     // Run aggressive cleanup before destroying the interpreter
     aggressiveCleanup();
-    
+
     // Break circular references by clearing environment
     if (env)
     {
@@ -111,7 +112,7 @@ bool Interpreter::interpret(Node *node)
 
     // Reset error state for each interpretation
     hadError = false;
-    
+
     // Reset the return value for each interpretation
     returnValue.reset();
 
@@ -156,16 +157,6 @@ void Interpreter::cleanupTempEnvironments()
 
 void Interpreter::finalCleanup()
 {
-    // Multi-stage cleanup strategy based on reference count analysis:
-    // Stage 1: Always clean truly unused environments (count = 1)
-    // Stage 2: Clean likely unused environments (count = 2-3)
-    // Stage 3: Preserve active environments (count = 4+)
-
-    // This is more principled than a single magic number because:
-    // 1. Count 1 = definitely unused (only in tempEnvironments vector)
-    // 2. Count 2-3 = minimal usage (may be temporary local references)
-    // 3. Count 4+ = active usage (closures, objects with complex reference chains)
-
     for (auto it = tempEnvironments.begin(); it != tempEnvironments.end();)
     {
         auto &tempEnv = *it;
@@ -197,7 +188,7 @@ void Interpreter::aggressiveCleanup()
 {
     // Final cleanup that runs only at the very end
     // This is more aggressive than finalCleanup() but still preserves ObjectValue environments
-    
+
     for (auto it = tempEnvironments.begin(); it != tempEnvironments.end();)
     {
         auto &tempEnv = *it;
@@ -206,7 +197,7 @@ void Interpreter::aggressiveCleanup()
             // More aggressive cleanup - only preserve environments with very high reference counts
             // which are likely to be ObjectValue environments that are still in use
             long refCount = tempEnv.use_count();
-            
+
             // Only preserve environments that are very actively referenced
             // This allows us to clean up function call environments and other temporary scopes
             if (refCount <= 3)  // More aggressive than finalCleanup
@@ -241,6 +232,7 @@ void Interpreter::setupBuiltInFunctions()
     env->declare("exit", make_shared<BuiltinFunctionValue>(Builtins::exit), true);
     env->declare("len", make_shared<BuiltinFunctionValue>(Builtins::len), true);
     env->declare("number", make_shared<BuiltinFunctionValue>(Builtins::toNumber), true);
+    env->declare("string", make_shared<BuiltinFunctionValue>(Builtins::toString), true);
     env->declare("print", make_shared<BuiltinFunctionValue>(Builtins::print), true);
     env->declare("println", make_shared<BuiltinFunctionValue>(Builtins::println), true);
     env->declare("dumpenv", make_shared<BuiltinFunctionValue>(Builtins::dumpEnv), true);
@@ -969,7 +961,7 @@ void Interpreter::visit(CallNode *node)
             callRange = memberAccess->getIdentifier().getRange();
         }
 
-        returnValue = builtin->call(args, env, callRange);
+        returnValue = builtin->call(*this, args, env, callRange);
     }
     else if (callee->getType() == Value::Type::class_)
     {
@@ -1158,7 +1150,7 @@ void Interpreter::visit(ReturnStatementNode *node)
 
 void Interpreter::visit(VarDeclNode *node)
 {
-    
+
     if (!node->getExpr())
     {
         returnValue = make_shared<NullValue>(); // If no expression, declare as null
@@ -1166,7 +1158,7 @@ void Interpreter::visit(VarDeclNode *node)
     else
     {
         node->getExpr()->visit(this);
-        
+
         // If an error occurred during expression evaluation, don't declare the variable
         if (hadError)
         {
@@ -2201,7 +2193,7 @@ void Interpreter::visit(MemberAccessNode *node)
 
         if (!returnValue)
         {
-            errorAtToken("member '" + node->getIdentifier().getValue() + "' not found", node->getIdentifier(), node->getRange());
+            errorAtToken(lhs->typeAsString() + " has no member '" + node->getIdentifier().getValue() + "'", node->getIdentifier(), node->getRange());
             return;
         }
     }
@@ -2244,7 +2236,7 @@ void Interpreter::visit(MemberAccessNode *node)
         env = env->getParent();
         if (!returnValue)
         {
-            errorAtToken("member '" + node->getIdentifier().getValue() + "' not found in class", node->getIdentifier(), node->getRange());
+            errorAtToken("class '" + classValue->getName() + "' has no member '" + node->getIdentifier().getValue() + "'", node->getIdentifier(), node->getRange());
         }
     }
 }
@@ -2258,22 +2250,20 @@ void Interpreter::visit(ContinueNode *node)
 void Interpreter::visit(DeleteNode *node)
 {
     const string &name = node->getName();
-    
+
     // Check if the variable exists in this scope or any parent scope
     if (!env->resolve(name))
     {
-        error("variable '" + name + "' is not defined", node->getRange());
-        return;
+        errorAtToken("cannot delete variable '" + name + "' it is not defined", node->getIdentifier(), node->getRange());
     }
-    
+
     // Try to remove the variable
     shared_ptr<Value> removedValue = env->remove(name);
     if (!removedValue)
     {
-        error("cannot delete constant variable '" + name + "'", node->getRange());
-        return;
+        errorAtToken("cannot delete '" + name + "'", node->getIdentifier(), node->getRange());
     }
-    
+
     returnValue = nullptr;
 }
 

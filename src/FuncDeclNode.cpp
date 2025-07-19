@@ -66,7 +66,7 @@ void FuncDeclNode::setBody(shared_ptr<StatementNode> b)
 
 bool FuncDeclNode::isConst() const
 {
-    return false;
+    return true;
 }
 
 void FuncDeclNode::visit(Visitor *visitor)

@@ -43,7 +43,8 @@ string Utils::readWholeFile(const string &filename)
     ifstream file(filename, ios::binary);
     if (!file)
     {
-        throw runtime_error("could not open file: " + filename);
+        cout << "Error: Could not open file " << filename << endl;
+        throw runtime_error("Could not open file: " + filename);
     }
     return string(istreambuf_iterator<char>(file), istreambuf_iterator<char>());
 }

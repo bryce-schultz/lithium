@@ -1,7 +1,0 @@
-class pair {
-    let x = 0;
-    let y = 0;
-}
-let p = pair();
-println("Created object:");
-println(p);

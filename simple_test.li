@@ -1,5 +1,0 @@
-class simple {
-    let x = 42;
-}
-let s = simple();
-println(s);

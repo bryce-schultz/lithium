@@ -1,2 +1,3 @@
 const y = 100;
 delete y;
+println(y);

@@ -71,6 +71,21 @@ string ObjectValue::toString() const
         return "{}";
     }
 
+    bool allFunctions = true;
+    for (const auto &pair : env->getMembers())
+    {
+        if (pair.second->getType() != Type::function)
+        {
+            allFunctions = false;
+            break;
+        }
+    }
+
+    if (allFunctions)
+    {
+        return "{}";
+    }
+
     string result = "{ ";
     bool first = true;
     for (const auto &pair : env->getMembers())

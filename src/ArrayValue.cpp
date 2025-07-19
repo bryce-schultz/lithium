@@ -22,8 +22,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     : Value(Type::array, range), elements(arr)
 {
     addMember("push", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             for (const auto &arg : args)
             {
@@ -40,8 +41,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("pop", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -60,8 +62,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("length", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -74,8 +77,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("clear", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -89,8 +93,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("empty", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -103,8 +108,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("get", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
@@ -124,8 +130,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("set", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 2)
             {
@@ -146,8 +153,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("remove", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
@@ -168,8 +176,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("find", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
@@ -183,8 +192,9 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("contains", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
@@ -198,15 +208,16 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
     ), true);
 
     addMember("join", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() > 1)
             {
                 errorAt("join() expects at most one argument", range.getStart(), range);
                 return nullptr;
             }
-            
+
             string separatorStr = "";
             if (args.size() == 1)
             {
@@ -218,7 +229,7 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
                 }
                 separatorStr = separator->getValue();
             }
-            
+
             string result;
             for (size_t i = 0; i < elements.size(); ++i)
             {

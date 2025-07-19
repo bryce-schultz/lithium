@@ -40,7 +40,7 @@ void ClassNode::setBody(shared_ptr<StatementNode> body)
 
 bool ClassNode::isConst() const
 {
-    return false;
+    return true;
 }
 
 void ClassNode::visit(Visitor *visitor)

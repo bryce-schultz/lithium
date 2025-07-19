@@ -726,7 +726,6 @@ Result<DeleteNode> Parser::parseDeleteStmt()
 
     auto deleteNode = make_shared<DeleteNode>(identifierToken);
     deleteNode->setRangeStart(deleteToken.getRange().getStart());
-    deleteNode->setRangeEnd(semicolonToken.getRange().getEnd());
 
     accept(deleteNode);
 }

@@ -40,21 +40,59 @@ using std::streamsize;
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__)
 
-// returns nullptr, this will prevent printing "null" in interactive mode
-shared_ptr<Value> Builtins::print(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::print(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
     UNUSED(env);
     UNUSED(range);
 
     if (args.empty())
     {
-        return nullptr;
+        return nullptr; // return nullptr to prevent printing "null" in interactive mode
     }
 
     for (size_t i = 0; i < args.size(); ++i)
     {
-        if (args[i])
+        if (!args[i])
         {
+            continue;
+        }
+
+        if (args[i]->getMember("string") && args[i]->getMember("string")->getType() == Value::Type::function)
+        {
+            // visit the string method if it exists
+            auto stringMethod = dynamic_pointer_cast<FunctionValue>(args[i]->getMember("string"));
+            if (!stringMethod)
+            {
+                error("Expected a function for 'string' method", args[i]->getRange());
+                return nullptr;
+            }
+
+            auto oldEnv = interpreter.getEnvironment();
+            interpreter.setEnvironment(stringMethod->getEnvironment());
+            try
+            {
+                stringMethod->getBody()->visit(&interpreter);
+            }
+            catch (const ReturnException &e)
+            {
+                if (e.value)
+                {
+                    cout << e.value->toString();
+                }
+            }
+            catch (const ErrorException &e)
+            {
+                // Handle any errors that occur during the method call
+                interpreter.setEnvironment(oldEnv); // restore the environment
+                error(e.what(), e.getRange());
+                return nullptr;
+            }
+
+            interpreter.setEnvironment(oldEnv); // restore the environment after visiting the method
+        }
+        else
+        {
+            // Fallback to toString if no print method exists
             cout << args[i]->toString();
         }
 
@@ -64,17 +102,56 @@ shared_ptr<Value> Builtins::print(const vector<shared_ptr<Value>> &args, shared_
         }
     }
     cout.flush();
-    return nullptr;
+    return nullptr; // return nullptr to prevent printing "null" in interactive mode
 }
 
-shared_ptr<Value> Builtins::println(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::println(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
     UNUSED(range);
 
     for (size_t i = 0; i < args.size(); ++i)
     {
-        if (args[i])
+        if (!args[i])
+        {
+            continue;
+        }
+
+        if (args[i]->getMember("string") && args[i]->getMember("string")->getType() == Value::Type::function)
+        {
+            // visit the string method if it exists
+            auto stringMethod = dynamic_pointer_cast<FunctionValue>(args[i]->getMember("string"));
+            if (!stringMethod)
+            {
+                error("Expected a function for 'string' method", args[i]->getRange());
+                return nullptr;
+            }
+
+            auto oldEnv = interpreter.getEnvironment();
+            interpreter.setEnvironment(stringMethod->getEnvironment());
+            try
+            {
+                stringMethod->getBody()->visit(&interpreter);
+            }
+            catch (const ReturnException &e)
+            {
+                if (e.value)
+                {
+                    cout << e.value->toString();
+                }
+            }
+            catch (const ErrorException &e)
+            {
+                // Handle any errors that occur during the method call
+                interpreter.setEnvironment(oldEnv); // restore the environment
+                error(e.what(), e.getRange());
+                return nullptr;
+            }
+
+            interpreter.setEnvironment(oldEnv); // restore the environment after visiting the method
+        }
+        else
         {
             cout << args[i]->toString();
         }
@@ -88,8 +165,9 @@ shared_ptr<Value> Builtins::println(const vector<shared_ptr<Value>> &args, share
     return nullptr;
 }
 
-shared_ptr<Value> Builtins::printf(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::printf(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.empty())
@@ -121,8 +199,9 @@ shared_ptr<Value> Builtins::printf(const vector<shared_ptr<Value>> &args, shared
     return nullptr;
 }
 
-shared_ptr<Value> Builtins::type(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::type(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -140,8 +219,9 @@ shared_ptr<Value> Builtins::type(const vector<shared_ptr<Value>> &args, shared_p
     return make_shared<StringValue>(arg->typeAsString(), arg->getRange());
 }
 
-shared_ptr<Value> Builtins::exit(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::exit(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() > 1)
@@ -164,8 +244,9 @@ shared_ptr<Value> Builtins::exit(const vector<shared_ptr<Value>> &args, shared_p
     throw ExitException(exitCode, range);
 }
 
-shared_ptr<Value> Builtins::input(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::input(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() > 1)
@@ -199,8 +280,9 @@ shared_ptr<Value> Builtins::input(const vector<shared_ptr<Value>> &args, shared_
     return make_shared<StringValue>(userInput, range);
 }
 
-shared_ptr<Value> Builtins::len(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::len(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -229,9 +311,10 @@ shared_ptr<Value> Builtins::len(const vector<shared_ptr<Value>> &args, shared_pt
     }
 }
 
-// attemtps to conver the first argument to a number if it fails it returns NullValue, but not nullptr
-shared_ptr<Value> Builtins::toNumber(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+// attempts to convert the first argument to a number if it fails it returns NullValue, but not nullptr
+shared_ptr<Value> Builtins::toNumber(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -262,14 +345,15 @@ shared_ptr<Value> Builtins::toNumber(const vector<shared_ptr<Value>> &args, shar
     }
 }
 
-shared_ptr<Value> Builtins::toString(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::toString(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
     {
         error("expected exactly 1 argument, but got " + to_string(args.size()), range);
-        return make_shared<NullValue>(range);
+        return nullptr;
     }
 
     const auto &arg = args[0];
@@ -278,11 +362,45 @@ shared_ptr<Value> Builtins::toString(const vector<shared_ptr<Value>> &args, shar
         return make_shared<StringValue>("null", range);
     }
 
+    if (arg->getMember("string") && arg->getMember("string")->getType() == Value::Type::function)
+    {
+        // visit the string method if it exists
+        auto stringMethod = dynamic_pointer_cast<FunctionValue>(arg->getMember("string"));
+        if (!stringMethod)
+        {
+            error("Expected a function for 'string' method", arg->getRange());
+            return nullptr;
+        }
+
+        auto oldEnv = interpreter.getEnvironment();
+        interpreter.setEnvironment(stringMethod->getEnvironment());
+        try
+        {
+            stringMethod->getBody()->visit(&interpreter);
+        }
+        catch (const ReturnException &e)
+        {
+            if (e.value)
+            {
+                interpreter.setEnvironment(oldEnv); // restore the environment after visiting the method
+                return make_shared<StringValue>(e.value->toString(), arg->getRange());
+            }
+        }
+        catch (const ErrorException &e)
+        {
+            // Handle any errors that occur during the method call
+            interpreter.setEnvironment(oldEnv); // restore the environment
+            error(e.what(), e.getRange());
+            return nullptr;
+        }
+    }
+
     return make_shared<StringValue>(arg->toString(), arg->getRange());
 }
 
-shared_ptr<Value> Builtins::toBoolean(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::toBoolean(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -301,8 +419,9 @@ shared_ptr<Value> Builtins::toBoolean(const vector<shared_ptr<Value>> &args, sha
 }
 
 // this should function like random() in c
-shared_ptr<Value> Builtins::randomNumber(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::randomNumber(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 0)
@@ -315,8 +434,9 @@ shared_ptr<Value> Builtins::randomNumber(const vector<shared_ptr<Value>> &args, 
 }
 
 // read (fd, size) - returns a string with a max size of size
-shared_ptr<Value> Builtins::readFd(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::readFd(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 2)
@@ -352,8 +472,9 @@ shared_ptr<Value> Builtins::readFd(const vector<shared_ptr<Value>> &args, shared
 }
 
 // write (fd, data) - writes data to the file descriptor fd
-shared_ptr<Value> Builtins::writeFd(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::writeFd(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 2)
@@ -387,8 +508,9 @@ shared_ptr<Value> Builtins::writeFd(const vector<shared_ptr<Value>> &args, share
 }
 
 // bool close(fd) - closes the file descriptor fd
-shared_ptr<Value> Builtins::closeFd(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::closeFd(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -419,8 +541,9 @@ shared_ptr<Value> Builtins::closeFd(const vector<shared_ptr<Value>> &args, share
 }
 
 // number open(filename, mode) - opens a file and returns a file descriptor
-shared_ptr<Value> Builtins::openFile(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::openFile(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 2)
@@ -441,7 +564,7 @@ shared_ptr<Value> Builtins::openFile(const vector<shared_ptr<Value>> &args, shar
 
     int flags = Utils::parseOpenMode(mode);
     int fd = Utils::openFile(filename, flags, 0644);
-    
+
     if (fd < 0)
     {
         return make_shared<NullValue>(range);
@@ -450,8 +573,9 @@ shared_ptr<Value> Builtins::openFile(const vector<shared_ptr<Value>> &args, shar
 }
 
 // number socket(type, address, port) - opens a socket connection to the given address and port
-shared_ptr<Value> Builtins::socket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::socket(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 3)
@@ -550,8 +674,9 @@ shared_ptr<Value> Builtins::socket(const vector<shared_ptr<Value>> &args, shared
 }
 
 // bool listen(socket, backlog = SOMAXCONN)
-shared_ptr<Value> Builtins::listenSocket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::listenSocket(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() < 1 || args.size() > 2)
@@ -586,8 +711,9 @@ shared_ptr<Value> Builtins::listenSocket(const vector<shared_ptr<Value>> &args, 
 }
 
 // int accept(socket) - accepts a connection on the socket and returns a new socket file descriptor
-shared_ptr<Value> Builtins::acceptSocket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::acceptSocket(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -624,8 +750,9 @@ shared_ptr<Value> Builtins::acceptSocket(const vector<shared_ptr<Value>> &args, 
 }
 
 // int connectSocket(socket, address, port) - connects to a server socket
-shared_ptr<Value> Builtins::connectSocket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::connectSocket(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 3)
@@ -683,8 +810,9 @@ shared_ptr<Value> Builtins::connectSocket(const vector<shared_ptr<Value>> &args,
 }
 
 // sendSocket(socket, data) - sends data to the socket
-shared_ptr<Value> Builtins::sendSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range & range)
+shared_ptr<Value> Builtins::sendSocket(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range & range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 2)
@@ -725,8 +853,9 @@ shared_ptr<Value> Builtins::sendSocket(const vector<shared_ptr<Value>>& args, sh
 }
 
 // receiveSocket(socket, size) - receives data from the socket and returns it as a string
-shared_ptr<Value> Builtins::receiveSocket(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::receiveSocket(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 2)
@@ -771,8 +900,9 @@ shared_ptr<Value> Builtins::receiveSocket(const vector<shared_ptr<Value>> &args,
     return result;
 }
 
-shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::runShellCommand(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -870,8 +1000,9 @@ shared_ptr<Value> Builtins::runShellCommand(const vector<shared_ptr<Value>> &arg
     return make_shared<StringValue>(output, range);
 }
 
-shared_ptr<Value> Builtins::dumpEnv(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::dumpEnv(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(args);
     UNUSED(env);
     UNUSED(range);
@@ -889,8 +1020,9 @@ shared_ptr<Value> Builtins::dumpEnv(const vector<shared_ptr<Value>> &args, share
     return nullptr;
 }
 
-shared_ptr<Value> Builtins::sleep(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::sleep(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -916,8 +1048,9 @@ shared_ptr<Value> Builtins::sleep(const vector<shared_ptr<Value>> &args, shared_
     return nullptr;
 }
 
-shared_ptr<Value> Builtins::time(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::time(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 0)
@@ -938,8 +1071,9 @@ shared_ptr<Value> Builtins::time(const vector<shared_ptr<Value>> &args, shared_p
 }
 
 // string rgb(r, g, b) - creates a color value from RGB components
-shared_ptr<Value> Builtins::rgb(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::rgb(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 3)
@@ -966,8 +1100,9 @@ shared_ptr<Value> Builtins::rgb(const vector<shared_ptr<Value>> &args, shared_pt
 }
 
 // [string] listdir(path) - lists the contents of the directory at the given path
-shared_ptr<Value> Builtins::listdir(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::listdir(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
     if (args.size() != 1)
     {
@@ -996,8 +1131,9 @@ shared_ptr<Value> Builtins::listdir(const vector<shared_ptr<Value>> &args, share
     return make_shared<ArrayValue>(items, range);
 }
 
-shared_ptr<Value> Builtins::getcwd(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::getcwd(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
     UNUSED(args);
 
@@ -1017,8 +1153,9 @@ shared_ptr<Value> Builtins::getcwd(const vector<shared_ptr<Value>> &args, shared
     return make_shared<StringValue>(cwd, range);
 }
 
-shared_ptr<Value> Builtins::chdir(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::chdir(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
 
     if (args.size() != 1)
@@ -1042,16 +1179,18 @@ shared_ptr<Value> Builtins::chdir(const vector<shared_ptr<Value>> &args, shared_
     return make_shared<NullValue>(range);
 }
 
-shared_ptr<Value> Builtins::getpid(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::getpid(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(args);
     UNUSED(env);
     return make_shared<NumberValue>(static_cast<double>(Utils::getpid()), range);
 }
 
 // string getuser() - returns the username of the current user
-shared_ptr<Value> Builtins::getuser(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::getuser(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
     UNUSED(args);
 
@@ -1066,8 +1205,9 @@ shared_ptr<Value> Builtins::getuser(const vector<shared_ptr<Value>> &args, share
 }
 
 // string getenv(variable) - returns the value of the environment variable
-shared_ptr<Value> Builtins::getenv(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::getenv(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
+    UNUSED(interpreter);
     UNUSED(env);
     if (args.size() != 1)
     {

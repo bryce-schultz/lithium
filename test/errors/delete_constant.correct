@@ -1,0 +1,4 @@
+error: delete_constant.li:3:9: 'y' is not defined
+│ println(y);
+│         ~
+│         ^

@@ -7,44 +7,45 @@
 #include "Environment.h"
 #include "Range.h"
 #include "Exceptions.h"
+#include "Interpreter.h"
 
 using std::shared_ptr;
 using std::vector;
 
 namespace Builtins
 {
-    shared_ptr<Value> print(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> println(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> printf(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> type(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> exit(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> input(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> len(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> toNumber(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> toString(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> toBoolean(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> randomNumber(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> readFd(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> writeFd(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> closeFd(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> openFile(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> socket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> listenSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> acceptSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> connectSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> sendSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> receiveSocket(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> getSocketAddress(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> getSocketPort(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> runShellCommand(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> dumpEnv(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> sleep(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> time(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> rgb(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> listdir(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> getcwd(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> chdir(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> getpid(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> getuser(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> getenv(const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> print(Interpreter& interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> println(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> printf(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> type(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> exit(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> input(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> len(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> toNumber(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> toString(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> toBoolean(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> randomNumber(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> readFd(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> writeFd(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> closeFd(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> openFile(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> socket(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> listenSocket(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> acceptSocket(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> connectSocket(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> sendSocket(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> receiveSocket(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> getSocketAddress(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> getSocketPort(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> runShellCommand(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> dumpEnv(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> sleep(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> time(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> rgb(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> listdir(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> getcwd(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> chdir(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> getpid(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> getuser(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> getenv(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
 }

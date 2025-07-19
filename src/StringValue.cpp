@@ -45,8 +45,9 @@ void StringValue::registerBuiltins()
 {
     // length() -> number
     addMember("length", make_shared<BuiltinFunctionValue>(
-        [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -60,8 +61,9 @@ void StringValue::registerBuiltins()
 
     // split(delimiter) -> []
     addMember("split", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             string delimiter = " "; // default delimiter is space
             if (args.size() > 1)
@@ -94,8 +96,9 @@ void StringValue::registerBuiltins()
 
     // lower() -> string
     addMember("lower", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -115,8 +118,9 @@ void StringValue::registerBuiltins()
 
     // upper() -> string
     addMember("upper", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -136,8 +140,9 @@ void StringValue::registerBuiltins()
 
     // code() -> number or array
     addMember("code", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -171,8 +176,9 @@ void StringValue::registerBuiltins()
 
     // find(substring) -> number
     addMember("find", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
@@ -198,8 +204,9 @@ void StringValue::registerBuiltins()
 
     // isNumeric() -> boolean
     addMember("isNumeric", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -222,8 +229,9 @@ void StringValue::registerBuiltins()
 
     // strip() -> string
     addMember("strip", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -241,8 +249,9 @@ void StringValue::registerBuiltins()
 
     // rstrip() -> string
     addMember("rstrip", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -259,8 +268,9 @@ void StringValue::registerBuiltins()
 
     // lstrip() -> string
     addMember("lstrip", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (!args.empty())
             {
@@ -277,8 +287,9 @@ void StringValue::registerBuiltins()
 
     // startsWith(prefix) -> boolean
     addMember("startsWith", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
@@ -299,8 +310,9 @@ void StringValue::registerBuiltins()
 
     // endsWith(suffix) -> boolean
     addMember("endsWith", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
@@ -321,8 +333,9 @@ void StringValue::registerBuiltins()
 
     // contains(substring) -> boolean
     addMember("contains", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
@@ -343,8 +356,9 @@ void StringValue::registerBuiltins()
 
     // match(regex) -> boolean
     addMember("match", make_shared<BuiltinFunctionValue>(
-    [this](const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+    [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
         {
+            UNUSED(interpreter);
             UNUSED(env);
             if (args.size() != 1)
             {
