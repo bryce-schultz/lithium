@@ -291,6 +291,32 @@ int Utils::getpid()
 #endif
 }
 
+string Utils::getCurrentUser()
+{
+#ifdef _WIN32
+    char username[256];
+    DWORD size = sizeof(username);
+    if (GetUserNameA(username, &size))
+    {
+        return string(username);
+    }
+    else
+    {
+        return "unknown";
+    }
+#else
+    const char *user = getenv("USER");
+    if (user)
+    {
+        return string(user);
+    }
+    else
+    {
+        return "unknown";
+    }
+#endif
+}
+
 // Platform-specific system call wrappers
 // These functions provide a cross-platform interface for system calls
 // On Unix-like systems, they directly call the system functions

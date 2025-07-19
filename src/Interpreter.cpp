@@ -313,6 +313,8 @@ bool Interpreter::import(const Token &moduleName, const Range &range)
             env->declare("getcwd", make_shared<BuiltinFunctionValue>(Builtins::getcwd), true);
             env->declare("chdir", make_shared<BuiltinFunctionValue>(Builtins::chdir), true);
             env->declare("getpid", make_shared<BuiltinFunctionValue>(Builtins::getpid), true);
+            env->declare("getuser", make_shared<BuiltinFunctionValue>(Builtins::getuser), true);
+            env->declare("getenv", make_shared<BuiltinFunctionValue>(Builtins::getenv), true);
             imported(module);
             return true;
         }

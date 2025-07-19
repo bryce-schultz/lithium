@@ -1,9 +1,0 @@
-class Person {
-    let x = 42;
-    let y = "hello";
-}
-
-let p = Person();
-print(p);
-print(p.x);
-print(p.y);

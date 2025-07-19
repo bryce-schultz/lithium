@@ -1048,3 +1048,44 @@ shared_ptr<Value> Builtins::getpid(const vector<shared_ptr<Value>> &args, shared
     UNUSED(env);
     return make_shared<NumberValue>(static_cast<double>(Utils::getpid()), range);
 }
+
+// string getuser() - returns the username of the current user
+shared_ptr<Value> Builtins::getuser(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+    UNUSED(args);
+
+    string user = Utils::getCurrentUser();
+    if (user.empty())
+    {
+        error("failed to get current user", range);
+        return nullptr;
+    }
+
+    return make_shared<StringValue>(user, range);
+}
+
+// string getenv(variable) - returns the value of the environment variable
+shared_ptr<Value> Builtins::getenv(const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+    if (args.size() != 1)
+    {
+        error("getenv() expects exactly 1 argument, but got " + to_string(args.size()), range);
+        return nullptr;
+    }
+
+    if (args[0]->getType() != Value::Type::string)
+    {
+        error("getenv() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange());
+        return nullptr;
+    }
+
+    string var = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+    const char *value = ::getenv(var.c_str());
+    if (value)
+    {
+        return make_shared<StringValue>(value, range);
+    }
+    return make_shared<NullValue>(range);
+}

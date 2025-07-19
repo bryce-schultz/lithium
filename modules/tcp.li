@@ -1,0 +1,24 @@
+import <socket>
+
+const make_socket = socket;
+const socket_connect = connect;
+
+class TCP {
+    let fd = -1;
+    let host = "";
+    let port = 0;
+
+    fn TCP() {
+    }
+
+    fn connect(host_, port_) {
+        host = host_;
+        port = port_;
+
+        fd = make_socket("tcp", "0.0.0.0", 0);
+        assert fd > 0, "Failed to create socket";
+
+        socket_connect(fd, host, port);
+        assert fd > 0, "Failed to connect to " + host_ + ":" + port_;
+    }
+}

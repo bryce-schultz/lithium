@@ -1,12 +1,13 @@
 #!/usr/bin/env li
+
 import <os>
 import <colorizer>
 
-# read the files in the current directory
-const files = listdir(".");
-
 # create a colorizer function
 const color = colorizer();
+
+# read the files in the current directory
+const files = listdir(".");
 
 # loop through the files
 foreach (file : files) {

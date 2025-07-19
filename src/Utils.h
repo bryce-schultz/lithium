@@ -110,4 +110,6 @@ namespace Utils
     void removePrefix(string &str, const string &prefix);
 
     int getpid();
+
+    string getCurrentUser();
 }
