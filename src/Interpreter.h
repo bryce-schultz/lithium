@@ -64,8 +64,6 @@ public:
     virtual void visit(VarExprNode *node) override;
     virtual void visit(WhileNode *node) override;
 private:
-    shared_ptr<Value> evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right);
-
     shared_ptr<Value> evalUnaryExpression(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
     shared_ptr<Value> evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
 private:
@@ -84,19 +82,16 @@ private:
     set<string> importedModules; // to avoid re-importing the same module
     vector<string> args; // command line arguments passed to the interpreter
     string currentFunctionName;
-    
+
     // Recursion depth tracking to prevent stack overflow
     int recursionDepth;
     static const int MAX_RECURSION_DEPTH = 1000;
-    
+
     // Track temporary environments for cleanup during chained calls
     std::vector<std::shared_ptr<Environment>> tempEnvironments;
-    
+
     // Helper to clean up any temporary environments
     void cleanupTempEnvironments();
     void finalCleanup();
     void aggressiveCleanup();
-    
-    // Function pointer for interrupt checking
-    static std::function<void()> interruptChecker;
 };

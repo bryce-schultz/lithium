@@ -467,34 +467,27 @@ void Interpreter::visit(StringNode *node)
 
 void Interpreter::visit(BinaryExprNode *node)
 {
-    returnValue = evalBinaryExpression(node->getLeft(), node->getOperator(), node->getRight());
-}
+    auto left = node->getLeft();
+    auto opNode = node->getOperator();
+    auto right = node->getRight();
 
-void Interpreter::visit(UnaryExprNode *node)
-{
-    returnValue = evalUnaryExpression(node->getExpression(), node->getOperator(), node->isPrefix());
-}
-
-shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> left, shared_ptr<OpNode> opNode, shared_ptr<ExpressionNode> right)
-{
     left->visit(this);
     auto leftValue = returnValue;
     if (!leftValue)
     {
         error("left operand of binary expression is null", left->getRange());
-        return nullptr;
     }
 
     // short-circuit evaluation for logical operators
     if (opNode->getType() == Token::AND && leftValue->toBoolean() == false)
     {
         returnValue = leftValue;
-        return leftValue;
+        return;
     }
     else if (opNode->getType() == Token::OR && leftValue->toBoolean() == true)
     {
         returnValue = leftValue;
-        return leftValue;
+        return;
     }
 
     right->visit(this);
@@ -502,7 +495,6 @@ shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> l
     if (!rightValue)
     {
         error("right operand of binary expression is null", right->getRange());
-        return nullptr;
     }
 
     returnValue = nullptr;
@@ -548,23 +540,28 @@ shared_ptr<Value> Interpreter::evalBinaryExpression(shared_ptr<ExpressionNode> l
         returnValue = leftValue->logicalOr(rightValue);
         break;
     default:
-        error("unsupported binary operation: " + opNode->getToken().getValue(), opNode->getRange());
-        return nullptr;
+        errorAt("unsupported binary operation: " + opNode->getToken().getValue(), opNode->getRange().getStart(), node->getRange());
     }
 
     if (returnValue && returnValue->getType() != Value::Type::null)
     {
-        return returnValue;
+        return;
     }
 
     if (returnValue && returnValue->getType() == Value::Type::null)
     {
+        cout << "Warning: binary operation resulted in null value" << endl;
         // If the operation resulted in a null value, we can return it as is
-        return nullptr;
+        returnValue = nullptr;
+        return;
     }
 
-    error("unsupported binary operation between " + leftValue->typeAsString() + " and " + rightValue->typeAsString(), opNode->getRange());
-    return nullptr;
+    errorAt("unsupported binary operation between " + leftValue->typeAsString() + " and " + rightValue->typeAsString(), opNode->getRange().getStart(), node->getRange());
+}
+
+void Interpreter::visit(UnaryExprNode *node)
+{
+    returnValue = evalUnaryExpression(node->getExpression(), node->getOperator(), node->isPrefix());
 }
 
 shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix)
@@ -645,7 +642,7 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
             int indexInt = static_cast<int>(dynamic_pointer_cast<NumberValue>(index)->getValue());
             if (indexInt < 0 || indexInt >= array->getElementCount())
             {
-                error("array index out of bounds: " + to_string(indexInt) + " for array of size " + to_string(array->getElementCount()), indexValue->getRange());
+                error("array index out of bounds: " + to_string(indexInt) + " for array of length: " + to_string(array->getElementCount()), indexValue->getRange());
                 return nullptr;
             }
 
@@ -1394,7 +1391,7 @@ void Interpreter::visit(AssignNode *node)
 
         if (index < 0 || index >= arrayValue->getElementCount())
         {
-            error("array index out of bounds: " + to_string(index), access->getIndex()->getRange());
+            error("array index out of bounds: " + to_string(index) + " for array of length: " + to_string(arrayValue->getElementCount()), access->getIndex()->getRange());
             returnValue = nullptr;
             return;
         }
@@ -2108,7 +2105,7 @@ void Interpreter::visit(ArrayAccessNode *node)
 
         if (index < 0 || index >= static_cast<int>(arrayValue->getElementCount()))
         {
-            error("array index out of bounds: " + to_string(index), node->getIndex()->getRange());
+            error("array index out of bounds: " + to_string(index) + " for array of length: " + to_string(arrayValue->getElementCount()), node->getIndex()->getRange());
             returnValue = nullptr;
             return;
         }

@@ -1,0 +1,22 @@
+# Test to demonstrate right-associativity of assignments
+
+let counter = 0;
+
+class Counter {
+    fn Counter() {
+        counter = counter + 1;
+        println("Creating Counter instance #", counter);
+    }
+}
+
+# With right-associativity, Counter() should only be called once
+# because a = b = Counter() is parsed as a = (b = Counter())
+let a = 0;
+let b = 0;
+println("Before assignment - counter:", counter);
+
+a = b = Counter();
+println("After assignment - counter:", counter);
+println("Both variables should reference the same instance");
+println("a type:", type(a));
+println("b type:", type(b));

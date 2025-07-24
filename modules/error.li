@@ -1,0 +1,14 @@
+# error.li
+
+import <color>
+
+fn error(msg)
+{
+    println(Color.red + "error" + Color.reset + ": " + msg);
+}
+
+fn critical(msg)
+{
+    println(Color.red + "critical" + Color.reset + ": " + msg);
+    exit(1);
+}

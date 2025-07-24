@@ -1,0 +1,8 @@
+# Simple multi-assignment test
+let b = 10;
+println("before: b =", b);
+
+let a = b = 5;
+println("after let a = b = 5:");
+println("a =", a);
+println("b =", b);

@@ -1,0 +1,21 @@
+# Test multi-assignment scenarios
+
+# Test 1: Initial declaration with multi-assignment (should work)
+let b = 10;
+let a = b = 5;
+println("a =", a);
+println("b =", b);
+
+# Test 2: Multi-assignment on existing variables (currently broken, should be fixed)
+a = b = 10;
+println("after multi-assignment:");
+println("a =", a);
+println("b =", b);
+
+# Test 3: Chain of assignments
+let c = 20;
+a = b = c = 15;
+println("after chain assignment:");
+println("a =", a);
+println("b =", b);
+println("c =", c);

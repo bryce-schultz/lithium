@@ -1,0 +1,41 @@
+# Test object reference behavior in multi-assignment
+
+class Test {
+    let id = 0;
+    
+    fn Test(value) {
+        id = value;
+    }
+}
+
+# Test 1: Two-way assignment - should be same instance
+let a = 0;
+let b = 0;
+a = b = Test(42);
+println("Test 1 - Two-way assignment:");
+println("a.id =", a.id);
+println("b.id =", b.id);
+
+# Modify one instance
+a.id = 99;
+println("After a.id = 99:");
+println("a.id =", a.id);
+println("b.id =", b.id);
+println();
+
+# Test 2: Three-way assignment - should all be same instance
+let x = 0;
+let y = 0;
+let z = 0;
+x = y = z = Test(100);
+println("Test 2 - Three-way assignment:");
+println("x.id =", x.id);
+println("y.id =", y.id);
+println("z.id =", z.id);
+
+# Modify one instance
+x.id = 200;
+println("After x.id = 200:");
+println("x.id =", x.id);
+println("y.id =", y.id);
+println("z.id =", z.id);

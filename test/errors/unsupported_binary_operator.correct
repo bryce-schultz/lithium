@@ -1,0 +1,4 @@
+error: unsupported_binary_operator.li:1:18: unsupported binary operation between string and number
+│ println("string" / 10);
+│         ~~~~~~~~~~~~~
+│                  ^

@@ -11,6 +11,8 @@ class NullNode : public ExpressionNode
 public:
     using Ptr = shared_ptr<NullNode>;
 public:
+    NullNode(Range range = {});
+
     void visit(Visitor *visitor) override;
 };
 

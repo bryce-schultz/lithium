@@ -36,23 +36,27 @@ private:
 
     bool isInFirstSet(const Token &token, const set<int> &firstSet) const;
 private:
+    //******************************************************************************************
+    // Statements
+    //******************************************************************************************
+
     // stmts -> stmt stmts
     //        | ε
     Result<StatementsNode> parseStmts();
 
-    // stmt -> assertStmt   - firsts: ASSERT
-    //       | exprStmt     - firsts: NUMBER, IDENT, STRING, (, [, PRINT, LET, CONST
-    //       | forStmt      - firsts: FOR
-    //       | whileStmt    - firsts: WHILE
-    //       | ifStmt       - firsts: IF
-    //       | block        - firsts: {
-    //       | funcDecl     - firsts: FN
-    //       | classDecl    - firsts: CLASS
-    //       | returnStmt   - firsts: RETURN
-    //       | breakStmt    - firsts: BREAK
-    //       | continueStmt - firsts: CONTINUE
-    //       | deleteStmt   - firsts: DELETE
-    //       | importStmt   - firsts: IMPORT
+    // stmt -> assertStmt
+    //       | exprStmt
+    //       | forStmt
+    //       | whileStmt
+    //       | ifStmt
+    //       | block
+    //       | funcDecl
+    //       | classDecl
+    //       | returnStmt
+    //       | breakStmt
+    //       | continueStmt
+    //       | deleteStmt
+    //       | importStmt
     Result<StatementNode> parseStmt();
 
     // assertStmt -> ASSERT expr ;
@@ -130,72 +134,125 @@ private:
     // letStmt -> LET IDENT = expr ;
     Result<VarDeclNode> parseLetStmt();
 
+    //***************************************************
     // constStmt -> CONST IDENT = expr ;
+    //***************************************************
+    // firsts: CONST
     Result<VarDeclNode> parseConstStmt();
 
+    //******************************************************************************************
+    // Expressions
     //******************************************************************************************
 
     //***************************************************
     // expr -> assign expr'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseExpr();
+
+    //***************************************************
     // expr' -> , assign expr'
-    //        | nothing
+    //        | ϵ
+    //***************************************************
+    // firsts: ,
     Result<ExpressionNode> parseExprP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // assign -> or assign'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseAssign();
+
+    //***************************************************
     // assign' -> = or assign'
-    //          | nothing
+    //          | ϵ
+    //***************************************************
+    // firsts: =
     Result<ExpressionNode> parseAssignP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // or -> and or'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseOr();
+
+    //***************************************************
     // or' -> OR and or'
-    //      | nothing
+    //      | ϵ
+    //***************************************************
+    // firsts: OR
     Result<ExpressionNode> parseOrP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // and -> equality and'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseAnd();
+
+    //***************************************************
     // and' -> AND equality and'
-    //       | nothing
+    //       | ϵ
+    //***************************************************
+    // firsts: AND
     Result<ExpressionNode> parseAndP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // equality -> relation equality'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseEquality();
+
+    //***************************************************
     // equality' -> EQ relation equality'
     //            | NE relation equality'
-    //            | nothing
+    //            | ϵ
+    //***************************************************
+    // firsts: EQ, NE
     Result<ExpressionNode> parseEqualityP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // relation -> addit relation'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseRelation();
+
+    //***************************************************
     // relation' -> > addit relation'
     //            | < addit relation'
     //            | GE addit relation'
     //            | LE addit relation'
-    //            | nothing
+    //            | ϵ
+    //***************************************************
+    // firsts: >, <, GE, LE
     Result<ExpressionNode> parseRelationP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // addit -> mult addit'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseAddit();
+
+    //***************************************************
     // addit' -> + mult addit'
     //         | - mult addit'
-    //         | nothing
+    //         | ϵ
+    //***************************************************
+    // firsts: +, -
     Result<ExpressionNode> parseAdditP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // mult -> unary mult'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseMult();
-    // mult' -> * uanry mult'
-    //        | / uanry mult'
+
+    //***************************************************
+    // mult' -> * unary mult'
+    //        | / unary mult'
     //        | % unary mult'
-    //        | nothing
+    //        | ϵ
+    //***************************************************
+    // firsts: *, /, %
     Result<ExpressionNode> parseMultP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
@@ -205,39 +262,58 @@ private:
     //        | - mult
     //        | ! mult
     //        | post
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parseUnary();
 
     //***************************************************
     // argList -> assign argList'
+    //***************************************************
+    // firsts: INC, DEC, +, -, !, (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ArgListNode> parseArgList();
 
     //****************************************************
     // argList' -> , assign argList'
-    //           | nothing
+    //           | ϵ
+    //***************************************************
+    // firsts: ,
     Result<ArgListNode> parseArgListP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // post -> primary post''
+    //***************************************************
+    // firsts: (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parsePost();
+
+    //***************************************************
     // post' -> [ expr ]
     //        | ( argList )
     //        | . IDENT
     //        | INC
     //        | DEC
+    //***************************************************
+    // firsts: [, (, ., INC, DEC
     Result<ExpressionNode> parsePostP(shared_ptr<ExpressionNode> lhs);
+
+    //***************************************************
     // post'' -> post' post''
     //         | ϵ
+    //***************************************************
+    // firsts: (, [, ., INC, DEC
     Result<ExpressionNode> parsePostPP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************
     // primary -> ( expr )
-    //          | [ expr ]
+    //          | [ argList ]
     //          | IDENT
     //          | NUMBER
     //          | STRING
+    //          | TRUE
+    //          | FALSE
+    //          | NULL
+    //***************************************************
+    // firsts: (, [, IDENT, NUMBER, STRING, TRUE, FALSE, NULL
     Result<ExpressionNode> parsePrimary();
-
-    //******************************************************************************************
 private:
     static set<int> additFirsts;
     static set<int> andFirsts;
@@ -260,7 +336,6 @@ private:
     static set<int> importFirsts;
     static set<int> letStmtFirsts;
     static set<int> multFirsts;
-    static set<int> orFirsts;
     static set<int> postFirsts;
     static set<int> postPFirsts;
     static set<int> printStmtFirsts;
@@ -268,9 +343,10 @@ private:
     static set<int> returnStmtFirsts;
     static set<int> unaryFirsts;
     static set<int> whileStmtFirsts;
+    static set<int> assignPFirsts;
 private:
     Tokenizer tokenizer;
     Token currentToken;
-    bool hadError = false;
-    int depth = 0;
+    bool hadError;
+    int depth;
 };

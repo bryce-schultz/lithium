@@ -1,0 +1,4 @@
+error: unsupported_binary_operator_null.li:1:14: unsupported binary operation between null and number
+│ println(null * 2);
+│         ~~~~~~~~
+│              ^

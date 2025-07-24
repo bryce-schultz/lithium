@@ -1,0 +1,4 @@
+error: array_out_of_bounds.li:3:11: array index out of bounds: 3 for array of length: 3
+│ println(a[3]);
+│           ~
+│           ^

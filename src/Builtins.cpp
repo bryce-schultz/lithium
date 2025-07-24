@@ -981,21 +981,17 @@ shared_ptr<Value> Builtins::runShellCommand(Interpreter &interpreter, const vect
     }
     if (bytesRead < 0)
     {
-        error("failed to read from pipe", range);
-        Utils::closeFd(pipefd[0]);
-        return nullptr;
+        return make_shared<NullValue>(range);
     }
     Utils::closeFd(pipefd[0]); // close read end of the pipe
     int status;
     if (Utils::waitForProcess(pid, &status, 0) < 0)
     {
-        error("failed to wait for child process", range);
-        return nullptr;
+        return make_shared<NullValue>(range);
     }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
     {
-        error("command execution failed with status " + to_string(WEXITSTATUS(status)), range);
-        return nullptr;
+        return make_shared<NullValue>(range);
     }
     return make_shared<StringValue>(output, range);
 }
@@ -1173,10 +1169,9 @@ shared_ptr<Value> Builtins::chdir(Interpreter &interpreter, const vector<shared_
     string path = dynamic_pointer_cast<StringValue>(args[0])->getValue();
     if (!Utils::changeDirectory(path))
     {
-        error("failed to change directory to '" + path + "'", range);
-        return nullptr;
+        return make_shared<BooleanValue>(false, range);
     }
-    return make_shared<NullValue>(range);
+    return make_shared<BooleanValue>(true, range);
 }
 
 shared_ptr<Value> Builtins::getpid(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)

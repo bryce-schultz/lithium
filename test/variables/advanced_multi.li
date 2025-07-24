@@ -1,0 +1,26 @@
+# Test more complex chained assignments
+let a = 1;
+let b = 2;
+let c = 3;
+let d = 4;
+
+# Three-way assignment
+a = b = c = 100;
+println("Three-way assignment:");
+println("a =", a);
+println("b =", b);  
+println("c =", c);
+
+# Mixed with arithmetic
+d = a = 50;
+println("Mixed assignment:");
+println("a =", a);
+println("d =", d);
+
+# Array assignment (if supported)
+let arr = [1, 2, 3];
+let x = 0;
+x = arr[0] = 999;
+println("Array assignment:");
+println("x =", x);
+println("arr[0] =", arr[0]);

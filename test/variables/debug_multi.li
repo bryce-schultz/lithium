@@ -1,0 +1,9 @@
+# Test problematic multi-assignment
+let a = 0;
+let b = 0;
+println("before: a =", a, "b =", b);
+
+a = b = 10;
+println("after a = b = 10:");
+println("a =", a);
+println("b =", b);

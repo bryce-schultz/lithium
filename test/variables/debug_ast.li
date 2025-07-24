@@ -1,0 +1,2 @@
+# Just the problematic assignment
+a = b = 10;

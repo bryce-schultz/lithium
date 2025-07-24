@@ -57,7 +57,9 @@
 
 Parser::Parser():
     tokenizer(),
-    currentToken()
+    currentToken(),
+    hadError(false),
+    depth(0)
 { }
 
 Parser::~Parser()
@@ -71,7 +73,8 @@ set<int> Parser::additFirsts = { '+', '-' };
 set<int> Parser::andFirsts = { Token::AND };
 set<int> Parser::argListFirsts = exprFirsts;
 set<int> Parser::assertFirsts = { Token::ASSERT };
-set<int> Parser::assignFirsts = { Token::NUMBER, Token::IDENT, Token::STRING,Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '+', '!' };
+set<int> Parser::assignFirsts = { Token::NUMBER, Token::IDENT, Token::STRING,Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, '(', '[', ';', '+', '!' };
+set<int> Parser::assignPFirsts = { '=', Token::PLUS_EQUAL, Token::MINUS_EQUAL, Token::MUL_EQUAL, Token::DIV_EQUAL, Token::MOD_EQUAL };
 set<int> Parser::blockFirsts = { '{' };
 set<int> Parser::breakStmtFirsts = { Token::BREAK };
 set<int> Parser::classDeclFirsts = { Token::CLASS };
@@ -79,8 +82,8 @@ set<int> Parser::constStmtFirsts = { Token::CONST };
 set<int> Parser::continueStmtFirsts = { Token::CONTINUE };
 set<int> Parser::deleteStmtFirsts = { Token::DELETE };
 set<int> Parser::equalityFirsts = { Token::EQ, Token::NE };
-set<int> Parser::exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', '-', '+', '!' };
-set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, '(', '[', ';', '-', '+', '!' };
+set<int> Parser::exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, '(', '[', '-', '+', '!' };
+set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, '(', '[', ';', '-', '+', '!' };
 set<int> Parser::forEachStmtFirsts = { Token::FOREACH };
 set<int> Parser::forStmtFirsts = { Token::FOR };
 set<int> Parser::funcDeclFirsts = { Token::FN };
@@ -88,7 +91,6 @@ set<int> Parser::ifStmtFirsts = { Token::IF };
 set<int> Parser::importFirsts = { Token::IMPORT };
 set<int> Parser::letStmtFirsts = { Token::LET };
 set<int> Parser::multFirsts = { '*', '/', '%' };
-set<int> Parser::orFirsts = { Token::OR };
 set<int> Parser::postFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, '(', '[', '-', '+', '!' };
 set<int> Parser::postPFirsts = { '(', '[', '.', Token::INC, Token::DEC };
 set<int> Parser::relationFirsts = { '>', '<', Token::LE, Token::GE };
@@ -110,7 +112,6 @@ bool Parser::isInFirstSet(const Token &token, const set<int> &firstSet) const
 {
     return firstSet.count(token.getType()) > 0;
 }
-
 
 Result<Node> Parser::parse(const string &input, const string &filename)
 {
@@ -850,6 +851,7 @@ Result<ExpressionNode> Parser::parseExpr()
 
     accept(result.value);
 }
+
 // expr' -> , assign expr'
 //        | nothing
 Result<ExpressionNode> Parser::parseExprP(shared_ptr<ExpressionNode> lhs)
@@ -894,6 +896,7 @@ Result<ExpressionNode> Parser::parseAssign()
 
     accept(result.value);
 }
+
 // assign' -> = or assign'
 //          | += or assign'
 //          | -= or assign'
@@ -904,30 +907,21 @@ Result<ExpressionNode> Parser::parseAssign()
 Result<ExpressionNode> Parser::parseAssignP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
-    if (token != '=' &&
-        token != Token::PLUS_EQUAL &&
-        token != Token::MINUS_EQUAL &&
-        token != Token::MUL_EQUAL &&
-        token != Token::DIV_EQUAL &&
-        token != Token::MOD_EQUAL)
+    if (!isInFirstSet(token, assignPFirsts))
     {
         accept(lhs);
     }
-    advanceToken(); // consume 'or'
+    advanceToken(); // consume assignment operator
 
-    auto rhs = parseOr();
+    // For right-associativity, we need to parse the entire RHS first (including any chained assignments)
+    auto rhs = parseAssign(); // This will handle any chained assignments on the right
     if (!rhs.status)
     {
         reject();
     }
 
-    rhs = parseAssignP(make_shared<AssignNode>(lhs, token, rhs.value));
-    if (!rhs.status)
-    {
-        reject();
-    }
-
-    accept(rhs.value);
+    // Now create the assignment node with the fully parsed RHS
+    accept(make_shared<AssignNode>(lhs, token, rhs.value));
 }
 
 //***************************************************
@@ -1212,7 +1206,11 @@ Result<ExpressionNode> Parser::parseUnary()
 {
     Token token = peekToken();
 
-    if (token != Token::INC && token != Token::DEC && token != '+' && token != '-' && token != '!')
+    if (token != Token::INC &&
+        token != Token::DEC &&
+        token != '+' &&
+        token != '-' &&
+        token != '!')
     {
         acceptNode(parsePost());
     }
@@ -1400,6 +1398,9 @@ Result<ExpressionNode> Parser::parsePostPP(shared_ptr<ExpressionNode> lhs)
 //          | IDENT
 //          | NUMBER
 //          | STRING
+//          | TRUE
+//          | FALSE
+//          | NULL
 Result<ExpressionNode> Parser::parsePrimary()
 {
     Token token = peekToken();
@@ -1474,7 +1475,7 @@ Result<ExpressionNode> Parser::parsePrimary()
     else if (token.getType() == Token::NULL_TOKEN)
     {
         advanceToken(); // consume null
-        accept(make_shared<NullNode>());
+        accept(make_shared<NullNode>(token.getRange()));
     }
 
     expected("primary expression");
