@@ -43,6 +43,8 @@ public:
 
     virtual string toString() const override;
     virtual string typeAsString() const override;
+
+    shared_ptr<Environment> getEnvironment() const { return env; }
 private:
     string name;
     shared_ptr<Environment> env;

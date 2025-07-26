@@ -243,6 +243,64 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
         },
         getRange()
     ), true);
+
+    addMember("sort", make_shared<BuiltinFunctionValue>(
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(interpreter);
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("sort() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+
+            if (elements.empty())
+            {
+                return make_shared<NullValue>(range);
+            }
+
+            // Check that all elements are of the same type
+            Value::Type firstType = elements[0]->getType();
+            for (const auto& element : elements)
+            {
+                if (element->getType() != firstType)
+                {
+                    errorAt("sort() requires all array elements to be of the same type", range.getStart(), range);
+                    return nullptr;
+                }
+            }
+
+            // Only allow sorting for numbers and strings
+            if (firstType != Value::Type::number && firstType != Value::Type::string)
+            {
+                errorAt("sort() only works with arrays of numbers or strings", range.getStart(), range);
+                return nullptr;
+            }
+
+            if (firstType == Value::Type::number)
+            {
+                std::sort(elements.begin(), elements.end(),
+                          [](const shared_ptr<Value>& a, const shared_ptr<Value>& b) {
+                              auto numA = dynamic_pointer_cast<NumberValue>(a);
+                              auto numB = dynamic_pointer_cast<NumberValue>(b);
+                              return numA->getValue() < numB->getValue();
+                          });
+            }
+            else // firstType == Value::Type::string
+            {
+                std::sort(elements.begin(), elements.end(),
+                          [](const shared_ptr<Value>& a, const shared_ptr<Value>& b) {
+                              auto strA = dynamic_pointer_cast<StringValue>(a);
+                              auto strB = dynamic_pointer_cast<StringValue>(b);
+                              return strA->getValue() < strB->getValue();
+                          });
+            }
+
+            return make_shared<NullValue>(range);
+        },
+        getRange()
+    ), true);
 }
 
 string ArrayValue::toString() const

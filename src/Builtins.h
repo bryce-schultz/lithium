@@ -38,7 +38,7 @@ namespace Builtins
     shared_ptr<Value> getSocketAddress(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> getSocketPort(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> runShellCommand(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
-    shared_ptr<Value> dumpEnv(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> dumpenv(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> sleep(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> time(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> rgb(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
@@ -48,4 +48,5 @@ namespace Builtins
     shared_ptr<Value> getpid(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> getuser(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
     shared_ptr<Value> getenv(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
+    shared_ptr<Value> dumpstack(Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {});
 }

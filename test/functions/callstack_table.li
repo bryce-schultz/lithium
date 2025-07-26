@@ -1,0 +1,30 @@
+# Test call stack table format with deep nesting
+fn level4()
+{
+    dumpstack("table");
+}
+
+fn level3(n)
+{
+    if (n <= 0)
+    {
+        level4();
+    }
+    else
+    {
+        level3(n - 1);
+    }
+}
+
+fn level2()
+{
+    level3(2);
+}
+
+fn level1()
+{
+    level2();
+}
+
+# Start the deep call chain
+level1();

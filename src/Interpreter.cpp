@@ -235,7 +235,8 @@ void Interpreter::setupBuiltInFunctions()
     env->declare("string", make_shared<BuiltinFunctionValue>(Builtins::toString), true);
     env->declare("print", make_shared<BuiltinFunctionValue>(Builtins::print), true);
     env->declare("println", make_shared<BuiltinFunctionValue>(Builtins::println), true);
-    env->declare("dumpenv", make_shared<BuiltinFunctionValue>(Builtins::dumpEnv), true);
+    env->declare("env", make_shared<BuiltinFunctionValue>(Builtins::dumpenv), true);
+    env->declare("dumpstack", make_shared<BuiltinFunctionValue>(Builtins::dumpstack), true);
 }
 
 void Interpreter::setupRuntimeValues()
@@ -574,7 +575,7 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
 
     expression->visit(this);
     auto value = returnValue;
-    if (!value)
+    if (!value && opNode->getType() != '?')
     {
         error("unary expression evaluation failed", expression->getRange());
         return nullptr;
@@ -591,156 +592,7 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
             return nullptr;
         }
 
-        shared_ptr<VarExprNode> varExpr = dynamic_pointer_cast<VarExprNode>(expression);
-        if (varExpr)
-        {
-            return evalVariableUnaryExpression(varExpr, opNode, prefix);
-        }
-
-        shared_ptr<ArrayAccessNode> arrayAccess = dynamic_pointer_cast<ArrayAccessNode>(expression);
-        if (arrayAccess)
-        {
-            arrayAccess->getArray()->visit(this);
-            if (!returnValue)
-            {
-                error("array access left-hand side evaluated to null", arrayAccess->getArray()->getRange());
-                returnValue = nullptr;
-                return nullptr;
-            }
-
-            if (returnValue->getType() != Value::Type::array)
-            {
-                error("left-hand side of array access is not an array, it is " + returnValue->typeAsString(), arrayAccess->getArray()->getRange());
-                returnValue = nullptr;
-                return nullptr;
-            }
-
-            auto arrayValue = dynamic_pointer_cast<ArrayValue>(returnValue);
-            if (!arrayValue)
-            {
-                error("left-hand side of array access could not be cast to ArrayValue", arrayAccess->getArray()->getRange());
-                returnValue = nullptr;
-                return nullptr;
-            }
-
-            auto indexValue = arrayAccess->getIndex();
-            indexValue->visit(this);
-            auto index = returnValue;
-            if (!index || index->getType() != Value::Type::number)
-            {
-                error("index in array access must be a number", indexValue->getRange());
-                return nullptr;
-            }
-
-            auto array = dynamic_pointer_cast<ArrayValue>(arrayValue);
-            if (!array)
-            {
-                error("array access expression is not an ArrayValue", expression->getRange());
-                return nullptr;
-            }
-
-            int indexInt = static_cast<int>(dynamic_pointer_cast<NumberValue>(index)->getValue());
-            if (indexInt < 0 || indexInt >= array->getElementCount())
-            {
-                error("array index out of bounds: " + to_string(indexInt) + " for array of length: " + to_string(array->getElementCount()), indexValue->getRange());
-                return nullptr;
-            }
-
-            shared_ptr<Value> elementValue = array->getElement(indexInt);
-            if (!elementValue)
-            {
-                error("array element at index " + to_string(indexInt) + " is null", indexValue->getRange());
-                return nullptr;
-            }
-
-            if (opNode->getType() == Token::INC)
-            {
-                if (elementValue->getType() != Value::Type::number)
-                {
-                    error("array element at index " + to_string(indexInt) + " is not a number", indexValue->getRange());
-                    return nullptr;
-                }
-                auto numberValue = dynamic_pointer_cast<NumberValue>(elementValue);
-                auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
-                array->setElement(indexInt, tmp);
-                return prefix ? tmp : numberValue; // return the incremented value if prefix, otherwise the original value
-            }
-            else if (opNode->getType() == Token::DEC)
-            {
-                if (elementValue->getType() != Value::Type::number)
-                {
-                    error("array element at index " + to_string(indexInt) + " is not a number", indexValue->getRange());
-                    return nullptr;
-                }
-                auto numberValue = dynamic_pointer_cast<NumberValue>(elementValue);
-                auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
-                array->setElement(indexInt, tmp);
-                return prefix ? tmp : numberValue; // return the decremented value if prefix, otherwise the original value
-            }
-        }
-
-        shared_ptr<MemberAccessNode> memberAccess = dynamic_pointer_cast<MemberAccessNode>(expression);
-        if (memberAccess)
-        {
-            memberAccess->getExpression()->visit(this);
-            if (!returnValue)
-            {
-                error("member access left-hand side evaluated to null", memberAccess->getExpression()->getRange());
-                returnValue = nullptr;
-                return nullptr;
-            }
-
-            if (returnValue->getType() != Value::Type::object && returnValue->getType() != Value::Type::class_)
-            {
-                error("left-hand side of member access is not an object or class, it is " + returnValue->typeAsString(), memberAccess->getExpression()->getRange());
-                returnValue = nullptr;
-                return nullptr;
-            }
-
-            auto objectValue = dynamic_pointer_cast<ObjectValue>(returnValue);
-            if (!objectValue)
-            {
-                error("left-hand side of member access could not be cast to ObjectValue", memberAccess->getExpression()->getRange());
-                returnValue = nullptr;
-                return nullptr;
-            }
-
-            auto memberName = memberAccess->getIdentifier().getValue();
-            shared_ptr<Value> memberValue = objectValue->getMember(memberName);
-            if (!memberValue)
-            {
-                error("member '" + memberName + "' not found in object", memberAccess->getIdentifier().getRange());
-                return nullptr;
-            }
-
-            if (opNode->getType() == Token::INC)
-            {
-                if (memberValue->getType() != Value::Type::number)
-                {
-                    error("member '" + memberName + "' is not a number", memberAccess->getIdentifier().getRange());
-                    return nullptr;
-                }
-                auto numberValue = dynamic_pointer_cast<NumberValue>(memberValue);
-                auto tmp = make_shared<NumberValue>(numberValue->getValue() + 1);
-                objectValue->setMember(memberName, tmp);
-                return prefix ? tmp : numberValue; // return the incremented value if prefix, otherwise the original value
-            }
-            else if (opNode->getType() == Token::DEC)
-            {
-                if (memberValue->getType() != Value::Type::number)
-                {
-                    error("member '" + memberName + "' is not a number", memberAccess->getIdentifier().getRange());
-                    return nullptr;
-                }
-                auto numberValue = dynamic_pointer_cast<NumberValue>(memberValue);
-                auto tmp = make_shared<NumberValue>(numberValue->getValue() - 1);
-                objectValue->setMember(memberName, tmp);
-                return prefix ? tmp : numberValue; // return the decremented value if prefix, otherwise the original value
-            }
-        }
-
-        error("expected a modifiable expression", expression->getRange());
-        return nullptr;
+        return evalIncrementDecrement(expression, opNode, prefix);
     }
     case '!':
         returnValue = value->unaryNot();
@@ -748,6 +600,15 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
     case '-':
         returnValue = value->unaryMinus();
         break;
+    case '?':
+        if (returnValue)
+        {
+            return returnValue;
+        }
+        else
+        {
+            return make_shared<NullValue>(opNode->getRange()); // If the value is undefined, return a NullValue instead
+        }
     }
 
     if (returnValue && returnValue->getType() != Value::Type::null)
@@ -763,6 +624,335 @@ shared_ptr<Value> Interpreter::evalUnaryExpression(shared_ptr<ExpressionNode> ex
 
     error("unsupported unary operation on " + value->typeAsString(), opNode->getRange());
     return nullptr;
+}
+
+shared_ptr<Value> Interpreter::evalIncrementDecrement(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix)
+{
+    // Get current value for return (prefix or postfix)
+    expression->visit(this);
+    auto currentVal = returnValue;
+    if (!currentVal)
+    {
+        error("Cannot increment/decrement null value", expression->getRange());
+        return nullptr;
+    }
+
+    // For postfix, we return the original value
+    shared_ptr<Value> returnVal = prefix ? nullptr : currentVal;
+
+    // Perform the increment/decrement
+    shared_ptr<Value> newVal;
+    if (opNode->getType() == Token::INC)
+    {
+        if (currentVal->getType() == Value::Type::number)
+        {
+            auto numberValue = dynamic_pointer_cast<NumberValue>(currentVal);
+            newVal = make_shared<NumberValue>(numberValue->getValue() + 1);
+        }
+        else
+        {
+            error("Cannot increment non-numeric value", expression->getRange());
+            return nullptr;
+        }
+    }
+    else if (opNode->getType() == Token::DEC)
+    {
+        if (currentVal->getType() == Value::Type::number)
+        {
+            auto numberValue = dynamic_pointer_cast<NumberValue>(currentVal);
+            newVal = make_shared<NumberValue>(numberValue->getValue() - 1);
+        }
+        else
+        {
+            error("Cannot decrement non-numeric value", expression->getRange());
+            return nullptr;
+        }
+    }
+    else
+    {
+        error("Unsupported increment/decrement operator", opNode->getRange());
+        return nullptr;
+    }
+
+    // Assign the new value back
+    if (auto varExpr = dynamic_pointer_cast<VarExprNode>(expression))
+    {
+        env->assign(varExpr->getName(), newVal);
+    }
+    else if (auto arrayAccess = dynamic_pointer_cast<ArrayAccessNode>(expression))
+    {
+        auto arrayVal = arrayAccess->getArray();
+        arrayVal->visit(this);
+        auto arrayValue = returnValue;
+
+        auto indexVal = arrayAccess->getIndex();
+        indexVal->visit(this);
+        auto indexValue = returnValue;
+
+        if (auto arrayObj = dynamic_pointer_cast<ArrayValue>(arrayValue))
+        {
+            if (auto numberIdx = dynamic_pointer_cast<NumberValue>(indexValue))
+            {
+                int idx = (int)numberIdx->getValue();
+                if (idx >= 0 && idx < (int)arrayObj->getElements().size())
+                {
+                    arrayObj->setElement(idx, newVal);
+                }
+                else
+                {
+                    error("Array index out of bounds", expression->getRange());
+                    return nullptr;
+                }
+            }
+            else
+            {
+                error("Array index must be a number", expression->getRange());
+                return nullptr;
+            }
+        }
+        else
+        {
+            error("Cannot index non-array value", expression->getRange());
+            return nullptr;
+        }
+    }
+    else if (auto memberAccess = dynamic_pointer_cast<MemberAccessNode>(expression))
+    {
+        auto objVal = memberAccess->getExpression();
+        objVal->visit(this);
+        auto objValue = returnValue;
+
+        if (objValue)
+        {
+            auto memberName = memberAccess->getIdentifier().getValue();
+            Result<Value> result = objValue->setMember(memberName, newVal);
+            if (result.status == Value::MEMBER_IS_CONSTANT)
+            {
+                error("cannot assign to constant member '" + memberName + "'", expression->getRange());
+                return nullptr;
+            }
+        }
+        else
+        {
+            error("Cannot access member of null value", expression->getRange());
+            return nullptr;
+        }
+    }
+    else
+    {
+        error("Invalid lvalue for increment/decrement", expression->getRange());
+        return nullptr;
+    }
+
+    // For prefix, return the new value; for postfix, return the original value
+    return prefix ? newVal : returnVal;
+}
+
+bool Interpreter::validateFunctionArguments(shared_ptr<FunctionValue> function, const vector<shared_ptr<Value>>& args, const Range& nodeRange, const string& functionType)
+{
+    if (function->getParameters() && (size_t)function->getParameters()->getParamCount() != args.size())
+    {
+        error(functionType + " '" + function->getName() + "' expects " +
+              to_string(function->getParameters()->getParamCount()) +
+              " arguments, but got " + to_string(args.size()),
+              nodeRange);
+        return false;
+    }
+    else if (!function->getParameters() && !args.empty())
+    {
+        error(functionType + " '" + function->getName() + "' does not take any arguments, but got " + to_string(args.size()), nodeRange);
+        return false;
+    }
+    return true;
+}
+
+shared_ptr<Value> Interpreter::callUserFunction(shared_ptr<FunctionValue> function, const vector<shared_ptr<Value>>& args, const Range& nodeRange)
+{
+    // Check recursion depth to prevent stack overflow
+    if (recursionDepth >= MAX_RECURSION_DEPTH)
+    {
+        error("maximum recursion depth exceeded (" + to_string(MAX_RECURSION_DEPTH) + ")", nodeRange);
+        return nullptr;
+    }
+
+    if (!validateFunctionArguments(function, args, nodeRange))
+    {
+        return nullptr;
+    }
+
+    if (!function->getBody())
+    {
+        error("function '" + function->getName() + "' has no body", nodeRange);
+        return nullptr;
+    }
+
+    // Set up function call environment
+    shared_ptr<Environment> scope = make_shared<Environment>(function->getEnvironment());
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        scope->declare(function->getParameters()->getParam(i)->getName(), args[i]);
+    }
+
+    auto previousEnv = env;
+    env = scope;
+
+    // Track this function call scope for cleanup
+    tempEnvironments.push_back(scope);
+
+    // Increment recursion depth and update function name
+    recursionDepth++;
+    string oldFunctionName = currentFunctionName;
+    currentFunctionName = function->getName();
+
+    shared_ptr<Value> result = nullptr;
+    try
+    {
+        callStack.push(currentFunctionName, function->getRange());
+        function->getBody()->visit(this);
+        result = nullptr; // Normal function completion without return
+    }
+    catch (const ReturnException &e)
+    {
+        result = e.value;
+    }
+    catch (const BaseException &e)
+    {
+        // Restore state before re-throwing
+        recursionDepth--;
+        currentFunctionName = oldFunctionName;
+        env = previousEnv;
+        callStack.pop();
+        throw;
+    }
+
+    callStack.pop();
+
+    // Restore state
+    recursionDepth--;
+    currentFunctionName = oldFunctionName;
+
+    // Handle closure cleanup for returned functions
+    if (result && result->getType() == Value::Type::function)
+    {
+        auto returnedFunc = dynamic_pointer_cast<FunctionValue>(result);
+        if (returnedFunc && returnedFunc->getEnvironment() == scope)
+        {
+            // Break circular reference
+            returnedFunc->clearClosureEnv();
+        }
+    }
+
+    env = previousEnv;
+    return result;
+}
+
+shared_ptr<Value> Interpreter::callClassConstructor(shared_ptr<ClassValue> classValue, const vector<shared_ptr<Value>>& args, const Range& nodeRange)
+{
+    // Visit the declarations of the class and capture them in a new environment
+    auto previousEnv = env;
+    shared_ptr<Environment> classEnv = make_shared<Environment>(env);
+    env = classEnv;
+
+    // Track this class environment for cleanup
+    tempEnvironments.push_back(classEnv);
+
+    auto cleanupAndReturn = [&](shared_ptr<Value> result = nullptr) -> shared_ptr<Value>
+    {
+        if (result == nullptr)
+        {
+            classEnv->clear();
+        }
+        env = previousEnv;
+        return result;
+    };
+
+    try
+    {
+        shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
+        if (!classBody)
+        {
+            error("class '" + classValue->getName() + "' has no body", nodeRange);
+            return cleanupAndReturn();
+        }
+
+        // Visit the class body to populate the environment
+        if (classBody->getStatements())
+        {
+            classBody->getStatements()->visit(this);
+        }
+
+        // Look for and call the constructor
+        auto ctor = env->lookupLocal(classValue->getName());
+        if (ctor)
+        {
+            if (ctor->getType() != Value::Type::function)
+            {
+                error("class '" + classValue->getName() + "' has no constructor", nodeRange);
+                return cleanupAndReturn();
+            }
+
+            shared_ptr<FunctionValue> constructor = dynamic_pointer_cast<FunctionValue>(ctor);
+            if (!constructor)
+            {
+                error("class '" + classValue->getName() + "' constructor could not be cast to FunctionValue", nodeRange);
+                return cleanupAndReturn();
+            }
+
+            if (!validateFunctionArguments(constructor, args, nodeRange, "constructor"))
+            {
+                return cleanupAndReturn();
+            }
+
+            if (!constructor->getBody())
+            {
+                error("constructor '" + constructor->getName() + "' has no body", nodeRange);
+                return cleanupAndReturn();
+            }
+
+            // Set up constructor environment
+            shared_ptr<Environment> scope = make_shared<Environment>(constructor->getEnvironment());
+            for (size_t i = 0; i < args.size(); ++i)
+            {
+                scope->declare(constructor->getParameters()->getParam(i)->getName(), args[i]);
+            }
+
+            auto constructorPrevEnv = env;
+            env = scope;
+
+            try
+            {
+                callStack.push(constructor->getName(), constructor->getRange());
+                constructor->getBody()->visit(this);
+            }
+            catch (const ReturnException &e)
+            {
+                callStack.pop();
+                if (e.value && e.value->getType() != Value::Type::null)
+                {
+                    error("constructor of class '" + classValue->getName() + "' returned a value, which is not allowed", nodeRange);
+                }
+            }
+            catch (const BaseException &e)
+            {
+                callStack.pop();
+                env = constructorPrevEnv;
+                throw;
+            }
+            callStack.pop();
+
+            env = constructorPrevEnv;
+        }
+
+        // Create and return the class instance
+        auto instance = make_shared<ObjectValue>(classValue->getName(), env);
+        env = previousEnv;
+        return instance;
+
+    }
+    catch (const BaseException &e)
+    {
+        return cleanupAndReturn();
+    }
 }
 
 shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix)
@@ -827,6 +1017,7 @@ shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNod
 
 void Interpreter::visit(CallNode *node)
 {
+    // Evaluate arguments
     vector<shared_ptr<Value>> args;
     if (node->getArgs())
     {
@@ -837,6 +1028,7 @@ void Interpreter::visit(CallNode *node)
         }
     }
 
+    // Evaluate the callee
     auto calleeNode = node->getCallee();
     calleeNode->visit(this);
     if (!returnValue)
@@ -845,6 +1037,8 @@ void Interpreter::visit(CallNode *node)
     }
 
     shared_ptr<Value> callee = returnValue;
+
+    // Handle different types of callables
     if (callee->getType() == Value::Type::function)
     {
         shared_ptr<FunctionValue> function = dynamic_pointer_cast<FunctionValue>(callee);
@@ -855,91 +1049,7 @@ void Interpreter::visit(CallNode *node)
             return;
         }
 
-        if (function->getParameters() && (size_t)function->getParameters()->getParamCount() != args.size())
-        {
-            error("function '" + function->getName() + "' expects " +
-                      to_string(function->getParameters()->getParamCount()) +
-                      " arguments, but got " + to_string(args.size()),
-                  node->getRange());
-            returnValue = nullptr;
-            return;
-        }
-        else if (!function->getParameters() && !args.empty())
-        {
-            errorAt("function '" + function->getName() + "' does not take any arguments, but got " + to_string(args.size()), args[0]->getRange().getStart(), node->getRange());
-            returnValue = nullptr;
-            return;
-        }
-
-        // Check recursion depth to prevent stack overflow
-        if (recursionDepth >= MAX_RECURSION_DEPTH)
-        {
-            error("maximum recursion depth exceeded (" + to_string(MAX_RECURSION_DEPTH) + ")", node->getRange());
-            returnValue = nullptr;
-            return;
-        }
-
-        shared_ptr<Environment> scope = make_shared<Environment>(function->getEnvironment());
-        for (size_t i = 0; i < args.size(); ++i)
-        {
-            scope->declare(function->getParameters()->getParam(i)->getName(), args[i]);
-        }
-        auto previousEnv = env;
-        env = scope;
-
-        // Track this function call scope for cleanup
-        tempEnvironments.push_back(scope);
-
-        // Increment recursion depth
-        recursionDepth++;
-        string oldFunctionName = currentFunctionName;
-        currentFunctionName = function->getName();
-
-        if (!function->getBody())
-        {
-            errorAt("function '" + function->getName() + "' has no body", node->getCallee()->getRange().getStart(), node->getRange());
-            returnValue = nullptr;
-            recursionDepth--;
-            env = previousEnv;
-            return;
-        }
-
-        try
-        {
-            function->getBody()->visit(this);
-            returnValue = nullptr;
-        }
-        catch (const ReturnException &e)
-        {
-            returnValue = e.value;
-        }
-        catch (const BaseException &e)
-        {
-            recursionDepth--;
-            currentFunctionName = oldFunctionName;
-            env = previousEnv;
-            throw;
-        }
-
-        // Decrement recursion depth
-        recursionDepth--;
-        currentFunctionName = oldFunctionName;
-
-        // If the returned value is a function, check if it has a closure environment
-        // that might create a circular reference with the current scope
-        if (returnValue && returnValue->getType() == Value::Type::function)
-        {
-            auto returnedFunc = dynamic_pointer_cast<FunctionValue>(returnValue);
-            if (returnedFunc && returnedFunc->getEnvironment() == scope)
-            {
-                // The returned function was declared in this call's scope
-                // This can create a circular reference (scope -> function -> scope)
-                // Clear the closure to break the cycle
-                returnedFunc->clearClosureEnv();
-            }
-        }
-
-        env = previousEnv;
+        returnValue = callUserFunction(function, args, node->getRange());
     }
     else if (callee->getType() == Value::Type::builtin)
     {
@@ -958,7 +1068,9 @@ void Interpreter::visit(CallNode *node)
             callRange = memberAccess->getIdentifier().getRange();
         }
 
+        callStack.push(callee->toString(), callRange);
         returnValue = builtin->call(*this, args, env, callRange);
+        callStack.pop();
     }
     else if (callee->getType() == Value::Type::class_)
     {
@@ -970,157 +1082,7 @@ void Interpreter::visit(CallNode *node)
             return;
         }
 
-        // visit the declarations of the class and capture them in a new environment
-        auto previousEnv = env;
-        shared_ptr<Environment> classEnv = make_shared<Environment>(env);
-        env = classEnv;
-
-        // Track this class environment for cleanup
-        tempEnvironments.push_back(classEnv);
-
-        try
-        {
-            shared_ptr<BlockNode> classBody = dynamic_pointer_cast<BlockNode>(classValue->getBody());
-            if (!classBody)
-            {
-                error("class '" + classValue->getName() + "' has no body", calleeNode->getRange());
-                returnValue = nullptr;
-                env = previousEnv;
-                return;
-            }
-
-            // we don't want to push extra scope for class body, so we just visit the statements directly
-            if (classBody->getStatements())
-            {
-                classBody->getStatements()->visit(this);
-            }
-
-            // call the constructor of the class
-            auto ctor = env->lookupLocal(classValue->getName());
-
-            if (ctor)
-            {
-                if (ctor->getType() != Value::Type::function)
-                {
-                    error("class '" + classValue->getName() + "' has no constructor", calleeNode->getRange());
-                    returnValue = nullptr;
-                    env = previousEnv;
-                    return;
-                }
-
-                shared_ptr<FunctionValue> constructor = dynamic_pointer_cast<FunctionValue>(ctor);
-                if (!constructor)
-                {
-                    error("class '" + classValue->getName() + "' constructor could not be cast to FunctionValue", calleeNode->getRange());
-                    returnValue = nullptr;
-                    env = previousEnv;
-                    return;
-                }
-
-                // TODO: come back here
-                if (constructor->getParameters() && (size_t)constructor->getParameters()->getParamCount() != args.size())
-                {
-                    error("function '" + constructor->getName() + "' expects " +
-                              to_string(constructor->getParameters()->getParamCount()) +
-                              " arguments, but got " + to_string(args.size()),
-                          node->getRange());
-                    returnValue = nullptr;
-                    env = previousEnv;
-                    return;
-                }
-                else if (!constructor->getParameters() && !args.empty())
-                {
-                    error("function '" + constructor->getName() + "' does not take any arguments, but got " + to_string(args.size()), node->getRange());
-                    returnValue = nullptr;
-                    env = previousEnv;
-                    return;
-                }
-
-                shared_ptr<Environment> scope = make_shared<Environment>(constructor->getEnvironment());
-                for (size_t i = 0; i < args.size(); ++i)
-                {
-                    scope->declare(constructor->getParameters()->getParam(i)->getName(), args[i]);
-                }
-                auto constructorPrevEnv = env;
-                env = scope;
-                try
-                {
-                    if (!constructor->getBody())
-                    {
-                        error("constructor '" + constructor->getName() + "' has no body", node->getRange());
-                        env = constructorPrevEnv;
-                        return;
-                    }
-
-                    constructor->getBody()->visit(this);
-                }
-                catch (const ReturnException &e)
-                {
-                    if (e.value && e.value->getType() != Value::Type::null)
-                    {
-                        error("constructor of class '" + classValue->getName() + "' returned a value, which is not allowed", node->getRange());
-                    }
-                }
-                catch (const BreakException &e)
-                {
-                    env = constructorPrevEnv;
-                    throw;
-                }
-                catch (const ContinueException &e)
-                {
-                    env = constructorPrevEnv;
-                    throw;
-                }
-                catch (const ExitException &e)
-                {
-                    env = constructorPrevEnv;
-                    throw;
-                }
-                catch (const ErrorException &e)
-                {
-                    env = constructorPrevEnv;
-                    throw;
-                }
-
-                // Don't clear the scope in normal flow - let RAII handle it
-                env = constructorPrevEnv;
-            }
-
-            // create a new instance of the class
-            auto instance = make_shared<ObjectValue>(classValue->getName(), env);
-
-            env = previousEnv;
-            returnValue = instance;
-        }
-        catch (const BreakException &e)
-        {
-            // Clear the class environment before restoring on exception
-            classEnv->clear();
-            env = previousEnv;
-            throw;
-        }
-        catch (const ContinueException &e)
-        {
-            // Clear the class environment before restoring on exception
-            classEnv->clear();
-            env = previousEnv;
-            throw;
-        }
-        catch (const ExitException &e)
-        {
-            // Clear the class environment before restoring on exception
-            classEnv->clear();
-            env = previousEnv;
-            throw;
-        }
-        catch (const ErrorException &e)
-        {
-            // Clear the class environment before restoring on exception
-            classEnv->clear();
-            env = previousEnv;
-            throw;
-        }
-        return;
+        returnValue = callClassConstructor(classValue, args, node->getRange());
     }
     else
     {
@@ -1134,7 +1096,7 @@ void Interpreter::visit(ReturnStatementNode *node)
     auto expr = node->getExpression();
     if (!expr)
     {
-        throw ReturnException(make_shared<NullValue>(), node->getRange());
+        throw ReturnException(nullptr, node->getRange());
     }
 
     expr->visit(this);
@@ -1166,7 +1128,7 @@ void Interpreter::visit(VarDeclNode *node)
 
     if (!returnValue)
     {
-        errorAt("invalid assignment", node->getExpr()->getRange().getStart(), node->getRange());
+        errorAt("cannot declare a variable with no value", node->getExpr()->getRange().getStart(), node->getRange());
         return;
     }
 
@@ -1222,7 +1184,7 @@ void Interpreter::visit(AssignNode *node)
     shared_ptr<Value> value = returnValue;
     if (!value)
     {
-        error("assignment right-hand side evaluated to null", node->getExpr()->getRange());
+        error("assignment does not have a value", node->getExpr()->getRange());
         returnValue = nullptr;
         return;
     }
@@ -1243,19 +1205,59 @@ void Interpreter::visit(AssignNode *node)
             // No additional operation, just assign the value
             break;
         case Token::PLUS_EQUAL:
-            value = env->lookup(asignee->getName())->add(value);
+            {
+                auto existingValue = env->lookup(asignee->getName());
+                if (!existingValue) {
+                    notDefined(asignee);
+                    returnValue = nullptr;
+                    return;
+                }
+                value = existingValue->add(value);
+            }
             break;
         case Token::MINUS_EQUAL:
-            value = env->lookup(asignee->getName())->sub(value);
+            {
+                auto existingValue = env->lookup(asignee->getName());
+                if (!existingValue) {
+                    notDefined(asignee);
+                    returnValue = nullptr;
+                    return;
+                }
+                value = existingValue->sub(value);
+            }
             break;
         case Token::MUL_EQUAL:
-            value = env->lookup(asignee->getName())->mul(value);
+            {
+                auto existingValue = env->lookup(asignee->getName());
+                if (!existingValue) {
+                    notDefined(asignee);
+                    returnValue = nullptr;
+                    return;
+                }
+                value = existingValue->mul(value);
+            }
             break;
         case Token::DIV_EQUAL:
-            value = env->lookup(asignee->getName())->div(value);
+            {
+                auto existingValue = env->lookup(asignee->getName());
+                if (!existingValue) {
+                    notDefined(asignee);
+                    returnValue = nullptr;
+                    return;
+                }
+                value = existingValue->div(value);
+            }
             break;
         case Token::MOD_EQUAL:
-            value = env->lookup(asignee->getName())->mod(value);
+            {
+                auto existingValue = env->lookup(asignee->getName());
+                if (!existingValue) {
+                    notDefined(asignee);
+                    returnValue = nullptr;
+                    return;
+                }
+                value = existingValue->mod(value);
+            }
             break;
         default:
             error("invalid assignment operator", node->getRange());
@@ -1586,7 +1588,7 @@ void Interpreter::visit(IfStatementNode *node)
 
 void Interpreter::visit(FuncDeclNode *node)
 {
-    auto function = make_shared<FunctionValue>(node->getName(), node->getParams(), node->getBody(), env);
+    auto function = make_shared<FunctionValue>(node->getName(), node->getParams(), node->getBody(), env, node->getRange());
     env->redeclare(node->getName(), function, node->isConst());
     returnValue = nullptr;
 }
@@ -2190,7 +2192,15 @@ void Interpreter::visit(MemberAccessNode *node)
 
         if (!returnValue)
         {
-            errorAtToken(lhs->typeAsString() + " has no member '" + node->getIdentifier().getValue() + "'", node->getIdentifier(), node->getRange());
+            if (lhs->getType() == Value::Type::object)
+            {
+                auto objValue = dynamic_pointer_cast<ObjectValue>(lhs);
+                errorAtToken("class '" + objValue->getClassName() + "' has no member '" + node->getIdentifier().getValue() + "'", node->getIdentifier(), node->getRange());
+            }
+            else
+            {
+                errorAtToken(lhs->typeAsString() + " has no member '" + node->getIdentifier().getValue() + "'", node->getIdentifier(), node->getRange());
+            }
             return;
         }
     }

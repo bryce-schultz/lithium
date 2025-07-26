@@ -92,7 +92,7 @@ set<int> Parser::importFirsts = { Token::IMPORT };
 set<int> Parser::letStmtFirsts = { Token::LET };
 set<int> Parser::multFirsts = { '*', '/', '%' };
 set<int> Parser::postFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, '(', '[', '-', '+', '!' };
-set<int> Parser::postPFirsts = { '(', '[', '.', Token::INC, Token::DEC };
+set<int> Parser::postPFirsts = { '(', '[', '.', Token::INC, Token::DEC, '?' };
 set<int> Parser::relationFirsts = { '>', '<', Token::LE, Token::GE };
 set<int> Parser::returnStmtFirsts = { Token::RETURN };
 set<int> Parser::unaryFirsts = { '+', '-', '!', '~' };
@@ -1362,6 +1362,11 @@ Result<ExpressionNode> Parser::parsePostP(shared_ptr<ExpressionNode> lhs)
     else if (token == Token::INC || token == Token::DEC)
     {
         advanceToken(); // consume 'inc' or 'dec'
+        accept(make_shared<UnaryExprNode>(lhs, make_shared<OpNode>(token), false));
+    }
+    else if (token == '?')
+    {
+        advanceToken();
         accept(make_shared<UnaryExprNode>(lhs, make_shared<OpNode>(token), false));
     }
 

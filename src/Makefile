@@ -105,10 +105,10 @@ MAIN_OBJS = main.o \
  StringValue.o \
  BooleanValue.o \
  FunctionValue.o \
+ Exceptions.o \
  ArrayValue.o \
  ClassValue.o \
  ObjectValue.o \
- Exceptions.o \
  Builtins.o \
  SemanticErrorVisitor.o
 
@@ -141,7 +141,14 @@ StringValue.o: StringValue.cpp StringValue.h Value.h StatementsNode.h \
  Node.h Range.h Location.h Visitor.h StatementNode.h Environment.h \
  Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
  ExpressionNode.h Error.h Color.h Values.h NullValue.h NumberValue.h \
- BooleanValue.h FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h \
+ BooleanValue.h FunctionValue.h Exceptions.h Interpreter.h Nodes.h \
+ ArgListNode.h ArrayAccessNode.h ArrayNode.h AssignNode.h \
+ BinaryExprNode.h OpNode.h BooleanNode.h CallNode.h MemberAccessNode.h \
+ NullNode.h NumberNode.h StringNode.h UnaryExprNode.h VarExprNode.h \
+ AssertNode.h BlockNode.h BreakNode.h ClassNode.h ContinueNode.h \
+ DeleteNode.h ForEachNode.h ForStatementNode.h FuncDeclNode.h \
+ IfStatementNode.h ImportNode.h ReturnStatementNode.h WhileNode.h \
+ Parser.h Tokenizer.h CallStack.h ArrayValue.h ClassValue.h ObjectValue.h \
  Utils.h
 ArrayAccessNode.o: ArrayAccessNode.cpp ArrayAccessNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h Token.h
@@ -154,14 +161,27 @@ NullValue.o: NullValue.cpp NullValue.h Value.h StatementsNode.h Node.h \
  Range.h Location.h Visitor.h StatementNode.h Environment.h Result.h \
  ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h \
  Values.h NumberValue.h StringValue.h BooleanValue.h FunctionValue.h \
- ArrayValue.h ClassValue.h ObjectValue.h
+ Exceptions.h Interpreter.h Nodes.h ArgListNode.h ArrayAccessNode.h \
+ ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h BooleanNode.h \
+ CallNode.h MemberAccessNode.h NullNode.h NumberNode.h StringNode.h \
+ UnaryExprNode.h VarExprNode.h AssertNode.h BlockNode.h BreakNode.h \
+ ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h ForStatementNode.h \
+ FuncDeclNode.h IfStatementNode.h ImportNode.h ReturnStatementNode.h \
+ WhileNode.h Parser.h Tokenizer.h CallStack.h ArrayValue.h ClassValue.h \
+ ObjectValue.h
 BinaryExpressionNode.o: BinaryExpressionNode.cpp
 NumberValue.o: NumberValue.cpp NumberValue.h Values.h Value.h \
  StatementsNode.h Node.h Range.h Location.h Visitor.h StatementNode.h \
  Environment.h Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
  ExpressionNode.h NullValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h Error.h Color.h \
- Exceptions.h
+ FunctionValue.h Exceptions.h Interpreter.h Nodes.h ArgListNode.h \
+ ArrayAccessNode.h ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h \
+ BooleanNode.h CallNode.h MemberAccessNode.h NullNode.h NumberNode.h \
+ StringNode.h UnaryExprNode.h VarExprNode.h AssertNode.h BlockNode.h \
+ BreakNode.h ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h \
+ ForStatementNode.h FuncDeclNode.h IfStatementNode.h ImportNode.h \
+ ReturnStatementNode.h WhileNode.h Parser.h Tokenizer.h CallStack.h \
+ ArrayValue.h ClassValue.h ObjectValue.h Error.h Color.h
 MemberAccessNode.o: MemberAccessNode.cpp MemberAccessNode.h \
  ExpressionNode.h StatementNode.h Node.h Range.h Location.h Visitor.h \
  Token.h
@@ -173,7 +193,14 @@ ObjectValue.o: ObjectValue.cpp ObjectValue.h Value.h StatementsNode.h \
  Node.h Range.h Location.h Visitor.h StatementNode.h Environment.h \
  Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
  ExpressionNode.h Values.h NullValue.h NumberValue.h StringValue.h \
- BooleanValue.h FunctionValue.h ArrayValue.h ClassValue.h
+ BooleanValue.h FunctionValue.h Exceptions.h Interpreter.h Nodes.h \
+ ArgListNode.h ArrayAccessNode.h ArrayNode.h AssignNode.h \
+ BinaryExprNode.h OpNode.h BooleanNode.h CallNode.h MemberAccessNode.h \
+ NullNode.h NumberNode.h StringNode.h UnaryExprNode.h VarExprNode.h \
+ AssertNode.h BlockNode.h BreakNode.h ClassNode.h ContinueNode.h \
+ DeleteNode.h ForEachNode.h ForStatementNode.h FuncDeclNode.h \
+ IfStatementNode.h ImportNode.h ReturnStatementNode.h WhileNode.h \
+ Parser.h Tokenizer.h CallStack.h ArrayValue.h ClassValue.h
 XmlVisitor.o: XmlVisitor.cpp XmlVisitor.h Visitor.h Nodes.h Node.h \
  Range.h Location.h ArgListNode.h ExpressionNode.h StatementNode.h \
  ArrayAccessNode.h Token.h ArrayNode.h AssignNode.h BinaryExprNode.h \
@@ -199,12 +226,26 @@ Value.o: Value.cpp Values.h Value.h StatementsNode.h Node.h Range.h \
  Location.h Visitor.h StatementNode.h Environment.h Result.h \
  ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h \
  NullValue.h NumberValue.h StringValue.h BooleanValue.h FunctionValue.h \
- ArrayValue.h ClassValue.h ObjectValue.h Utils.h
+ Exceptions.h Interpreter.h Nodes.h ArgListNode.h ArrayAccessNode.h \
+ ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h BooleanNode.h \
+ CallNode.h MemberAccessNode.h NullNode.h NumberNode.h StringNode.h \
+ UnaryExprNode.h VarExprNode.h AssertNode.h BlockNode.h BreakNode.h \
+ ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h ForStatementNode.h \
+ FuncDeclNode.h IfStatementNode.h ImportNode.h ReturnStatementNode.h \
+ WhileNode.h Parser.h Tokenizer.h CallStack.h ArrayValue.h ClassValue.h \
+ ObjectValue.h Utils.h
 BooleanValue.o: BooleanValue.cpp BooleanValue.h Value.h StatementsNode.h \
  Node.h Range.h Location.h Visitor.h StatementNode.h Environment.h \
  Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
  ExpressionNode.h Values.h NullValue.h NumberValue.h StringValue.h \
- FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h
+ FunctionValue.h Exceptions.h Interpreter.h Nodes.h ArgListNode.h \
+ ArrayAccessNode.h ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h \
+ BooleanNode.h CallNode.h MemberAccessNode.h NullNode.h NumberNode.h \
+ StringNode.h UnaryExprNode.h VarExprNode.h AssertNode.h BlockNode.h \
+ BreakNode.h ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h \
+ ForStatementNode.h FuncDeclNode.h IfStatementNode.h ImportNode.h \
+ ReturnStatementNode.h WhileNode.h Parser.h Tokenizer.h CallStack.h \
+ ArrayValue.h ClassValue.h ObjectValue.h
 Error.o: Error.cpp Error.h Range.h Location.h Token.h Color.h Utils.h
 Interpreter.o: Interpreter.cpp Interpreter.h Visitor.h Environment.h \
  Result.h Nodes.h Node.h Range.h Location.h ArgListNode.h \
@@ -215,17 +256,24 @@ Interpreter.o: Interpreter.cpp Interpreter.h Visitor.h Environment.h \
  BlockNode.h StatementsNode.h BreakNode.h ClassNode.h ContinueNode.h \
  DeleteNode.h ForEachNode.h ForStatementNode.h FuncDeclNode.h \
  IfStatementNode.h ImportNode.h ReturnStatementNode.h WhileNode.h Value.h \
- Parser.h Tokenizer.h Values.h NullValue.h NumberValue.h StringValue.h \
- BooleanValue.h FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h \
- Error.h Color.h Utils.h Builtins.h Exceptions.h SemanticErrorVisitor.h \
- ArrayBuilder.h
+ Parser.h Tokenizer.h CallStack.h Values.h NullValue.h NumberValue.h \
+ StringValue.h BooleanValue.h FunctionValue.h Exceptions.h ArrayValue.h \
+ ClassValue.h ObjectValue.h Error.h Color.h Utils.h Builtins.h \
+ SemanticErrorVisitor.h ArrayBuilder.h
 BinaryExprNode.o: BinaryExprNode.cpp BinaryExprNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h OpNode.h Token.h
 ClassValue.o: ClassValue.cpp ClassValue.h Value.h StatementsNode.h Node.h \
  Range.h Location.h Visitor.h StatementNode.h Environment.h Result.h \
  ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h \
  Values.h NullValue.h NumberValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ArrayValue.h ObjectValue.h
+ FunctionValue.h Exceptions.h Interpreter.h Nodes.h ArgListNode.h \
+ ArrayAccessNode.h ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h \
+ BooleanNode.h CallNode.h MemberAccessNode.h NullNode.h NumberNode.h \
+ StringNode.h UnaryExprNode.h VarExprNode.h AssertNode.h BlockNode.h \
+ BreakNode.h ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h \
+ ForStatementNode.h FuncDeclNode.h IfStatementNode.h ImportNode.h \
+ ReturnStatementNode.h WhileNode.h Parser.h Tokenizer.h CallStack.h \
+ ArrayValue.h ObjectValue.h
 CallNode.o: CallNode.cpp CallNode.h ArgListNode.h ExpressionNode.h \
  StatementNode.h Node.h Range.h Location.h Visitor.h
 StatementsNode.o: StatementsNode.cpp StatementsNode.h Node.h Range.h \
@@ -258,7 +306,15 @@ ExpressionNode.o: ExpressionNode.cpp ExpressionNode.h StatementNode.h \
 Environment.o: Environment.cpp Environment.h Result.h Value.h \
  StatementsNode.h Node.h Range.h Location.h Visitor.h StatementNode.h \
  ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h \
- FunctionValue.h ArrayValue.h Error.h Color.h
+ FunctionValue.h Exceptions.h Values.h NullValue.h NumberValue.h \
+ StringValue.h BooleanValue.h ArrayValue.h ClassValue.h ObjectValue.h \
+ Interpreter.h Nodes.h ArgListNode.h ArrayAccessNode.h ArrayNode.h \
+ AssignNode.h BinaryExprNode.h OpNode.h BooleanNode.h CallNode.h \
+ MemberAccessNode.h NullNode.h NumberNode.h StringNode.h UnaryExprNode.h \
+ VarExprNode.h AssertNode.h BlockNode.h BreakNode.h ClassNode.h \
+ ContinueNode.h DeleteNode.h ForEachNode.h ForStatementNode.h \
+ FuncDeclNode.h IfStatementNode.h ImportNode.h ReturnStatementNode.h \
+ WhileNode.h Parser.h Tokenizer.h CallStack.h Error.h Color.h
 Location.o: Location.cpp Location.h
 Utils.o: Utils.cpp Utils.h
 ForEachNode.o: ForEachNode.cpp ForEachNode.h StatementNode.h Node.h \
@@ -277,7 +333,14 @@ ArrayValue.o: ArrayValue.cpp ArrayValue.h Value.h StatementsNode.h Node.h \
  Range.h Location.h Visitor.h StatementNode.h Environment.h Result.h \
  ParamListNode.h VarDeclNode.h DeclNode.h Token.h ExpressionNode.h \
  Values.h NullValue.h NumberValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ClassValue.h ObjectValue.h Error.h Color.h Utils.h
+ FunctionValue.h Exceptions.h Interpreter.h Nodes.h ArgListNode.h \
+ ArrayAccessNode.h ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h \
+ BooleanNode.h CallNode.h MemberAccessNode.h NullNode.h NumberNode.h \
+ StringNode.h UnaryExprNode.h VarExprNode.h AssertNode.h BlockNode.h \
+ BreakNode.h ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h \
+ ForStatementNode.h FuncDeclNode.h IfStatementNode.h ImportNode.h \
+ ReturnStatementNode.h WhileNode.h Parser.h Tokenizer.h CallStack.h \
+ ClassValue.h ObjectValue.h Error.h Color.h Utils.h
 FileCache.o: FileCache.cpp
 main.o: main.cpp Utils.h Parser.h Tokenizer.h Token.h Range.h Location.h \
  Nodes.h Node.h Visitor.h ArgListNode.h ExpressionNode.h StatementNode.h \
@@ -287,10 +350,10 @@ main.o: main.cpp Utils.h Parser.h Tokenizer.h Token.h Range.h Location.h \
  VarExprNode.h AssertNode.h BlockNode.h StatementsNode.h BreakNode.h \
  ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h ForStatementNode.h \
  FuncDeclNode.h IfStatementNode.h ImportNode.h ReturnStatementNode.h \
- WhileNode.h Result.h Interpreter.h Environment.h Value.h \
+ WhileNode.h Result.h Interpreter.h Environment.h Value.h CallStack.h \
  SemanticErrorVisitor.h Values.h NullValue.h NumberValue.h StringValue.h \
- BooleanValue.h FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h \
- Error.h Color.h Exceptions.h
+ BooleanValue.h FunctionValue.h Exceptions.h ArrayValue.h ClassValue.h \
+ ObjectValue.h Error.h Color.h
 Parser.o: Parser.cpp Parser.h Tokenizer.h Token.h Range.h Location.h \
  Nodes.h Node.h Visitor.h ArgListNode.h ExpressionNode.h StatementNode.h \
  ArrayAccessNode.h ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h \
@@ -304,16 +367,29 @@ Color.o: Color.cpp Color.h
 FunctionValue.o: FunctionValue.cpp FunctionValue.h Value.h \
  StatementsNode.h Node.h Range.h Location.h Visitor.h StatementNode.h \
  Environment.h Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
- ExpressionNode.h Values.h NullValue.h NumberValue.h StringValue.h \
- BooleanValue.h ArrayValue.h ClassValue.h ObjectValue.h Utils.h
+ ExpressionNode.h Exceptions.h Values.h NullValue.h NumberValue.h \
+ StringValue.h BooleanValue.h ArrayValue.h ClassValue.h ObjectValue.h \
+ Interpreter.h Nodes.h ArgListNode.h ArrayAccessNode.h ArrayNode.h \
+ AssignNode.h BinaryExprNode.h OpNode.h BooleanNode.h CallNode.h \
+ MemberAccessNode.h NullNode.h NumberNode.h StringNode.h UnaryExprNode.h \
+ VarExprNode.h AssertNode.h BlockNode.h BreakNode.h ClassNode.h \
+ ContinueNode.h DeleteNode.h ForEachNode.h ForStatementNode.h \
+ FuncDeclNode.h IfStatementNode.h ImportNode.h ReturnStatementNode.h \
+ WhileNode.h Parser.h Tokenizer.h CallStack.h Utils.h
 IfStatementNode.o: IfStatementNode.cpp IfStatementNode.h StatementNode.h \
  Node.h Range.h Location.h Visitor.h ExpressionNode.h Token.h
 Builtins.o: Builtins.cpp Builtins.h Values.h Value.h StatementsNode.h \
  Node.h Range.h Location.h Visitor.h StatementNode.h Environment.h \
  Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
  ExpressionNode.h NullValue.h NumberValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h Exceptions.h \
- Utils.h Error.h Color.h
+ FunctionValue.h Exceptions.h Interpreter.h Nodes.h ArgListNode.h \
+ ArrayAccessNode.h ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h \
+ BooleanNode.h CallNode.h MemberAccessNode.h NullNode.h NumberNode.h \
+ StringNode.h UnaryExprNode.h VarExprNode.h AssertNode.h BlockNode.h \
+ BreakNode.h ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h \
+ ForStatementNode.h FuncDeclNode.h IfStatementNode.h ImportNode.h \
+ ReturnStatementNode.h WhileNode.h Parser.h Tokenizer.h CallStack.h \
+ ArrayValue.h ClassValue.h ObjectValue.h Utils.h Error.h Color.h
 VarDeclNode.o: VarDeclNode.cpp VarDeclNode.h DeclNode.h StatementNode.h \
  Node.h Range.h Location.h Visitor.h Token.h ExpressionNode.h
 ReturnStatementNode.o: ReturnStatementNode.cpp ReturnStatementNode.h \
@@ -334,7 +410,14 @@ Exceptions.o: Exceptions.cpp Exceptions.h Range.h Location.h Values.h \
  Value.h StatementsNode.h Node.h Visitor.h StatementNode.h Environment.h \
  Result.h ParamListNode.h VarDeclNode.h DeclNode.h Token.h \
  ExpressionNode.h NullValue.h NumberValue.h StringValue.h BooleanValue.h \
- FunctionValue.h ArrayValue.h ClassValue.h ObjectValue.h Utils.h
+ FunctionValue.h Interpreter.h Nodes.h ArgListNode.h ArrayAccessNode.h \
+ ArrayNode.h AssignNode.h BinaryExprNode.h OpNode.h BooleanNode.h \
+ CallNode.h MemberAccessNode.h NullNode.h NumberNode.h StringNode.h \
+ UnaryExprNode.h VarExprNode.h AssertNode.h BlockNode.h BreakNode.h \
+ ClassNode.h ContinueNode.h DeleteNode.h ForEachNode.h ForStatementNode.h \
+ FuncDeclNode.h IfStatementNode.h ImportNode.h ReturnStatementNode.h \
+ WhileNode.h Parser.h Tokenizer.h CallStack.h ArrayValue.h ClassValue.h \
+ ObjectValue.h Utils.h
 SemanticErrorVisitor.o: SemanticErrorVisitor.cpp SemanticErrorVisitor.h \
  Visitor.h Nodes.h Node.h Range.h Location.h ArgListNode.h \
  ExpressionNode.h StatementNode.h ArrayAccessNode.h Token.h ArrayNode.h \

@@ -1,0 +1,26 @@
+# Test call stack raw format with deep recursive nesting
+fn countdown(n)
+{
+    if (n <= 0)
+    {
+        dumpstack("raw");
+        return "done";
+    }
+    else
+    {
+        return countdown(n - 1);
+    }
+}
+
+fn wrapper()
+{
+    countdown(5);
+}
+
+fn outer()
+{
+    wrapper();
+}
+
+# Start deep recursive chain
+outer();

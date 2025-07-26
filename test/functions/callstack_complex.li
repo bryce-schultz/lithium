@@ -1,0 +1,37 @@
+# Complex call stack test with class constructors and functions
+class Calculator
+{
+    fn Calculator()
+    {
+        let version = "1.0";
+    }
+}
+
+fn factorial(n)
+{
+    if (n <= 1)
+    {
+        # Show call stack at the deepest point
+        dumpstack("table");
+        return 1;
+    }
+    else
+    {
+        return n * factorial(n - 1);
+    }
+}
+
+fn testMath()
+{
+    let calc = Calculator();
+    return factorial(4);
+}
+
+fn main()
+{
+    let result = testMath();
+    println("Result: " + string(result));
+}
+
+# Start the complex call chain
+main();

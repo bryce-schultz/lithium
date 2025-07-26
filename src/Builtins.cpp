@@ -996,12 +996,28 @@ shared_ptr<Value> Builtins::runShellCommand(Interpreter &interpreter, const vect
     return make_shared<StringValue>(output, range);
 }
 
-shared_ptr<Value> Builtins::dumpEnv(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+shared_ptr<Value> Builtins::dumpenv(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
 {
     UNUSED(interpreter);
-    UNUSED(args);
-    UNUSED(env);
     UNUSED(range);
+
+    // if we have 1 argument and its an object or a class, we will dump its environment
+    if (args.size() == 1)
+    {
+        if (args[0]->getType() == Value::Type::object)
+        {
+            auto object = dynamic_pointer_cast<ObjectValue>(args[0]);
+            if (object)
+            {
+                env = object->getEnvironment();
+            }
+        }
+        else if (args[0]->getType() != Value::Type::null)
+        {
+            error("dumpenv() expects an object or nothing, but got " + args[0]->typeAsString(), args[0]->getRange());
+            return nullptr;
+        }
+    }
 
     // this function is for debugging purposes, it dumps the environment variables
     // to the standard output, so we don't need to return anything
@@ -1223,4 +1239,37 @@ shared_ptr<Value> Builtins::getenv(Interpreter &interpreter, const vector<shared
         return make_shared<StringValue>(value, range);
     }
     return make_shared<NullValue>(range);
+}
+
+shared_ptr<Value> Builtins::dumpstack(Interpreter &interpreter, const vector<shared_ptr<Value>> &args, shared_ptr<Environment> env, const Range &range)
+{
+    UNUSED(env);
+    UNUSED(range);
+
+    string format = "table"; // default format
+    
+    if (args.size() == 1)
+    {
+        if (args[0]->getType() != Value::Type::string)
+        {
+            error("dumpstack() format argument must be a string", args[0]->getRange());
+            return nullptr;
+        }
+        format = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+        
+        if (format != "table" && format != "raw")
+        {
+            error("dumpstack() format must be 'table' or 'raw'", args[0]->getRange());
+            return nullptr;
+        }
+    }
+    else if (args.size() > 1)
+    {
+        error("dumpstack() expects 0 or 1 arguments, but got " + to_string(args.size()), range);
+        return nullptr;
+    }
+
+    cout << interpreter.getCallStack().toString(format);
+
+    return nullptr; // this function is for debugging purposes, it dumps the stack trace to the standard output
 }

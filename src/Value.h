@@ -44,7 +44,8 @@ public:
         function,
         builtin,
         class_,
-        object // for instances of classes
+        object, // for instances of classes
+        error // for error values
     };
 
     virtual string typeAsString() const;

@@ -291,8 +291,9 @@ private:
     //        | . IDENT
     //        | INC
     //        | DEC
+    //        | ?
     //***************************************************
-    // firsts: [, (, ., INC, DEC
+    // firsts: [, (, ., INC, DEC, ?
     Result<ExpressionNode> parsePostP(shared_ptr<ExpressionNode> lhs);
 
     //***************************************************

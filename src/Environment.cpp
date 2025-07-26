@@ -146,30 +146,51 @@ const map<string, shared_ptr<Value>> &Environment::getMembers() const
 void Environment::clear()
 {
     // First, clear closure environments in functions and arrays to break cycles
-    for (auto& pair : variables) {
-        if (pair.second && pair.second->getType() == Value::Type::function) {
+    for (auto& pair : variables)
+    {
+        if (!pair.second)
+        {
+            continue;
+        }
+
+        if (pair.second->getType() == Value::Type::function)
+        {
             auto func = dynamic_pointer_cast<FunctionValue>(pair.second);
-            if (func) {
+            if (func)
+            {
+                func->clearClosureEnv();
+            }
+            continue;
+        }
+
+        if (pair.second->getType() != Value::Type::array)
+        {
+            continue;
+        }
+
+        auto array = dynamic_pointer_cast<ArrayValue>(pair.second);
+        if (!array)
+        {
+            continue;
+        }
+
+        // Clear function closures in the array elements to break cycles
+        for (int i = 0; i < array->getElementCount(); ++i)
+        {
+            auto element = array->getElement(i);
+            if (!element || element->getType() != Value::Type::function)
+            {
+                continue;
+            }
+
+            auto func = dynamic_pointer_cast<FunctionValue>(element);
+            if (func)
+            {
                 func->clearClosureEnv();
             }
         }
-        else if (pair.second && pair.second->getType() == Value::Type::array) {
-            auto array = dynamic_pointer_cast<ArrayValue>(pair.second);
-            if (array) {
-                // Clear function closures in the array elements to break cycles
-                for (int i = 0; i < array->getElementCount(); ++i) {
-                    auto element = array->getElement(i);
-                    if (element && element->getType() == Value::Type::function) {
-                        auto func = dynamic_pointer_cast<FunctionValue>(element);
-                        if (func) {
-                            func->clearClosureEnv();
-                        }
-                    }
-                }
-            }
-        }
     }
-    
+
     // Clear all variables to break potential cycles
     variables.clear();
     constants.clear();
@@ -178,22 +199,31 @@ void Environment::clear()
 
 void Environment::dump() const
 {
+    static int id = 0;
     if (parent)
     {
-        cout << "----------------------------------------\nParent Environment\n----------------------------------------\n";
         parent->dump();
+        cout << "----------------------------------------\nEnvironment - " << id++ << "\n----------------------------------------\n";
+        if (variables.empty())
+        {
+            cout << "  empty\n";
+        }
+    }
+    else
+    {
+        id = 0;
+        cout << "----------------------------------------\nRoot Environment - " << id++ << "\n----------------------------------------\n";
+        if (variables.empty())
+        {
+            cout << "  root empty!\n";
+        }
     }
 
-    cout << "----------------------------------------\nEnvironment\n----------------------------------------\n";
-    cout << "Variables:\n";
     for (const auto &pair : variables)
     {
-        cout << "  " << pair.first << ": " << (pair.second ? pair.second->toString() : "null") << "\n";
-    }
-    cout << "Constants:\n";
-    for (const auto &name : constants)
-    {
-        cout << "  " << name << "\n";
+        bool isConstant = hasConstant(pair.first);
+        string constIndicator = isConstant ? " [const]" : "";
+        cout << "  " << pair.first << ": " << (pair.second ? pair.second->toString() : "null") << constIndicator << "\n";
     }
 }
 

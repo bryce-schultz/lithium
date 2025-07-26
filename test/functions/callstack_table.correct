@@ -1,0 +1,13 @@
+┌──────────────────────────────────────────────┐
+│                  Call Stack                  │
+├────────────────────┬─────────────────────────┤
+│ Function           │ Location                │
+├────────────────────┼─────────────────────────┤
+│ level1             │ callstack_table.li:30:1 │
+│ level2             │ callstack_table.li:26:5 │
+│ level3             │ callstack_table.li:21:5 │
+│ level3             │ callstack_table.li:15:9 │
+│ level3             │ callstack_table.li:15:9 │
+│ level4             │ callstack_table.li:11:9 │
+│ <builtin function> │ callstack_table.li:4:5  │
+└────────────────────┴─────────────────────────┘

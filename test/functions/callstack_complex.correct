@@ -1,0 +1,14 @@
+┌─────────────────────────────────────────────────┐
+│                   Call Stack                    │
+├────────────────────┬────────────────────────────┤
+│ Function           │ Location                   │
+├────────────────────┼────────────────────────────┤
+│ main               │ callstack_complex.li:37:1  │
+│ testMath           │ callstack_complex.li:32:18 │
+│ factorial          │ callstack_complex.li:27:12 │
+│ factorial          │ callstack_complex.li:20:20 │
+│ factorial          │ callstack_complex.li:20:20 │
+│ factorial          │ callstack_complex.li:20:20 │
+│ <builtin function> │ callstack_complex.li:15:9  │
+└────────────────────┴────────────────────────────┘
+Result: 24

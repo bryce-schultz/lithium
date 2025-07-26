@@ -59,7 +59,8 @@ Token Tokenizer::lex()
         c == '}' ||
         c == '[' ||
         c == ']' ||
-        c == '.')
+        c == '.' ||
+        c == '?')
     {
         advance();
         return Token(static_cast<int>(c), Range(start, location), c);

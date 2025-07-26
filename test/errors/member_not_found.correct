@@ -1,4 +1,4 @@
-error: member_not_found.li:3:3: Test has no member 'b'
+error: member_not_found.li:3:3: class 'Test' has no member 'b'
 │ x.b.c.d;
 │ ~~~
 │   ^

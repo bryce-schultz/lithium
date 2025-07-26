@@ -11,6 +11,7 @@
 #include "Nodes.h"
 #include "Value.h"
 #include "Parser.h"
+#include "CallStack.h"
 
 using std::string;
 using std::cout;
@@ -32,6 +33,8 @@ public:
 
     shared_ptr<Environment> getEnvironment() const { return env; }
     void setEnvironment(shared_ptr<Environment> newEnv) { env = newEnv; }
+
+    const CallStack &getCallStack() const { return callStack; }
 
     virtual void visitAllChildren(Node *node) override;
 public:
@@ -66,6 +69,12 @@ public:
 private:
     shared_ptr<Value> evalUnaryExpression(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
     shared_ptr<Value> evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
+    shared_ptr<Value> evalIncrementDecrement(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
+    
+    // Call node helper methods
+    bool validateFunctionArguments(shared_ptr<FunctionValue> function, const vector<shared_ptr<Value>>& args, const Range& nodeRange, const string& functionType = "function");
+    shared_ptr<Value> callUserFunction(shared_ptr<FunctionValue> function, const vector<shared_ptr<Value>>& args, const Range& nodeRange);
+    shared_ptr<Value> callClassConstructor(shared_ptr<ClassValue> classValue, const vector<shared_ptr<Value>>& args, const Range& nodeRange);
 private:
     void setupEnvironment();
     void setupBuiltInFunctions();
@@ -89,6 +98,9 @@ private:
 
     // Track temporary environments for cleanup during chained calls
     std::vector<std::shared_ptr<Environment>> tempEnvironments;
+
+    // Call stack for debugging and error reporting
+    CallStack callStack;
 
     // Helper to clean up any temporary environments
     void cleanupTempEnvironments();
