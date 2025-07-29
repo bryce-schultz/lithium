@@ -64,12 +64,21 @@ int runInteractiveMode(const vector<string> &args)
     SemanticErrorVisitor semanticVisitor;
 
     string line;
+    string accumulatedInput; // Track all input so far
+
     while ((line = Utils::getInputLine()) != "exit")
     {
         clearErrorLocations();
         semanticVisitor.resetErrorCount();
 
-        Result<Node> result = parser.parse(line, "cin");
+        // Store current position for this line
+        size_t currentLineStart = accumulatedInput.length();
+
+        // Append current line to accumulated input (line already includes \n)
+        accumulatedInput += line;
+
+        // Parse with accumulated input starting from the current line position
+        Result<Node> result = parser.parseFromPosition(accumulatedInput, currentLineStart, "cin");
         if (!result.status)
         {
             continue;

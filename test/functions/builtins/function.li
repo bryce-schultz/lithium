@@ -1,0 +1,6 @@
+fn test()
+{
+    println(__function__);
+}
+
+test();

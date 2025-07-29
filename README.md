@@ -15,10 +15,7 @@ cd lithium
 # Option 1: Quick build (recommended - uses parallel compilation)
 ./build
 
-# Option 2: Development setup with dependencies
-./setup_dev.sh
-
-# Option 3: Manual build
+# Option 2: Manual build
 make -C src
 ```
 
@@ -46,9 +43,6 @@ echo 'println("Hello, Lithium!");' > hello.li
 ```bash
 # Run all native tests
 ./run_all_tests
-
-# Run Python integration tests  
-python3 -m pytest -v
 
 # Run memory leak tests (optional)
 ./run_all_tests_with_memory
@@ -376,7 +370,6 @@ This project uses GitHub Actions for automated testing and quality assurance. Th
 
 - **Builds** the interpreter from source on Ubuntu
 - **Runs** all 97+ native tests using the test runner
-- **Executes** Python/pytest integration tests
 - **Performs** memory leak detection with valgrind
 - **Tests** sample programs for regression detection
 

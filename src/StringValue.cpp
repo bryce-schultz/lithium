@@ -59,6 +59,22 @@ void StringValue::registerBuiltins()
         getRange()
     ), true);
 
+    // empty() -> boolean
+    addMember("empty", make_shared<BuiltinFunctionValue>(
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(interpreter);
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("empty() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+            return make_shared<BooleanValue>(this->value.empty(), range);
+        },
+        getRange()
+    ), true);
+
     // split(delimiter) -> []
     addMember("split", make_shared<BuiltinFunctionValue>(
     [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>

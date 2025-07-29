@@ -1,11 +1,3 @@
-only line comments are supported using #.
-Tokens in caps like IF are just the lowercase version (if)
-IDENT is [A-Za-z_][A-Za-z0-9_]*
-NUMBER is [0-9]+\.?[0-9]*
-the PLUS_EQUAL, EQ, NE are self explanatory
-
-there are builtin constants of true, false, null, PI, E, VERSION, FILE, LINE
-
 module -> stmts
 
 stmts -> stmt stmts
@@ -64,7 +56,7 @@ exprStmt -> expr ;
 
 importStmt -> IMPORT < moduleName >
 
-moduleName -> IDENT . IDENT
+moduleName -> moduleName . IDENT
             | IDENT
 
 varDecl -> letStmt

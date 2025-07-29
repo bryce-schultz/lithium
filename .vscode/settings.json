@@ -1,28 +1,4 @@
 {
-    // Python testing configuration
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestArgs": [
-        "-v",
-        "--tb=short",
-        "."
-    ],
-    "python.testing.autoTestDiscoverOnSaveEnabled": true,
-    
-    // Test Explorer settings
-    "testExplorer.useNativeTesting": true,
-    "testExplorer.mergeSuites": false,
-    "testExplorer.showCollapseButton": true,
-    "testExplorer.showExpandButton": true,
-    "testExplorer.gutterDecoration": true,
-    "testExplorer.onStart": "reset",
-    "testExplorer.onReload": "reset",
-    "testExplorer.sort": "byLocation",
-    
-    // Python test discovery settings
-    "python.testing.pytestPath": "python3",
-    "python.testing.cwd": "${workspaceFolder}",
-    
     // File associations
     "files.associations": {
         "string": "cpp",

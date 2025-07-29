@@ -5,6 +5,9 @@
 #include "Error.h"
 #include "Exceptions.h"
 
+// Epsilon for floating-point comparison - handles precision issues like 0.1 + 0.2 == 0.3
+constexpr double EPSILON = 1e-15;
+
 #define error(msg, range) \
     rangeError(msg, range, __FILE__, __LINE__); \
     throw ErrorException(msg, range)
@@ -26,8 +29,10 @@ NumberValue::NumberValue(double value, const Range &range):
 
 string NumberValue::toString() const
 {
-
-    string str = to_string(value);
+    // Round to 15 decimal places to eliminate floating-point precision artifacts
+    double rounded = std::round(value * 1e15) / 1e15;
+    
+    string str = to_string(rounded);
     str.erase(str.find_last_not_of('0') + 1, string::npos);
     str.erase(str.find_last_not_of('.') + 1, string::npos);
     if (str.empty())
@@ -89,7 +94,10 @@ shared_ptr<Value> NumberValue::mod(const shared_ptr<NumberValue> &other) const
 
 shared_ptr<Value> NumberValue::eq(const shared_ptr<NumberValue> &other) const
 {
-    return make_shared<BooleanValue>(value == other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
+    // Use epsilon comparison for floating-point numbers to handle precision issues
+    double diff = std::abs(value - other->getValue());
+    bool isEqual = diff < EPSILON;
+    return make_shared<BooleanValue>(isEqual, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> NumberValue::eq(const shared_ptr<NullValue> &other) const

@@ -241,11 +241,7 @@ void Interpreter::setupBuiltInFunctions()
 
 void Interpreter::setupRuntimeValues()
 {
-    // FILE is also declared, but its setup in the main file for now.
-    env->declare("null", make_shared<NullValue>(), true);
-    env->declare("true", make_shared<BooleanValue>(true), true);
-    env->declare("false", make_shared<BooleanValue>(false), true);
-    env->declare("VERSION", make_shared<StringValue>(INTERPRETER_VERSION), true);
+    declare("__version__", INTERPRETER_VERSION, true);
 }
 
 bool Interpreter::import(const Token &moduleName, const Range &range)
@@ -557,7 +553,7 @@ void Interpreter::visit(BinaryExprNode *node)
         return;
     }
 
-    errorAt("unsupported binary operation between " + leftValue->typeAsString() + " and " + rightValue->typeAsString(), opNode->getRange().getStart(), node->getRange());
+    errorAt("unsupported operation between " + leftValue->typeAsString() + " and " + rightValue->typeAsString(), opNode->getRange().getStart(), node->getRange());
 }
 
 void Interpreter::visit(UnaryExprNode *node)
@@ -955,6 +951,21 @@ shared_ptr<Value> Interpreter::callClassConstructor(shared_ptr<ClassValue> class
     }
 }
 
+shared_ptr<Value> Interpreter::declare(const string &name, const string &value, bool constant)
+{
+    return env->declare(name, make_shared<StringValue>(value), constant);
+}
+
+shared_ptr<Value> Interpreter::declare(const string &name, const bool &value, bool constant)
+{
+    return env->declare(name, make_shared<BooleanValue>(value), constant);
+}
+
+shared_ptr<Value> Interpreter::declare(const string &name, const double &value, bool constant)
+{
+    return env->declare(name, make_shared<NumberValue>(value), constant);
+}
+
 shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix)
 {
     auto value = env->lookup(expression->getName());
@@ -1146,24 +1157,21 @@ void Interpreter::visit(VarDeclNode *node)
 void Interpreter::visit(VarExprNode *node)
 {
     // Intercept special variables
-    if (node->getName() == "FILE")
+    if (node->getName() == "__file__")
     {
-        returnValue = make_shared<StringValue>(node->getRange().getStart().getFilename());
-        returnValue->setRange(node->getRange());
+        returnValue = make_shared<StringValue>(node->getRange().getStart().getFilename(), node->getRange());
         return;
     }
 
-    if (node->getName() == "LINE")
+    if (node->getName() == "__line__")
     {
-        returnValue = make_shared<NumberValue>(node->getRange().getStart().getLine());
-        returnValue->setRange(node->getRange());
+        returnValue = make_shared<NumberValue>(node->getRange().getStart().getLine(), node->getRange());
         return;
     }
 
-    if (node->getName() == "FUNCTION")
+    if (node->getName() == "__function__")
     {
-        returnValue = make_shared<StringValue>(currentFunctionName);
-        returnValue->setRange(node->getRange());
+        returnValue = make_shared<StringValue>(currentFunctionName, node->getRange());
         return;
     }
 
@@ -1201,68 +1209,77 @@ void Interpreter::visit(AssignNode *node)
     {
         switch (node->getOp())
         {
-        case '=':
-            // No additional operation, just assign the value
-            break;
-        case Token::PLUS_EQUAL:
+            case '=':
+            {
+                // No additional operation, just assign the value
+                break;
+            }
+            case Token::PLUS_EQUAL:
             {
                 auto existingValue = env->lookup(asignee->getName());
-                if (!existingValue) {
+                if (!existingValue)
+                {
                     notDefined(asignee);
                     returnValue = nullptr;
                     return;
                 }
                 value = existingValue->add(value);
+                break;
             }
-            break;
-        case Token::MINUS_EQUAL:
+            case Token::MINUS_EQUAL:
             {
                 auto existingValue = env->lookup(asignee->getName());
-                if (!existingValue) {
+                if (!existingValue)
+                {
                     notDefined(asignee);
                     returnValue = nullptr;
                     return;
                 }
                 value = existingValue->sub(value);
+                break;
             }
-            break;
-        case Token::MUL_EQUAL:
+            case Token::MUL_EQUAL:
             {
                 auto existingValue = env->lookup(asignee->getName());
-                if (!existingValue) {
+                if (!existingValue)
+                {
                     notDefined(asignee);
                     returnValue = nullptr;
                     return;
                 }
                 value = existingValue->mul(value);
+                break;
             }
-            break;
-        case Token::DIV_EQUAL:
+            case Token::DIV_EQUAL:
             {
                 auto existingValue = env->lookup(asignee->getName());
-                if (!existingValue) {
+                if (!existingValue)
+                {
                     notDefined(asignee);
                     returnValue = nullptr;
                     return;
                 }
                 value = existingValue->div(value);
+                break;
             }
-            break;
-        case Token::MOD_EQUAL:
+            case Token::MOD_EQUAL:
             {
                 auto existingValue = env->lookup(asignee->getName());
-                if (!existingValue) {
+                if (!existingValue)
+                {
                     notDefined(asignee);
                     returnValue = nullptr;
                     return;
                 }
                 value = existingValue->mod(value);
+                break;
             }
-            break;
-        default:
-            error("invalid assignment operator", node->getRange());
-            returnValue = nullptr;
-            return;
+            default:
+            {
+                error("invalid assignment operator", node->getRange());
+                returnValue = nullptr;
+                return;
+            }
         }
 
         if (!value)
@@ -1558,15 +1575,6 @@ void Interpreter::visit(IfStatementNode *node)
     node->getCondition()->visit(this);
     if (!returnValue)
     {
-        return;
-    }
-
-    if (returnValue->getType() != Value::Type::boolean &&
-        returnValue->getType() != Value::Type::number &&
-        returnValue->getType() != Value::Type::string)
-    {
-        error("condition evaluate to a boolean expression", node->getCondition()->getRange());
-        returnValue = nullptr;
         return;
     }
 
@@ -2043,14 +2051,6 @@ void Interpreter::visit(AssertNode *node)
 
     auto condition = returnValue;
 
-    if (condition->getType() != Value::Type::boolean &&
-        condition->getType() != Value::Type::number &&
-        condition->getType() != Value::Type::string)
-    {
-        error("assertion condition must be a boolean expression", node->getCondition()->getRange());
-        return;
-    }
-
     auto message = node->getMessage();
     string messageStr = "";
     if (message)
@@ -2067,6 +2067,8 @@ void Interpreter::visit(AssertNode *node)
     {
         error("assertion failed: " + messageStr, node->getCondition()->getRange());
     }
+
+    returnValue = nullptr;
 }
 
 void Interpreter::visit(ArrayAccessNode *node)

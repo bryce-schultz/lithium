@@ -1,0 +1,23 @@
+# Test floating-point precision handling
+# These tests verify that common floating-point precision issues are handled correctly
+
+# Classic floating-point precision issue
+println(0.1 + 0.2 == 0.3);  # Should be true
+
+# Multiple operations
+println(0.1 + 0.1 + 0.1 == 0.3);  # Should be true
+println(0.1 + 0.2 + 0.3 == 0.6);  # Should be true
+
+# Integer vs float comparisons
+println(1.0 == 1);  # Should be true
+println(0.0 == 0);  # Should be true
+println(10.0 == 10);  # Should be true
+
+# Cases that should NOT be equal
+println(0.1 == 0.2);  # Should be false
+println(0.3 == 0.4);  # Should be false
+println(0.30001 == 0.3);  # Should be false (difference too large for epsilon)
+
+# Display formatting
+print("0.1 + 0.2 = ");
+println(0.1 + 0.2);  # Should display as 0.3, not 0.30000000000000004

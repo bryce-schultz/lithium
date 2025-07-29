@@ -8,19 +8,18 @@ The CI pipeline consists of two main jobs:
 
 ### 1. Test Job (`test`)
 - **Platform**: Ubuntu Latest
-- **Python**: 3.12
+- **Python**: 3.12 (for fuzzer tools only)
 - **Dependencies**: 
   - Build tools: `gcc`, `g++`, `make`
   - Memory tools: `valgrind`
-  - Python testing: `pytest` and other dev dependencies
 
 **Steps:**
 1. **Build Verification**: Clean build of the interpreter
 2. **PATH Setup**: Add interpreter to PATH for test runner compatibility
 3. **Basic Functionality**: Run a simple test program to verify core functionality
 4. **Native Test Suite**: Execute all 97+ native Lithium tests using `./run_all_tests`
-5. **Python Test Suite**: Run pytest-based tests for compatibility and integration
-6. **Sample Programs**: Test interpreter with sample programs (grid, pascal)
+5. **Sample Programs**: Test interpreter with sample programs (grid, pascal)
+5. **Sample Programs**: Test interpreter with sample programs (grid, pascal)
 
 ### 2. Memory Test Job (`memory-test`)
 - **Platform**: Ubuntu Latest
@@ -39,7 +38,6 @@ The CI pipeline covers:
 - **Built-in Functions**: Type checking, string operations, I/O, etc.
 - **Error Handling**: Syntax errors, runtime errors, edge cases
 - **Memory Safety**: Memory leak detection and cleanup verification
-- **Integration**: Python test compatibility and VSCode integration
 
 ## File Structure
 
@@ -58,9 +56,6 @@ test/ci/
 To run the same tests that CI runs:
 
 ```bash
-# Install dependencies
-./setup_dev.sh
-
 # Build interpreter
 make -C src
 
@@ -69,9 +64,6 @@ export PATH="$(pwd)/src:$PATH"
 
 # Run native tests
 ./run_all_tests
-
-# Run Python tests
-python3 -m pytest -v
 
 # Run memory tests (optional)
 ./run_all_tests_with_memory

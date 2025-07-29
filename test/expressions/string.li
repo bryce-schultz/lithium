@@ -14,9 +14,9 @@ println("Concatenating " + "strings " + "is " + "fun!");
 
 println(10 + " + " + 20 + " = " + (10 + 20));
 
-println("The current line is: " + LINE);
+println("The current line is: " + __line__);
 
-println("The current file is: " + FILE);
+println("The current file is: " + __file__);
 
 println("This boolean value is: " + true);
 

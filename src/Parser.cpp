@@ -62,18 +62,11 @@ Parser::Parser():
     depth(0)
 { }
 
-Parser::~Parser()
-{
-    // Reset the tokenizer to ensure proper cleanup
-    tokenizer = Tokenizer();
-    currentToken = Token();
-}
-
 set<int> Parser::additFirsts = { '+', '-' };
 set<int> Parser::andFirsts = { Token::AND };
 set<int> Parser::argListFirsts = exprFirsts;
 set<int> Parser::assertFirsts = { Token::ASSERT };
-set<int> Parser::assignFirsts = { Token::NUMBER, Token::IDENT, Token::STRING,Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, '(', '[', ';', '+', '!' };
+set<int> Parser::assignFirsts = { Token::NUMBER, Token::IDENT, Token::STRING,Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, Token::TRUE, Token::FALSE, '(', '[', ';', '+', '!' };
 set<int> Parser::assignPFirsts = { '=', Token::PLUS_EQUAL, Token::MINUS_EQUAL, Token::MUL_EQUAL, Token::DIV_EQUAL, Token::MOD_EQUAL };
 set<int> Parser::blockFirsts = { '{' };
 set<int> Parser::breakStmtFirsts = { Token::BREAK };
@@ -82,8 +75,8 @@ set<int> Parser::constStmtFirsts = { Token::CONST };
 set<int> Parser::continueStmtFirsts = { Token::CONTINUE };
 set<int> Parser::deleteStmtFirsts = { Token::DELETE };
 set<int> Parser::equalityFirsts = { Token::EQ, Token::NE };
-set<int> Parser::exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, '(', '[', '-', '+', '!' };
-set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, '(', '[', ';', '-', '+', '!' };
+set<int> Parser::exprFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, Token::TRUE, Token::FALSE, '(', '[', '-', '+', '!' };
+set<int> Parser::exprStmtFirsts = { Token::NUMBER, Token::IDENT, Token::STRING, Token::LET, Token::CONST, Token::INC, Token::DEC, Token::NULL_TOKEN, Token::TRUE, Token::FALSE, '(', '[', ';', '-', '+', '!' };
 set<int> Parser::forEachStmtFirsts = { Token::FOREACH };
 set<int> Parser::forStmtFirsts = { Token::FOR };
 set<int> Parser::funcDeclFirsts = { Token::FN };
@@ -108,7 +101,7 @@ void Parser::advanceToken()
     currentToken = tokenizer.lex();
 }
 
-bool Parser::isInFirstSet(const Token &token, const set<int> &firstSet) const
+bool Parser::inSet(const Token &token, const set<int> &firstSet) const
 {
     return firstSet.count(token.getType()) > 0;
 }
@@ -116,6 +109,25 @@ bool Parser::isInFirstSet(const Token &token, const set<int> &firstSet) const
 Result<Node> Parser::parse(const string &input, const string &filename)
 {
     tokenizer = Tokenizer(input, filename);
+    hadError = false;
+    currentToken = tokenizer.lex();
+
+    auto result = parseStmts();
+    if (!result.status || hadError)
+    {
+        // Clear tokenizer before returning error
+        tokenizer = Tokenizer();
+        reject();
+    }
+
+    // Clear tokenizer before successful return
+    tokenizer = Tokenizer();
+    accept(result.value);
+}
+
+Result<Node> Parser::parseFromPosition(const string &input, size_t startPos, const string &filename)
+{
+    tokenizer = Tokenizer(input, startPos, filename);
     hadError = false;
     currentToken = tokenizer.lex();
 
@@ -172,59 +184,59 @@ Result<StatementNode> Parser::parseStmt()
     {
         accept(nullptr); // No more statements to parse
     }
-    else if (isInFirstSet(token, assertFirsts))
+    else if (inSet(token, assertFirsts))
     {
         acceptNode(parseAssert());
     }
-    else if (isInFirstSet(token, exprStmtFirsts))
+    else if (inSet(token, exprStmtFirsts))
     {
         acceptNode(parseExprStmt());
     }
-    else if (isInFirstSet(token, forStmtFirsts))
+    else if (inSet(token, forStmtFirsts))
     {
         acceptNode(parseForStmt());
     }
-    else if (isInFirstSet(token, forEachStmtFirsts))
+    else if (inSet(token, forEachStmtFirsts))
     {
         acceptNode(parseForEachStmt());
     }
-    else if (isInFirstSet(token, whileStmtFirsts))
+    else if (inSet(token, whileStmtFirsts))
     {
         acceptNode(parseWhileStmt());
     }
-    else if (isInFirstSet(token, ifStmtFirsts))
+    else if (inSet(token, ifStmtFirsts))
     {
         acceptNode(parseIfStmt());
     }
-    else if (isInFirstSet(token, funcDeclFirsts))
+    else if (inSet(token, funcDeclFirsts))
     {
         acceptNode(parseFuncDecl());
     }
-    else if (isInFirstSet(token, blockFirsts))
+    else if (inSet(token, blockFirsts))
     {
         acceptNode(parseBlock());
     }
-    else if (isInFirstSet(token, returnStmtFirsts))
+    else if (inSet(token, returnStmtFirsts))
     {
         acceptNode(parseReturnStmt());
     }
-    else if (isInFirstSet(token, breakStmtFirsts))
+    else if (inSet(token, breakStmtFirsts))
     {
         acceptNode(parseBreakStmt());
     }
-    else if (isInFirstSet(token, continueStmtFirsts))
+    else if (inSet(token, continueStmtFirsts))
     {
         acceptNode(parseContinueStmt());
     }
-    else if (isInFirstSet(token, deleteStmtFirsts))
+    else if (inSet(token, deleteStmtFirsts))
     {
         acceptNode(parseDeleteStmt());
     }
-    else if (isInFirstSet(token, importFirsts))
+    else if (inSet(token, importFirsts))
     {
         acceptNode(parseImportStmt());
     }
-    else if (isInFirstSet(token, classDeclFirsts))
+    else if (inSet(token, classDeclFirsts))
     {
         acceptNode(parseClassDecl());
     }
@@ -283,15 +295,15 @@ Result<StatementNode> Parser::parseExprStmt()
         advanceToken(); // consume ';'
         accept(nullptr); // Empty statement
     }
-    else if (isInFirstSet(token, letStmtFirsts))
+    else if (inSet(token, letStmtFirsts))
     {
         acceptNode(parseLetStmt());
     }
-    else if (isInFirstSet(token, constStmtFirsts))
+    else if (inSet(token, constStmtFirsts))
     {
         acceptNode(parseConstStmt());
     }
-    else if (isInFirstSet(token, exprFirsts))
+    else if (inSet(token, exprFirsts))
     {
         auto exprResult = parseExpr();
         if (!exprResult.status)
@@ -596,15 +608,15 @@ Result<StatementNode> Parser::parseClassStmt()
 {
     Token token = peekToken();
 
-    if (isInFirstSet(token, funcDeclFirsts))
+    if (inSet(token, funcDeclFirsts))
     {
         acceptNode(parseFuncDecl());
     }
-    else if (isInFirstSet(token, letStmtFirsts))
+    else if (inSet(token, letStmtFirsts))
     {
         acceptNode(parseLetStmt());
     }
-    else if (isInFirstSet(token, constStmtFirsts))
+    else if (inSet(token, constStmtFirsts))
     {
         acceptNode(parseConstStmt());
     }
@@ -907,7 +919,7 @@ Result<ExpressionNode> Parser::parseAssign()
 Result<ExpressionNode> Parser::parseAssignP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
-    if (!isInFirstSet(token, assignPFirsts))
+    if (!inSet(token, assignPFirsts))
     {
         accept(lhs);
     }
@@ -1377,7 +1389,7 @@ Result<ExpressionNode> Parser::parsePostP(shared_ptr<ExpressionNode> lhs)
 Result<ExpressionNode> Parser::parsePostPP(shared_ptr<ExpressionNode> lhs)
 {
     Token token = peekToken();
-    if (!isInFirstSet(token, postPFirsts))
+    if (!inSet(token, postPFirsts))
     {
         accept(lhs);
     }

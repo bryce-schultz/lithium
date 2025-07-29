@@ -1,4 +1,4 @@
 fn getfile()
 {
-    return FILE;
+    return __file__;
 }

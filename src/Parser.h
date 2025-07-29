@@ -28,13 +28,13 @@ class Parser
 {
 public:
     Parser();
-    ~Parser(); // Add explicit destructor
     Result<Node> parse(const string &input, const string &filename = "");
+    Result<Node> parseFromPosition(const string &input, size_t startPos, const string &filename = "");
 private:
     Token peekToken() const;
     void advanceToken();
 
-    bool isInFirstSet(const Token &token, const set<int> &firstSet) const;
+    bool inSet(const Token &token, const set<int> &firstSet) const;
 private:
     //******************************************************************************************
     // Statements

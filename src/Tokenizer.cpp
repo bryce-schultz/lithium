@@ -25,6 +25,15 @@ Tokenizer::Tokenizer(const string &input, const string &filename):
     location = Location(0, this->input, this->filename);
 }
 
+Tokenizer::Tokenizer(const string &input, size_t startPos, const string &filename):
+    input(make_shared<string>(input)),
+    filename(make_shared<string>(filename)),
+    location(),
+    endOfFile(false)
+{
+    location = Location(startPos, this->input, this->filename);
+}
+
 Tokenizer::~Tokenizer()
 {
     // Explicitly clear shared_ptr members to ensure cleanup
