@@ -421,31 +421,34 @@ void Interpreter::visit(StatementsNode *node)
     {
         if (auto funcDecl = dynamic_pointer_cast<FuncDeclNode>(statement))
         {
-            // Note: Redeclaration checking is now handled by semantic analysis
-            // during hoisting, just use redeclare to allow proper scoping
             auto function = make_shared<FunctionValue>(
                 funcDecl->getName(),
                 funcDecl->getParams(),
                 funcDecl->getBody(),
                 env);
-            env->redeclare(funcDecl->getName(), function, funcDecl->isConst());
+            env->declare(funcDecl->getName(), function, funcDecl->isConst());
         }
     }
 
     // Second pass: execute all statements
     for (auto &statement : node->getStatements())
     {
+        returnValue = nullptr;
         if (!statement)
             continue;
         if (hadError)
-            break; // Stop processing statements if an error occurred
-        returnValue = nullptr;
+            break;
         statement->visit(this);
-        if (returnValue && isInteractive)
-        {
-            cout << returnValue->toString() << endl;
-        }
     }
+
+    // In interactive mode, print only the last non-undefined (nullptr) result
+    if (returnValue && isInteractive)
+    {
+        cout << returnValue->toString() << endl;
+    }
+
+    // Set the final return value to nullptr as 'statements' do not return a value
+    returnValue = nullptr;
 }
 
 void Interpreter::visit(NumberNode *node)
