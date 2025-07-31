@@ -437,6 +437,8 @@ void Interpreter::visit(StatementsNode *node)
     {
         if (!statement)
             continue;
+        if (hadError)
+            break; // Stop processing statements if an error occurred
         returnValue = nullptr;
         statement->visit(this);
         if (returnValue && isInteractive)
@@ -469,6 +471,11 @@ void Interpreter::visit(BinaryExprNode *node)
     auto right = node->getRight();
 
     left->visit(this);
+    if (hadError)
+    {
+        returnValue = nullptr;
+        return;
+    }
     auto leftValue = returnValue;
     if (!leftValue)
     {
@@ -488,6 +495,11 @@ void Interpreter::visit(BinaryExprNode *node)
     }
 
     right->visit(this);
+    if (hadError)
+    {
+        returnValue = nullptr;
+        return;
+    }
     auto rightValue = returnValue;
     if (!rightValue)
     {
@@ -1034,6 +1046,8 @@ void Interpreter::visit(CallNode *node)
     {
         for (auto &arg : node->getArgs()->getArgs())
         {
+            if (hadError)
+                break; // Stop processing arguments if an error occurred
             arg->visit(this);
             args.push_back(returnValue);
         }
@@ -1042,6 +1056,11 @@ void Interpreter::visit(CallNode *node)
     // Evaluate the callee
     auto calleeNode = node->getCallee();
     calleeNode->visit(this);
+    if (hadError)
+    {
+        returnValue = nullptr;
+        return;
+    }
     if (!returnValue)
     {
         return;
@@ -1189,6 +1208,11 @@ void Interpreter::visit(VarExprNode *node)
 void Interpreter::visit(AssignNode *node)
 {
     node->getExpr()->visit(this);
+    if (hadError)
+    {
+        returnValue = nullptr;
+        return;
+    }
     shared_ptr<Value> value = returnValue;
     if (!value)
     {
@@ -2029,6 +2053,8 @@ void Interpreter::visit(ArrayNode *node)
     vector<shared_ptr<Value>> elements;
     for (const auto &element : node->getElements())
     {
+        if (hadError)
+            break; // Stop processing elements if an error occurred
         element->visit(this);
         if (!returnValue)
         {

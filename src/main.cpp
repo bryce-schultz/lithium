@@ -17,6 +17,7 @@
 #include "SemanticErrorVisitor.h"
 #include "Values.h"
 #include "Error.h"
+#include "Color.h"
 #include "Exceptions.h"  // Add this for ExitException
 
 using std::cout;
@@ -68,6 +69,20 @@ int runInteractiveMode(const vector<string> &args)
 
     while ((line = Utils::getInputLine()) != "exit")
     {
+        // Check for help command (with or without newline)
+        if (line == "help\n" || line == "help")
+        {
+            cout << cyan << "📚 Lithium Interactive Help" << reset << endl;
+            cout << endl;
+            cout << yellow << "Commands:" << reset << endl;
+            cout << "  " << green << "help" << reset << "   - Show this help message" << endl;
+            cout << "  " << green << "exit" << reset << "   - Exit the interpreter" << endl;
+            cout << endl;
+            cout << "🚀 " << magenta << "Happy coding!" << reset << endl;
+            cout << endl;
+            continue;
+        }
+
         clearErrorLocations();
         semanticVisitor.resetErrorCount();
 
