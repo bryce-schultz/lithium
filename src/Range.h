@@ -29,6 +29,10 @@ public:
     bool operator==(const Range& other) const;
     bool operator!=(const Range& other) const;
     string toString() const;
+    
+    // Static empty range for optimization purposes
+    static const Range& getEmpty();
+    
 private:
     Location start;
     Location end;

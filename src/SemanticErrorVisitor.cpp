@@ -75,8 +75,10 @@ void SemanticErrorVisitor::visit(FuncDeclNode *node)
     localFunctions.clear();
 
     // Parameters are in the function's local scope
-    if (node->getParams()) {
-        for (int i = 0; i < node->getParams()->getParamCount(); i++) {
+    if (node->getParams())
+    {
+        for (int i = 0; i < node->getParams()->getParamCount(); i++)
+        {
             std::string paramName = node->getParams()->getParam(i)->getName();
             localVariables.insert(paramName);
         }
@@ -318,7 +320,7 @@ void SemanticErrorVisitor::visit(VarDeclNode *node)
 
     // Note: Variable redeclaration checking moved to runtime (Environment::declare)
     // since semantic analysis can't detect runtime errors that prevent declaration
-    
+
     // Track this variable in the current scope
     localVariables.insert(varName);
     declaredVariables.insert(varName);
@@ -355,12 +357,12 @@ void SemanticErrorVisitor::visit(DeleteNode *node)
 {
     // Basic semantic analysis for delete statements
     // Note: Most delete validation happens at runtime in the interpreter
-    
+
     // For now, we don't have specific semantic errors to check for delete
     // Future enhancements could include:
     // - Static analysis of whether variable exists in current scope
     // - Warning about deleting variables that might be used later
     // - Check for deleting constants (though this is also a runtime check)
-    
+
     UNUSED(node);
 }

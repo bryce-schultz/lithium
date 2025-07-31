@@ -37,6 +37,7 @@ public:
     bool toBoolean() const override;
 
     virtual string typeAsString() const override;
+
 public:
     virtual shared_ptr<Value> eq(const shared_ptr<ArrayValue> &other) const override;
     virtual shared_ptr<Value> eq(const shared_ptr<NullValue> &other) const override;
@@ -52,6 +53,7 @@ public:
     virtual shared_ptr<Value> add(const shared_ptr<BuiltinFunctionValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<NullValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<ObjectValue> &other) const override;
+
 private:
     vector<shared_ptr<Value>> elements;
 };

@@ -33,7 +33,8 @@ Range::Range(const Range &other):
 
 Range &Range::operator=(const Range &other)
 {
-    if (this != &other) {
+    if (this != &other)
+    {
         start = other.start;
         end = other.end;
     }
@@ -44,7 +45,7 @@ Range::Range(Range &&other) noexcept
 {
     start = std::move(other.start);
     end = std::move(other.end);
-    
+
     // Reset the moved-from object
     other.start = Location();
     other.end = Location();
@@ -52,10 +53,11 @@ Range::Range(Range &&other) noexcept
 
 Range &Range::operator=(Range &&other) noexcept
 {
-    if (this != &other) {
+    if (this != &other)
+    {
         start = std::move(other.start);
         end = std::move(other.end);
-        
+
         // Reset the moved-from object
         other.start = Location();
         other.end = Location();
@@ -96,4 +98,10 @@ bool Range::operator!=(const Range &other) const
 string Range::toString() const
 {
     return start.toString() + " - " + end.toString();
+}
+
+const Range& Range::getEmpty()
+{
+    static Range emptyRange;
+    return emptyRange;
 }

@@ -1434,6 +1434,9 @@ Result<ExpressionNode> Parser::parsePrimary()
 
         Token closeParenToken = expectToken(')');
 
+        exprResult.value->setRangeStart(token.getRange().getStart());
+        exprResult.value->setRangeEnd(closeParenToken.getRange().getEnd());
+
         accept(exprResult.value);
     }
     else if (token == '[')

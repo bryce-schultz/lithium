@@ -1,0 +1,12 @@
+# Test multiple types of allocations that should now be cached
+let a = 10;      # Should use cached NumberValue
+let b = 0;       # Should use cached NumberValue  
+let c = 1;       # Should use cached NumberValue
+let d = true;    # Should use cached BooleanValue
+let e = false;   # Should use cached BooleanValue
+let f = null;    # Should use singleton NullValue
+
+# Test operations that should use cached results
+let g = 5 + 5;   # Should create cached NumberValue(10)
+let h = 3 * 0;   # Should create cached NumberValue(0)
+let i = 1 == 1;  # Should create cached BooleanValue(true)

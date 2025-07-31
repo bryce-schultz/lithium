@@ -4,6 +4,7 @@
 #include "Values.h"
 #include "Error.h"
 #include "Exceptions.h"
+#include "Utils.h"
 
 // Epsilon for floating-point comparison - handles precision issues like 0.1 + 0.2 == 0.3
 constexpr double EPSILON = 1e-15;
@@ -54,6 +55,7 @@ string NumberValue::typeAsString() const
 
 shared_ptr<Value> NumberValue::add(const shared_ptr<NumberValue> &other) const
 {
+    if (!other) return nullptr;
     return make_shared<NumberValue>(value + other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
@@ -77,7 +79,7 @@ shared_ptr<Value> NumberValue::div(const shared_ptr<NumberValue> &other) const
     if (other->getValue() == 0.0)
     {
         error("cannot divide by zero", other->getRange());
-        return make_shared<NullValue>(Range(getRange().getStart(), other->getRange().getEnd()));
+        return make_shared<NullValue>(Range::getEmpty()); // This won't be reached due to exception
     }
     return make_shared<NumberValue>(value / other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
@@ -87,7 +89,7 @@ shared_ptr<Value> NumberValue::mod(const shared_ptr<NumberValue> &other) const
     if (other->getValue() == 0.0)
     {
         error("cannot divide by zero", other->getRange());
-        return make_shared<NullValue>(Range(getRange().getStart(), other->getRange().getEnd()));
+        return make_shared<NullValue>(Range::getEmpty()); // This won't be reached due to exception
     }
     return make_shared<NumberValue>(fmod(value, other->getValue()), Range(getRange().getStart(), other->getRange().getEnd()));
 }
@@ -102,6 +104,7 @@ shared_ptr<Value> NumberValue::eq(const shared_ptr<NumberValue> &other) const
 
 shared_ptr<Value> NumberValue::eq(const shared_ptr<NullValue> &other) const
 {
+    UNUSED(other);
     return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
@@ -112,6 +115,7 @@ shared_ptr<Value> NumberValue::ne(const shared_ptr<NumberValue> &other) const
 
 shared_ptr<Value> NumberValue::ne(const shared_ptr<NullValue> &other) const
 {
+    UNUSED(other);
     return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 

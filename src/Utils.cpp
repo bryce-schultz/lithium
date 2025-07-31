@@ -368,9 +368,12 @@ int Utils::openFile(const string &filename, int flags, mode_t mode)
     // Windows implementation would go here
     return -1;
 #else
-    if (flags & O_CREAT) {
+    if (flags & O_CREAT)
+    {
         return open(filename.c_str(), flags, mode);
-    } else {
+    }
+    else
+    {
         return open(filename.c_str(), flags);
     }
 #endif
@@ -576,7 +579,8 @@ uint16_t Utils::hostToNetworkShort(uint16_t hostshort)
  *     if (handle == INVALID_HANDLE_VALUE) return -1;
  *
  *     DWORD bytesRead = 0;
- *     if (!ReadFile(handle, buffer, (DWORD)size, &bytesRead, NULL)) {
+ *     if (!ReadFile(handle, buffer, (DWORD)size, &bytesRead, NULL))
+ *     {
  *         return -1;
  *     }
  *     return (ssize_t)bytesRead;

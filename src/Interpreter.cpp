@@ -453,6 +453,7 @@ void Interpreter::visit(StatementsNode *node)
 
 void Interpreter::visit(NumberNode *node)
 {
+    // Keep the actual range for error reporting purposes
     returnValue = make_shared<NumberValue>(node->getValue(), node->getRange());
 }
 
@@ -955,7 +956,15 @@ shared_ptr<Value> Interpreter::callClassConstructor(shared_ptr<ClassValue> class
         }
 
         // Create and return the class instance
-        auto instance = make_shared<ObjectValue>(classValue->getName(), env);
+        // Optimize memory usage: if the class environment has no local variables,
+        // use nullptr instead of creating an environment
+        shared_ptr<Environment> instanceEnv = env;
+        if (env->getMembers().empty() && env->getParent() == previousEnv)
+        {
+            instanceEnv = nullptr; // Use nullptr for empty objects to save maximum memory
+        }
+        
+        auto instance = make_shared<ObjectValue>(classValue->getName(), instanceEnv);
         env = previousEnv;
         return instance;
 
@@ -1166,7 +1175,7 @@ void Interpreter::visit(VarDeclNode *node)
     }
 
     // Check for redeclaration - this catches built-in constants and imported variables
-    auto result = env->declare(node->getName(), returnValue, node->isConst());
+    auto result = env->declare(node->getName(), std::move(returnValue), node->isConst());
     if (!result)
     {
         errorAt("variable '" + node->getName() + "' is already declared in this scope", node->getToken().getRange().getStart(), node->getRange());

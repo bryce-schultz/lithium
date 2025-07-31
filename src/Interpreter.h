@@ -13,12 +13,12 @@
 #include "Parser.h"
 #include "CallStack.h"
 
-using std::string;
 using std::cout;
 using std::endl;
-using std::shared_ptr;
 using std::make_shared;
 using std::set;
+using std::shared_ptr;
+using std::string;
 using std::vector;
 
 constexpr const char *INTERPRETER_VERSION = "0.4";
@@ -37,6 +37,7 @@ public:
     const CallStack &getCallStack() const { return callStack; }
 
     virtual void visitAllChildren(Node *node) override;
+
 public:
     // Override visit methods for different node types
     virtual void visit(ArrayAccessNode *node) override;
@@ -66,19 +67,21 @@ public:
     virtual void visit(VarDeclNode *node) override;
     virtual void visit(VarExprNode *node) override;
     virtual void visit(WhileNode *node) override;
+
 private:
     shared_ptr<Value> evalUnaryExpression(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
     shared_ptr<Value> evalVariableUnaryExpression(shared_ptr<VarExprNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
     shared_ptr<Value> evalIncrementDecrement(shared_ptr<ExpressionNode> expression, shared_ptr<OpNode> opNode, bool prefix = false);
-    
+
     // Call node helper methods
-    bool validateFunctionArguments(shared_ptr<FunctionValue> function, const vector<shared_ptr<Value>>& args, const Range& nodeRange, const string& functionType = "function");
-    shared_ptr<Value> callUserFunction(shared_ptr<FunctionValue> function, const vector<shared_ptr<Value>>& args, const Range& nodeRange);
-    shared_ptr<Value> callClassConstructor(shared_ptr<ClassValue> classValue, const vector<shared_ptr<Value>>& args, const Range& nodeRange);
+    bool validateFunctionArguments(shared_ptr<FunctionValue> function, const vector<shared_ptr<Value>> &args, const Range &nodeRange, const string &functionType = "function");
+    shared_ptr<Value> callUserFunction(shared_ptr<FunctionValue> function, const vector<shared_ptr<Value>> &args, const Range &nodeRange);
+    shared_ptr<Value> callClassConstructor(shared_ptr<ClassValue> classValue, const vector<shared_ptr<Value>> &args, const Range &nodeRange);
 
     shared_ptr<Value> declare(const string &name, const string &value, bool constant = false);
     shared_ptr<Value> declare(const string &name, const bool &value, bool constant = false);
     shared_ptr<Value> declare(const string &name, const double &value, bool constant = false);
+
 private:
     void setupEnvironment();
     void setupBuiltInFunctions();
@@ -86,6 +89,7 @@ private:
 
     bool import(const Token &moduleName, const Range &range = {});
     void imported(const string &module);
+
 private:
     bool isInteractive;
     bool hadError;
@@ -93,7 +97,7 @@ private:
     shared_ptr<Value> returnValue;
     Parser moduleParser;
     set<string> importedModules; // to avoid re-importing the same module
-    vector<string> args; // command line arguments passed to the interpreter
+    vector<string> args;         // command line arguments passed to the interpreter
     string currentFunctionName;
 
     // Recursion depth tracking to prevent stack overflow

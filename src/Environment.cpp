@@ -26,7 +26,8 @@ Environment::~Environment()
         if (pair.second && pair.second->getType() == Value::Type::function)
         {
             auto func = std::dynamic_pointer_cast<FunctionValue>(pair.second);
-            if (func) {
+            if (func)
+            {
                 func->clearClosureEnv();
             }
         }
@@ -44,14 +45,14 @@ shared_ptr<Value> Environment::declare(const string &name, shared_ptr<Value> val
         return nullptr; // Variable already declared
     }
 
-    variables[name] = value;
+    variables[name] = std::move(value);
 
     if (constant)
     {
         constants.insert(name);
     }
 
-    return value;
+    return variables[name];
 }
 
 shared_ptr<Value> Environment::redeclare(const string &name, shared_ptr<Value> value, bool constant)

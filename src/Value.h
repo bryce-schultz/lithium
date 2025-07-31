@@ -12,13 +12,13 @@
 #include "Location.h"
 #include "Result.h"
 
-using std::string;
-using std::static_pointer_cast;
-using std::shared_ptr;
-using std::make_shared;
-using std::vector;
 using std::cout;
 using std::endl;
+using std::make_shared;
+using std::shared_ptr;
+using std::static_pointer_cast;
+using std::string;
+using std::vector;
 
 // forward declarations of the Value subclasses
 class NullValue;
@@ -45,10 +45,11 @@ public:
         builtin,
         class_,
         object, // for instances of classes
-        error // for error values
+        error   // for error values
     };
 
     virtual string typeAsString() const;
+
 public:
     enum ResultStatus
     {
@@ -57,6 +58,7 @@ public:
         MEMBER_ALREADY_DECLARED = 2,
         MEMBER_IS_CONSTANT = 3,
     };
+
 public:
     Value(Type type, const Range &range = {});
     virtual ~Value();
@@ -79,7 +81,8 @@ public:
     // set a member, returns false if the member does not exist
     virtual Result<Value> setMember(const string &name, const shared_ptr<Value> &value);
 
-    virtual const std::map<string, shared_ptr<Value>>& getMembers() const;
+    virtual const std::map<string, shared_ptr<Value>> &getMembers() const;
+
 public:
     // dispatchers
     shared_ptr<Value> add(const shared_ptr<Value> &other) const;
@@ -234,6 +237,7 @@ public:
     // Unary operators
     virtual shared_ptr<Value> unaryMinus() const;
     virtual shared_ptr<Value> unaryNot() const;
+
 protected:
     Type type;
     Range range;

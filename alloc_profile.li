@@ -1,0 +1,5 @@
+# Simple allocation test
+let x = 42;
+let y = true;
+let z = "hello";
+let w = null;

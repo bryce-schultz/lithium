@@ -281,7 +281,8 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
             if (firstType == Value::Type::number)
             {
                 std::sort(elements.begin(), elements.end(),
-                          [](const shared_ptr<Value>& a, const shared_ptr<Value>& b) {
+                          [](const shared_ptr<Value>& a, const shared_ptr<Value>& b) 
+                          {
                               auto numA = dynamic_pointer_cast<NumberValue>(a);
                               auto numB = dynamic_pointer_cast<NumberValue>(b);
                               return numA->getValue() < numB->getValue();
@@ -290,7 +291,8 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
             else // firstType == Value::Type::string
             {
                 std::sort(elements.begin(), elements.end(),
-                          [](const shared_ptr<Value>& a, const shared_ptr<Value>& b) {
+                          [](const shared_ptr<Value>& a, const shared_ptr<Value>& b) 
+                          {
                               auto strA = dynamic_pointer_cast<StringValue>(a);
                               auto strB = dynamic_pointer_cast<StringValue>(b);
                               return strA->getValue() < strB->getValue();

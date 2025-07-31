@@ -5,12 +5,14 @@ ObjectValue::ObjectValue(const string &name, shared_ptr<Environment> env):
     Value(Type::object),
     name(name),
     env(env)
-{ }
+{
+}
 
 ObjectValue::~ObjectValue()
 {
     // Clear the environment to break cycles
-    if (env) {
+    if (env)
+    {
         env->clear();
     }
     env.reset();
@@ -18,6 +20,11 @@ ObjectValue::~ObjectValue()
 
 shared_ptr<Value> ObjectValue::getMember(const string &name) const
 {
+    if (!env)
+    {
+        return nullptr; // No environment means no members
+    }
+
     auto member = env->lookup(name);
     if (member)
     {
@@ -29,6 +36,11 @@ shared_ptr<Value> ObjectValue::getMember(const string &name) const
 
 Result<Value> ObjectValue::setMember(const string &name, const shared_ptr<Value> &value)
 {
+    if (!env)
+    {
+        return { ResultStatus::MEMBER_NOT_FOUND, nullptr }; // No environment means no members to set
+    }
+
     // check if the member exists
     if (!env->hasVariable(name))
     {
@@ -48,6 +60,12 @@ Result<Value> ObjectValue::setMember(const string &name, const shared_ptr<Value>
 
 bool ObjectValue::addMember(const string &name, const shared_ptr<Value> &value, bool isConst)
 {
+    if (!env)
+    {
+        // Create environment on demand when adding first member
+        env = make_shared<Environment>();
+    }
+
     // check if the member already exists
     if (env->hasVariable(name))
     {
@@ -61,12 +79,17 @@ bool ObjectValue::addMember(const string &name, const shared_ptr<Value> &value, 
 
 const std::map<string, shared_ptr<Value>> &ObjectValue::getMembers() const
 {
+    if (!env)
+    {
+        static const std::map<string, shared_ptr<Value>> emptyMap;
+        return emptyMap;
+    }
     return env->getMembers();
 }
 
 string ObjectValue::toString() const
 {
-    if (env->getMembers().empty())
+    if (!env || env->getMembers().empty())
     {
         return "{}";
     }
@@ -95,8 +118,10 @@ string ObjectValue::toString() const
             continue;
         }
 
-        if (pair.first == "LINE") continue;
-        if (pair.first == name) continue;
+        if (pair.first == "LINE")
+            continue;
+        if (pair.first == name)
+            continue;
 
         if (!first)
         {
@@ -111,33 +136,38 @@ string ObjectValue::toString() const
 
 shared_ptr<Value> ObjectValue::eq(const shared_ptr<NullValue> &other) const
 {
-    if (!other) return nullptr;
+    if (!other)
+        return nullptr;
     return make_shared<BooleanValue>(false, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> ObjectValue::ne(const shared_ptr<NullValue> &other) const
 {
-    if (!other) return nullptr;
+    if (!other)
+        return nullptr;
     return make_shared<BooleanValue>(true, Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> ObjectValue::eq(const shared_ptr<ObjectValue> &other) const
 {
-    if (!other) return nullptr;
+    if (!other)
+        return nullptr;
     // Objects are equal if they are the same instance (pointer equality)
     return make_shared<BooleanValue>(this == other.get(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> ObjectValue::ne(const shared_ptr<ObjectValue> &other) const
 {
-    if (!other) return nullptr;
+    if (!other)
+        return nullptr;
     // Objects are not equal if they are different instances
     return make_shared<BooleanValue>(this != other.get(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 
 shared_ptr<Value> ObjectValue::add(const shared_ptr<StringValue> &other) const
 {
-    if (!other) return nullptr;
+    if (!other)
+        return nullptr;
     return make_shared<StringValue>(toString() + other->getValue(), Range(getRange().getStart(), other->getRange().getEnd()));
 }
 

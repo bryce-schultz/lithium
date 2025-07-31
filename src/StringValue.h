@@ -9,6 +9,9 @@ public:
     StringValue(const string &value, const Range &range = {});
     ~StringValue() override;
 
+    // Factory method for creating string values with potential caching
+    static shared_ptr<StringValue> create(const string &value, const Range &range = {});
+
     void registerBuiltins();
 
     inline const string &getValue() const { return value; }
@@ -21,6 +24,7 @@ public:
     bool toBoolean() const override; // Override toBoolean for string values
 
     virtual string typeAsString() const override;
+
 public:
     virtual shared_ptr<Value> add(const shared_ptr<NumberValue> &other) const override;
     virtual shared_ptr<Value> add(const shared_ptr<StringValue> &other) const override;
@@ -47,6 +51,7 @@ public:
     virtual shared_ptr<Value> gt(const shared_ptr<StringValue> &other) const override;
 
     virtual shared_ptr<Value> ge(const shared_ptr<StringValue> &other) const override;
+
 private:
     string value;
 };

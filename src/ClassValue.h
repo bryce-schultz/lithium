@@ -22,7 +22,7 @@ public:
 
     virtual string toString() const override;
     virtual string typeAsString() const override;
-public:
+
 private:
     string name;
     shared_ptr<StatementNode> body;

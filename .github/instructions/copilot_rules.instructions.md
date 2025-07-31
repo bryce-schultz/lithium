@@ -31,3 +31,5 @@ General coding standards for all files:
 - Do not leave trailing whitespace at the end of lines
 - Ensure files end with a single newline character
 - Use consistent line endings (LF for Unix/Linux systems)
+- If you add new lithium tests for any reason add them to the proper place in the test directory. If they are temporary or for debugging, add tmp to the end of the test name then remove them when they are no longer needed.
+- Do not suggest code that has been deleted or is no longer relevant.

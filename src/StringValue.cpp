@@ -36,6 +36,12 @@ StringValue::StringValue(const string &value, const Range &range):
     registerBuiltins();
 }
 
+shared_ptr<StringValue> StringValue::create(const string &value, const Range &range)
+{
+    // For now, just create normally. Could add caching for common strings later.
+    return make_shared<StringValue>(value, range);
+}
+
 StringValue::~StringValue()
 {
     //std::cout << "StringValue destructor called for value: " << value << std::endl;
