@@ -204,7 +204,7 @@ void Environment::dump() const
     if (parent)
     {
         parent->dump();
-        cout << "----------------------------------------\nEnvironment - " << id++ << "\n----------------------------------------\n";
+        cout << "────────────────────────────────────────\nEnvironment - " << id++ << "\n────────────────────────────────────────\n";
         if (variables.empty())
         {
             cout << "  empty\n";
@@ -213,7 +213,7 @@ void Environment::dump() const
     else
     {
         id = 0;
-        cout << "----------------------------------------\nRoot Environment - " << id++ << "\n----------------------------------------\n";
+        cout << "────────────────────────────────────────\nRoot Environment - " << id++ << "\n────────────────────────────────────────\n";
         if (variables.empty())
         {
             cout << "  root empty!\n";

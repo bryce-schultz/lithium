@@ -32,7 +32,7 @@ string NumberValue::toString() const
 {
     // Round to 15 decimal places to eliminate floating-point precision artifacts
     double rounded = std::round(value * 1e15) / 1e15;
-    
+
     string str = to_string(rounded);
     str.erase(str.find_last_not_of('0') + 1, string::npos);
     str.erase(str.find_last_not_of('.') + 1, string::npos);

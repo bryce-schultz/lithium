@@ -79,6 +79,7 @@ private:
     shared_ptr<Value> callClassConstructor(shared_ptr<ClassValue> classValue, const vector<shared_ptr<Value>> &args, const Range &nodeRange);
 
     shared_ptr<Value> declare(const string &name, const string &value, bool constant = false);
+    shared_ptr<Value> declare(const string &name, const char *value, bool constant = false);
     shared_ptr<Value> declare(const string &name, const bool &value, bool constant = false);
     shared_ptr<Value> declare(const string &name, const double &value, bool constant = false);
 

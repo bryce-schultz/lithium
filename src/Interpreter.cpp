@@ -980,6 +980,11 @@ shared_ptr<Value> Interpreter::declare(const string &name, const string &value, 
     return env->declare(name, make_shared<StringValue>(value), constant);
 }
 
+shared_ptr<Value> Interpreter::declare(const string &name, const char *value, bool constant)
+{
+    return env->declare(name, make_shared<StringValue>(value), constant);
+}
+
 shared_ptr<Value> Interpreter::declare(const string &name, const bool &value, bool constant)
 {
     return env->declare(name, make_shared<BooleanValue>(value), constant);
