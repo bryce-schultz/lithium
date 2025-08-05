@@ -12,6 +12,8 @@ public:
     NumberValue(unsigned long value, const Range &range = {});
     NumberValue(double value, const Range &range = {});
 
+    void registerBuiltins();
+
     inline double getValue() const { return value; }
     inline void setValue(double v) { value = v; }
     inline bool isInteger() const { return value == static_cast<int>(value); }

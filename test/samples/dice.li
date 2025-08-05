@@ -1,0 +1,46 @@
+import <args>
+import <random>
+
+fn rand(min, max)
+{
+    return random() % (max - min + 1) + min;
+}
+
+if (args.length() != 3)
+{
+    println("Usage: dice <number of dice> <sides per die>");
+    exit(1);
+}
+
+const numDice = number(args[1]);
+if (numDice == null)
+{
+    println("Invalid number of dice specified.");
+    exit(1);
+}
+
+const numSides = number(args[2]);
+if (numSides == null)
+{
+    println("Invalid number of sides specified.");
+    exit(1);
+}
+
+if (numDice <= 0 || numSides <= 0)
+{
+    println("Both number of dice and sides per die must be positive integers.");
+    exit(1);
+}
+
+let results = [];
+
+for (let i = 0; i < numDice; i++)
+{
+    const roll = rand(1, numSides);
+    results += roll;
+}
+
+foreach (result : results)
+{
+    println("Rolled: " + result);
+}

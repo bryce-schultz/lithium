@@ -67,7 +67,8 @@ Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const 
     importedModules(),
     args(args),
     currentFunctionName(""),
-    recursionDepth(0)
+    recursionDepth(0),
+    nestingLevel(0)
 {
     if (!env)
     {
@@ -442,7 +443,8 @@ void Interpreter::visit(StatementsNode *node)
     }
 
     // In interactive mode, print only the last non-undefined (nullptr) result
-    if (returnValue && isInteractive)
+    // but only if we're at the top level (not inside methods, classes, etc.)
+    if (returnValue && isInteractive && nestingLevel == 0)
     {
         cout << returnValue->toString() << endl;
     }
@@ -820,16 +822,20 @@ shared_ptr<Value> Interpreter::callUserFunction(shared_ptr<FunctionValue> functi
     try
     {
         callStack.push(currentFunctionName, function->getRange());
+        nestingLevel++; // Increment nesting level when entering function body
         function->getBody()->visit(this);
+        nestingLevel--; // Decrement nesting level when leaving function body
         result = nullptr; // Normal function completion without return
     }
     catch (const ReturnException &e)
     {
+        nestingLevel--; // Restore nesting level on return
         result = e.value;
     }
     catch (const BaseException &e)
     {
         // Restore state before re-throwing
+        nestingLevel--; // Restore nesting level on exception
         recursionDepth--;
         currentFunctionName = oldFunctionName;
         env = previousEnv;
@@ -1672,6 +1678,9 @@ void Interpreter::visit(WhileNode *node)
             shared_ptr<Environment> iterationEnv = make_shared<Environment>(originalEnv);
             env = iterationEnv;
 
+            // Increment nesting level to prevent printing intermediate results in loops
+            nestingLevel++;
+
             // don't visit an empty body
             if (node->getBody())
             {
@@ -1681,25 +1690,32 @@ void Interpreter::visit(WhileNode *node)
                 }
                 catch (const BreakException &)
                 {
+                    nestingLevel--; // Restore nesting level
                     env = originalEnv;
                     break;
                 }
                 catch (const ContinueException &)
                 {
+                    nestingLevel--; // Restore nesting level
                     env = originalEnv;
                     continue;
                 }
                 catch (const ReturnException &e)
                 {
+                    nestingLevel--; // Restore nesting level
                     env = originalEnv;
                     throw;
                 }
                 catch (const ErrorException &e)
                 {
+                    nestingLevel--; // Restore nesting level
                     env = originalEnv;
                     throw;
                 }
             }
+
+            // Restore nesting level after normal execution
+            nestingLevel--;
 
             // Clear any references that might be holding onto values
             returnValue = nullptr;
@@ -1967,17 +1983,20 @@ void Interpreter::visit(ForStatementNode *node)
                 // don't visit an empty body
                 if (node->getBody())
                 {
+                    nestingLevel++; // Increment nesting level when entering for loop body
                     try
                     {
                         node->getBody()->visit(this);
                     }
                     catch (const BreakException &)
                     {
+                        nestingLevel--; // Restore nesting level
                         env = originalEnv;
                         return;
                     }
                     catch (const ContinueException &)
                     {
+                        nestingLevel--; // Restore nesting level
                         // Restore for environment and execute increment
                         env = forEnv;
                         if (node->getIncrement())
@@ -1988,14 +2007,17 @@ void Interpreter::visit(ForStatementNode *node)
                     }
                     catch (const ReturnException &e)
                     {
+                        nestingLevel--; // Restore nesting level
                         env = originalEnv;
                         throw;
                     }
                     catch (const ErrorException &e)
                     {
+                        nestingLevel--; // Restore nesting level
                         env = originalEnv;
                         throw;
                     }
+                    nestingLevel--; // Restore nesting level after normal execution
                 }
 
                 // Clear any references that might be holding onto values

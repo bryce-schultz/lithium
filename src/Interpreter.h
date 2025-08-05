@@ -105,6 +105,9 @@ private:
     int recursionDepth;
     static const int MAX_RECURSION_DEPTH = 1000;
 
+    // Track nesting level for interactive mode printing
+    int nestingLevel;
+
     // Track temporary environments for cleanup during chained calls
     std::vector<std::shared_ptr<Environment>> tempEnvironments;
 

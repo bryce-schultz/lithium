@@ -1,0 +1,84 @@
+import <time>
+
+class Date
+{
+    let day = 1;
+    let month = 1;
+    let year = 1970;
+    let hours = 0;
+    let minutes = 0;
+    let seconds = 0;
+
+    fn now()
+    {
+        let date = Date();
+        date.setTime(time());
+        return date;
+    }
+
+    fn setTime(timestamp)
+    {
+        # Extract time components first
+        let remaining = timestamp;
+        seconds = remaining % 60;
+        remaining = (remaining - seconds) / 60;
+        minutes = remaining % 60;
+        remaining = (remaining - minutes) / 60;
+        hours = remaining % 24;
+        let totalDays = (remaining - hours) / 24;
+
+        # Calculate date from Unix epoch (1970-01-01)
+        # Using a more efficient approach that minimizes intermediate calculations
+        let daysSinceEpoch = totalDays;
+        year = 1970;
+        
+        # Pre-calculate years to avoid loop iteration output
+        # Average days per year over a 4-year cycle: (365 + 365 + 365 + 366) / 4 = 365.25
+        let approximateYears = (daysSinceEpoch / 365.25).floor();
+        year = year + approximateYears;
+        daysSinceEpoch = daysSinceEpoch - (approximateYears * 365.25).floor();
+        
+        # Fine-tune the year calculation
+        while (daysSinceEpoch < 0) 
+        {
+            year = year - 1;
+            let daysInPrevYear = 365;
+            if ((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0))) {
+                daysInPrevYear = 366;
+            }
+            daysSinceEpoch = daysSinceEpoch + daysInPrevYear;
+        }
+        
+        let currentYearDays = 365;
+        if ((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0))) {
+            currentYearDays = 366;
+        }
+        
+        while (daysSinceEpoch >= currentYearDays) 
+        {
+            daysSinceEpoch = daysSinceEpoch - currentYearDays;
+            year = year + 1;
+            currentYearDays = 365;
+            if ((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0))) {
+                currentYearDays = 366;
+            }
+        }
+        
+        # Calculate month and day using month lengths array
+        let monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        if ((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0))) {
+            monthDays[1] = 29;
+        }
+        
+        month = 1;
+        let monthIndex = 0;
+        while (monthIndex < 12 && daysSinceEpoch >= monthDays[monthIndex]) 
+        {
+            daysSinceEpoch = daysSinceEpoch - monthDays[monthIndex];
+            month = month + 1;
+            monthIndex = monthIndex + 1;
+        }
+        
+        day = daysSinceEpoch + 1;
+    }
+}

@@ -6,6 +6,13 @@
 #include "Exceptions.h"
 #include "Utils.h"
 
+using std::shared_ptr;
+using std::string;
+using std::vector;
+using std::make_shared;
+
+
+
 // Epsilon for floating-point comparison - handles precision issues like 0.1 + 0.2 == 0.3
 constexpr double EPSILON = 1e-15;
 
@@ -13,19 +20,86 @@ constexpr double EPSILON = 1e-15;
     rangeError(msg, range, __FILE__, __LINE__); \
     throw ErrorException(msg, range)
 
+#define errorAt(msg, location, range) \
+    locationRangeError(msg, location, range, __FILE__, __LINE__); \
+    throw ErrorException(msg, range)
+
 NumberValue::NumberValue(int value, const Range &range):
     Value(Type::number, range), value(value)
 {
+    registerBuiltins();
 }
 
 NumberValue::NumberValue(unsigned long value, const Range &range):
     Value(Type::number, range), value(static_cast<double>(value))
 {
+    registerBuiltins();
 }
 
 NumberValue::NumberValue(double value, const Range &range):
     Value(Type::number, range), value(value)
 {
+    registerBuiltins();
+}
+
+void NumberValue::registerBuiltins()
+{
+    addMember("round", make_shared<BuiltinFunctionValue>(
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(interpreter);
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("round() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+            return make_shared<NumberValue>(std::round(value), range);
+        },
+        getRange()
+    ), true);
+
+    addMember("abs", make_shared<BuiltinFunctionValue>(
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(interpreter);
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("abs() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+            return make_shared<NumberValue>(std::abs(value), range);
+        }
+    ), true);
+
+    addMember("floor", make_shared<BuiltinFunctionValue>(
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(interpreter);
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("floor() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+            return make_shared<NumberValue>(std::floor(value), range);
+        }
+    ), true);
+
+    addMember("ceil", make_shared<BuiltinFunctionValue>(
+        [this](Interpreter &interpreter, const vector<shared_ptr<Value>>& args, shared_ptr<Environment> env, const Range &range = {}) -> shared_ptr<Value>
+        {
+            UNUSED(interpreter);
+            UNUSED(env);
+            if (!args.empty())
+            {
+                errorAt("ceil() does not take any arguments", args[0]->getRange().getStart(), range);
+                return nullptr;
+            }
+            return make_shared<NumberValue>(std::ceil(value), range);
+        }
+    ), true);
 }
 
 string NumberValue::toString() const
