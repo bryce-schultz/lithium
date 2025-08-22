@@ -23,14 +23,14 @@ using std::regex;
     locationRangeError(msg, location, range, __FILE__, __LINE__)
 
 StringValue::StringValue(char c, const Range &range):
-    Value(Type::string, range), value(1, c)
+    Value(Type::string_, range), value(1, c)
 {
     //std::cout << "StringValue constructor called with char: " << c << std::endl; // Debug output
     registerBuiltins();
 }
 
 StringValue::StringValue(const string &value, const Range &range):
-    Value(Type::string, range), value(value)
+    Value(Type::string_, range), value(value)
 {
     //std::cout << "StringValue constructor called with value: " << value << std::endl; // Debug output
     registerBuiltins();
@@ -95,7 +95,7 @@ void StringValue::registerBuiltins()
             }
             if (args.size() == 1)
             {
-                if (args[0]->getType() != Value::Type::string)
+                if (args[0]->getType() != Value::Type::string_)
                 {
                     error("split() expects a string argument, but got " + args[0]->typeAsString(), range);
                     return nullptr;
@@ -208,7 +208,7 @@ void StringValue::registerBuiltins()
                 return nullptr;
             }
 
-            if (args[0]->getType() != Value::Type::string)
+            if (args[0]->getType() != Value::Type::string_)
             {
                 errorAt("find() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange().getStart(), range);
                 return nullptr;
@@ -319,7 +319,7 @@ void StringValue::registerBuiltins()
                 return nullptr;
             }
 
-            if (args[0]->getType() != Value::Type::string)
+            if (args[0]->getType() != Value::Type::string_)
             {
                 errorAt("startsWith() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange().getStart(), range);
                 return nullptr;
@@ -342,7 +342,7 @@ void StringValue::registerBuiltins()
                 return nullptr;
             }
 
-            if (args[0]->getType() != Value::Type::string)
+            if (args[0]->getType() != Value::Type::string_)
             {
                 errorAt("endsWith() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange().getStart(), range);
                 return nullptr;
@@ -365,7 +365,7 @@ void StringValue::registerBuiltins()
                 return nullptr;
             }
 
-            if (args[0]->getType() != Value::Type::string)
+            if (args[0]->getType() != Value::Type::string_)
             {
                 errorAt("contains() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange().getStart(), range);
                 return nullptr;
@@ -388,7 +388,7 @@ void StringValue::registerBuiltins()
                 return nullptr;
             }
 
-            if (args[0]->getType() != Value::Type::string)
+            if (args[0]->getType() != Value::Type::string_)
             {
                 errorAt("match() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange().getStart(), range);
                 return nullptr;

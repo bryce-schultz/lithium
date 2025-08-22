@@ -92,7 +92,7 @@ shared_ptr<Value> Value::add(const shared_ptr<Value> &other) const
             return add(static_pointer_cast<NullValue>(other));
         case Type::number:
             return add(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return add(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return add(static_pointer_cast<BooleanValue>(other));
@@ -121,7 +121,7 @@ shared_ptr<Value> Value::sub(const shared_ptr<Value> &other) const
             return sub(static_pointer_cast<NullValue>(other));
         case Type::number:
             return sub(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return sub(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return sub(static_pointer_cast<BooleanValue>(other));
@@ -146,7 +146,7 @@ shared_ptr<Value> Value::mul(const shared_ptr<Value> &other) const
             return mul(static_pointer_cast<NullValue>(other));
         case Type::number:
             return mul(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return mul(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return mul(static_pointer_cast<BooleanValue>(other));
@@ -171,7 +171,7 @@ shared_ptr<Value> Value::div(const shared_ptr<Value> &other) const
             return div(static_pointer_cast<NullValue>(other));
         case Type::number:
             return div(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return div(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return div(static_pointer_cast<BooleanValue>(other));
@@ -196,7 +196,7 @@ shared_ptr<Value> Value::mod(const shared_ptr<Value> &other) const
             return mod(static_pointer_cast<NullValue>(other));
         case Type::number:
             return mod(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return mod(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return mod(static_pointer_cast<BooleanValue>(other));
@@ -221,7 +221,7 @@ shared_ptr<Value> Value::eq(const shared_ptr<Value> &other) const
             return eq(static_pointer_cast<NullValue>(other));
         case Type::number:
             return eq(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return eq(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return eq(static_pointer_cast<BooleanValue>(other));
@@ -250,7 +250,7 @@ shared_ptr<Value> Value::ne(const shared_ptr<Value> &other) const
             return ne(static_pointer_cast<NullValue>(other));
         case Type::number:
             return ne(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return ne(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return ne(static_pointer_cast<BooleanValue>(other));
@@ -279,7 +279,7 @@ shared_ptr<Value> Value::lt(const shared_ptr<Value> &other) const
             return lt(static_pointer_cast<NullValue>(other));
         case Type::number:
             return lt(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return lt(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return lt(static_pointer_cast<BooleanValue>(other));
@@ -304,7 +304,7 @@ shared_ptr<Value> Value::le(const shared_ptr<Value> &other) const
             return le(static_pointer_cast<NullValue>(other));
         case Type::number:
             return le(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return le(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return le(static_pointer_cast<BooleanValue>(other));
@@ -329,7 +329,7 @@ shared_ptr<Value> Value::gt(const shared_ptr<Value> &other) const
             return gt(static_pointer_cast<NullValue>(other));
         case Type::number:
             return gt(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return gt(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return gt(static_pointer_cast<BooleanValue>(other));
@@ -354,7 +354,7 @@ shared_ptr<Value> Value::ge(const shared_ptr<Value> &other) const
             return ge(static_pointer_cast<NullValue>(other));
         case Type::number:
             return ge(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return ge(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return ge(static_pointer_cast<BooleanValue>(other));
@@ -379,7 +379,7 @@ shared_ptr<Value> Value::logicalAnd(const shared_ptr<Value> &other) const
             return logicalAnd(static_pointer_cast<NullValue>(other));
         case Type::number:
             return logicalAnd(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return logicalAnd(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return logicalAnd(static_pointer_cast<BooleanValue>(other));
@@ -404,7 +404,7 @@ shared_ptr<Value> Value::logicalOr(const shared_ptr<Value> &other) const
             return logicalOr(static_pointer_cast<NullValue>(other));
         case Type::number:
             return logicalOr(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return logicalOr(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return logicalOr(static_pointer_cast<BooleanValue>(other));
@@ -429,7 +429,7 @@ shared_ptr<Value> Value::comma(const shared_ptr<Value> &other) const
             return comma(static_pointer_cast<NullValue>(other));
         case Type::number:
             return comma(static_pointer_cast<NumberValue>(other));
-        case Type::string:
+        case Type::string_:
             return comma(static_pointer_cast<StringValue>(other));
         case Type::boolean:
             return comma(static_pointer_cast<BooleanValue>(other));

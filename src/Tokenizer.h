@@ -25,8 +25,8 @@ class Tokenizer
 {
 public:
     Tokenizer();
-    Tokenizer(const string &input, const string &filename = "");
-    Tokenizer(const string &input, size_t startPos, const string &filename = "");
+    Tokenizer(const string &inputText, const string &fileName = "");
+    Tokenizer(const string &inputText, size_t startPos, const string &fileName = "");
     ~Tokenizer(); // Add explicit destructor
     Token lex();
 private:

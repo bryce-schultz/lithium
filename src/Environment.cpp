@@ -159,7 +159,12 @@ void Environment::clear()
             auto func = dynamic_pointer_cast<FunctionValue>(pair.second);
             if (func)
             {
-                func->clearClosureEnv();
+                // Only clear closure environments if they reference this environment
+                // to avoid breaking legitimate closures
+                if (func->getEnvironment().get() == this)
+                {
+                    func->clearClosureEnv();
+                }
             }
             continue;
         }
@@ -187,7 +192,11 @@ void Environment::clear()
             auto func = dynamic_pointer_cast<FunctionValue>(element);
             if (func)
             {
-                func->clearClosureEnv();
+                // Only clear closure environments if they reference this environment
+                if (func->getEnvironment().get() == this)
+                {
+                    func->clearClosureEnv();
+                }
             }
         }
     }

@@ -81,6 +81,13 @@ Interpreter::Interpreter(bool isInteractive, shared_ptr<Environment> env, const 
 
     // runtime values defined in all environments
     setupEnvironment();
+
+    // Initialize commonly used values for caching
+    cachedTrue = make_shared<BooleanValue>(true);
+    cachedFalse = make_shared<BooleanValue>(false);
+    cachedNull = make_shared<NullValue>();
+    cachedZero = make_shared<NumberValue>(0.0);
+    cachedOne = make_shared<NumberValue>(1.0);
 }
 
 Interpreter::~Interpreter()
@@ -455,8 +462,21 @@ void Interpreter::visit(StatementsNode *node)
 
 void Interpreter::visit(NumberNode *node)
 {
-    // Keep the actual range for error reporting purposes
-    returnValue = make_shared<NumberValue>(node->getValue(), node->getRange());
+    // Use cached values for common numbers for better performance
+    double value = node->getValue();
+    if (value == 0.0)
+    {
+        returnValue = cachedZero;
+    }
+    else if (value == 1.0)
+    {
+        returnValue = cachedOne;
+    }
+    else
+    {
+        returnValue = make_shared<NumberValue>(value);
+    }
+    returnValue->setRange(node->getRange());
 }
 
 void Interpreter::visit(StringNode *node)
@@ -691,7 +711,12 @@ shared_ptr<Value> Interpreter::evalIncrementDecrement(shared_ptr<ExpressionNode>
     // Assign the new value back
     if (auto varExpr = dynamic_pointer_cast<VarExprNode>(expression))
     {
-        env->assign(varExpr->getName(), newVal);
+        auto result = env->assign(varExpr->getName(), newVal);
+        if (result.status != Environment::SUCCESS)
+        {
+            error("Failed to assign value in increment/decrement", expression->getRange());
+            return nullptr;
+        }
     }
     else if (auto arrayAccess = dynamic_pointer_cast<ArrayAccessNode>(expression))
     {
@@ -801,7 +826,13 @@ shared_ptr<Value> Interpreter::callUserFunction(shared_ptr<FunctionValue> functi
     }
 
     // Set up function call environment
-    shared_ptr<Environment> scope = make_shared<Environment>(function->getEnvironment());
+    shared_ptr<Environment> closureEnv = function->getEnvironment();
+    if (!closureEnv) {
+        // If the function's closure environment is null, use the current environment as fallback
+        // This can happen if the closure environment was cleared due to cleanup
+        closureEnv = env;
+    }
+    shared_ptr<Environment> scope = make_shared<Environment>(closureEnv);
     for (size_t i = 0; i < args.size(); ++i)
     {
         scope->declare(function->getParameters()->getParam(i)->getName(), args[i]);
@@ -1063,10 +1094,32 @@ shared_ptr<Value> Interpreter::evalVariableUnaryExpression(shared_ptr<VarExprNod
 
 void Interpreter::visit(CallNode *node)
 {
-    // Evaluate arguments
+    // Evaluate the callee first to fail fast if it's not callable
+    auto calleeNode = node->getCallee();
+    calleeNode->visit(this);
+    if (hadError || !returnValue)
+    {
+        returnValue = nullptr;
+        return;
+    }
+
+    shared_ptr<Value> callee = returnValue;
+
+    // Early type check to avoid unnecessary argument evaluation
+    if (callee->getType() != Value::Type::function && 
+        callee->getType() != Value::Type::builtin && 
+        callee->getType() != Value::Type::class_)
+    {
+        error("cannot call non-function value: " + callee->typeAsString(), node->getRange());
+        returnValue = nullptr;
+        return;
+    }
+
+    // Now evaluate arguments (only after confirming callee is callable)
     vector<shared_ptr<Value>> args;
     if (node->getArgs())
     {
+        args.reserve(node->getArgs()->getArgs().size()); // Pre-allocate for efficiency
         for (auto &arg : node->getArgs()->getArgs())
         {
             if (hadError)
@@ -1075,21 +1128,6 @@ void Interpreter::visit(CallNode *node)
             args.push_back(returnValue);
         }
     }
-
-    // Evaluate the callee
-    auto calleeNode = node->getCallee();
-    calleeNode->visit(this);
-    if (hadError)
-    {
-        returnValue = nullptr;
-        return;
-    }
-    if (!returnValue)
-    {
-        return;
-    }
-
-    shared_ptr<Value> callee = returnValue;
 
     // Handle different types of callables
     if (callee->getType() == Value::Type::function)
@@ -1217,7 +1255,7 @@ void Interpreter::visit(VarExprNode *node)
         return;
     }
 
-    returnValue = env->lookup(node->getName());
+    returnValue = cachedLookup(node->getName());
     if (!returnValue)
     {
         notDefined(node);
@@ -1614,7 +1652,9 @@ void Interpreter::visit(BlockNode *node)
 
 void Interpreter::visit(BooleanNode *node)
 {
-    returnValue = make_shared<BooleanValue>(node->getValue());
+    // Use cached boolean values for better performance
+    returnValue = node->getValue() ? cachedTrue : cachedFalse;
+    returnValue->setRange(node->getRange());
 }
 
 void Interpreter::visit(IfStatementNode *node)
@@ -1743,7 +1783,7 @@ void Interpreter::visit(ForEachNode *node)
 
     if (node->isArrayLike())
     {
-        if (!returnValue || (returnValue->getType() != Value::Type::array && returnValue->getType() != Value::Type::string))
+        if (!returnValue || (returnValue->getType() != Value::Type::array && returnValue->getType() != Value::Type::string_))
         {
             error("for-each loop iterable must be an array or string", node->getIterable()->getRange());
             return;
@@ -1803,7 +1843,7 @@ void Interpreter::visit(ForEachNode *node)
                 } // iterationEnv is destroyed here, allowing immediate cleanup
             }
         }
-        else if (returnValue->getType() == Value::Type::string)
+        else if (returnValue->getType() == Value::Type::string_)
         {
             auto stringValue = dynamic_pointer_cast<StringValue>(returnValue);
             if (!stringValue)
@@ -2064,8 +2104,9 @@ void Interpreter::visit(ForStatementNode *node)
 
 void Interpreter::visit(NullNode *node)
 {
-    UNUSED(node);
-    returnValue = make_shared<NullValue>();
+    // Use cached null value for better performance
+    returnValue = cachedNull;
+    returnValue->setRange(node->getRange());
 }
 
 void Interpreter::visit(BreakNode *node)
@@ -2183,7 +2224,7 @@ void Interpreter::visit(ArrayAccessNode *node)
         return;
     }
 
-    if (returnValue->getType() == Value::Type::string)
+    if (returnValue->getType() == Value::Type::string_)
     {
         auto stringValue = dynamic_pointer_cast<StringValue>(returnValue);
         if (!stringValue)
@@ -2348,4 +2389,20 @@ void Interpreter::visit(ClassNode *node)
     env->redeclare(node->getName(), classValue, node->isConst());
 
     returnValue = nullptr; // No return value for class declaration
+}
+
+// Performance optimization: Cached variable lookup
+std::shared_ptr<Value> Interpreter::cachedLookup(const std::string& name) const
+{
+    // For now, disable caching for assignments to ensure correctness
+    // TODO: Implement more sophisticated cache invalidation strategy
+    
+    // Do fresh lookup every time to ensure correctness
+    auto resolvedEnv = env->resolve(name);
+    if (resolvedEnv)
+    {
+        return resolvedEnv->lookupLocal(name);
+    }
+    
+    return nullptr;
 }

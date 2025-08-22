@@ -38,7 +38,7 @@ public:
     {
         null,
         number,
-        string,
+        string_,
         boolean,
         array,
         function,

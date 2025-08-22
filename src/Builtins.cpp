@@ -176,13 +176,19 @@ shared_ptr<Value> Builtins::printf(Interpreter &interpreter, const vector<shared
         return nullptr;
     }
 
-    if (args[0]->getType() != Value::Type::string)
+    if (args[0]->getType() != Value::Type::string_)
     {
         error("printf() expects a string format as the first argument, but got " + args[0]->typeAsString(), args[0]->getRange());
         return nullptr;
     }
 
-    const auto &format = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+    auto stringVal = dynamic_pointer_cast<StringValue>(args[0]);
+    if (!stringVal)
+    {
+        error("printf() internal error: failed to cast string value", args[0]->getRange());
+        return nullptr;
+    }
+    const auto &format = stringVal->getValue();
 
     vector<string> formatArgs;
     for (size_t i = 1; i < args.size(); ++i)
@@ -238,7 +244,13 @@ shared_ptr<Value> Builtins::exit(Interpreter &interpreter, const vector<shared_p
             error("exit() expects a number argument, but got " + args[0]->typeAsString(), args[0]->getRange());
             return nullptr;
         }
-        exitCode = dynamic_pointer_cast<NumberValue>(args[0])->getValue();
+        auto numberVal = dynamic_pointer_cast<NumberValue>(args[0]);
+        if (!numberVal)
+        {
+            error("exit() internal error: failed to cast number value", args[0]->getRange());
+            return nullptr;
+        }
+        exitCode = numberVal->getValue();
     }
 
     throw ExitException(exitCode, range);
@@ -258,12 +270,18 @@ shared_ptr<Value> Builtins::input(Interpreter &interpreter, const vector<shared_
     string prompt;
     if (args.size() == 1 && args[0])
     {
-        if (args[0]->getType() != Value::Type::string)
+        if (args[0]->getType() != Value::Type::string_)
         {
             error("input() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange());
             return nullptr;
         }
-        prompt = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+        auto stringVal = dynamic_pointer_cast<StringValue>(args[0]);
+        if (!stringVal)
+        {
+            error("input() internal error: failed to cast string value", args[0]->getRange());
+            return nullptr;
+        }
+        prompt = stringVal->getValue();
     }
 
     cout << prompt;
@@ -299,10 +317,26 @@ shared_ptr<Value> Builtins::len(Interpreter &interpreter, const vector<shared_pt
 
     switch (arg->getType())
     {
-        case Value::Type::string:
-            return make_shared<NumberValue>(dynamic_pointer_cast<StringValue>(arg)->length(), range);
+        case Value::Type::string_:
+        {
+            auto stringVal = dynamic_pointer_cast<StringValue>(arg);
+            if (!stringVal)
+            {
+                error("len() internal error: failed to cast string value", arg->getRange());
+                return nullptr;
+            }
+            return make_shared<NumberValue>(stringVal->length(), range);
+        }
         case Value::Type::array:
-            return make_shared<NumberValue>(dynamic_pointer_cast<ArrayValue>(arg)->getElementCount(), range);
+        {
+            auto arrayVal = dynamic_pointer_cast<ArrayValue>(arg);
+            if (!arrayVal)
+            {
+                error("len() internal error: failed to cast array value", arg->getRange());
+                return nullptr;
+            }
+            return make_shared<NumberValue>(arrayVal->getElementCount(), range);
+        }
         case Value::Type::null:
             return make_shared<NumberValue>(0, range);
         default:
@@ -483,7 +517,7 @@ shared_ptr<Value> Builtins::writeFd(Interpreter &interpreter, const vector<share
         return nullptr;
     }
 
-    if (args[0]->getType() != Value::Type::number || args[1]->getType() != Value::Type::string)
+    if (args[0]->getType() != Value::Type::number || args[1]->getType() != Value::Type::string_)
     {
         error("expected a number and a string argument, but got " + args[0]->typeAsString() + " and " + args[1]->typeAsString(), range);
         return nullptr;
@@ -552,7 +586,7 @@ shared_ptr<Value> Builtins::openFile(Interpreter &interpreter, const vector<shar
         return nullptr;
     }
 
-    if (args[0]->getType() != Value::Type::string || args[1]->getType() != Value::Type::string)
+    if (args[0]->getType() != Value::Type::string_ || args[1]->getType() != Value::Type::string_)
     {
         error("expected two string arguments, but got " + args[0]->typeAsString() + " and " + args[1]->typeAsString(), range);
         return nullptr;
@@ -584,13 +618,13 @@ shared_ptr<Value> Builtins::socket(Interpreter &interpreter, const vector<shared
         return nullptr;
     }
 
-    if (args[0]->getType() != Value::Type::string)
+    if (args[0]->getType() != Value::Type::string_)
     {
         error("expected a string for the type, but got " + args[0]->typeAsString(), range);
         return nullptr;
     }
 
-    if (args[1]->getType() != Value::Type::string)
+    if (args[1]->getType() != Value::Type::string_)
     {
         error("expected a string for the address, but got " + args[1]->typeAsString(), range);
         return nullptr;
@@ -692,6 +726,11 @@ shared_ptr<Value> Builtins::listenSocket(Interpreter &interpreter, const vector<
     }
 
     auto socketValue = dynamic_pointer_cast<NumberValue>(args[0]);
+    if (!socketValue)
+    {
+        error("tcp_listen() internal error: failed to cast socket value", args[0]->getRange());
+        return nullptr;
+    }
     int sockfd = static_cast<int>(socketValue->getValue());
     if (sockfd < 0)
     {
@@ -699,9 +738,15 @@ shared_ptr<Value> Builtins::listenSocket(Interpreter &interpreter, const vector<
         return nullptr;
     }
 
-    int backlog = (args.size() == 2 && args[1]->getType() == Value::Type::number)
-                      ? static_cast<int>(dynamic_pointer_cast<NumberValue>(args[1])->getValue())
-                      : SOMAXCONN;
+    int backlog = SOMAXCONN;
+    if (args.size() == 2 && args[1]->getType() == Value::Type::number)
+    {
+        auto backlogVal = dynamic_pointer_cast<NumberValue>(args[1]);
+        if (backlogVal)
+        {
+            backlog = static_cast<int>(backlogVal->getValue());
+        }
+    }
     if (Utils::listenSocket(sockfd, backlog) < 0)
     {
         error("failed to listen on socket " + to_string(sockfd), range);
@@ -775,7 +820,7 @@ shared_ptr<Value> Builtins::connectSocket(Interpreter &interpreter, const vector
         return nullptr;
     }
 
-    if (args[1]->getType() != Value::Type::string)
+    if (args[1]->getType() != Value::Type::string_)
     {
         error("expected a string for the address, but got " + args[1]->typeAsString(), range);
         return nullptr;
@@ -787,8 +832,21 @@ shared_ptr<Value> Builtins::connectSocket(Interpreter &interpreter, const vector
         return nullptr;
     }
 
-    const auto &address = dynamic_pointer_cast<StringValue>(args[1])->getValue();
-    int port = static_cast<int>(dynamic_pointer_cast<NumberValue>(args[2])->getValue());
+    auto addressVal = dynamic_pointer_cast<StringValue>(args[1]);
+    if (!addressVal)
+    {
+        error("tcp_connect() internal error: failed to cast address value", args[1]->getRange());
+        return nullptr;
+    }
+    auto portVal = dynamic_pointer_cast<NumberValue>(args[2]);
+    if (!portVal)
+    {
+        error("tcp_connect() internal error: failed to cast port value", args[2]->getRange());
+        return nullptr;
+    }
+
+    const auto &address = addressVal->getValue();
+    int port = static_cast<int>(portVal->getValue());
 
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
@@ -827,13 +885,18 @@ shared_ptr<Value> Builtins::sendSocket(Interpreter &interpreter, const vector<sh
         return nullptr;
     }
 
-    if (args[1]->getType() != Value::Type::string)
+    if (args[1]->getType() != Value::Type::string_)
     {
         error("expected a string for the data, but got " + args[1]->typeAsString(), range);
         return nullptr;
     }
 
     auto socketValue = dynamic_pointer_cast<NumberValue>(args[0]);
+    if (!socketValue)
+    {
+        error("tcp_send() internal error: failed to cast socket value", args[0]->getRange());
+        return nullptr;
+    }
     int sockfd = static_cast<int>(socketValue->getValue());
     if (sockfd < 0)
     {
@@ -841,7 +904,13 @@ shared_ptr<Value> Builtins::sendSocket(Interpreter &interpreter, const vector<sh
         return nullptr;
     }
 
-    const auto &data = dynamic_pointer_cast<StringValue>(args[1])->getValue();
+    auto dataVal = dynamic_pointer_cast<StringValue>(args[1]);
+    if (!dataVal)
+    {
+        error("tcp_send() internal error: failed to cast data value", args[1]->getRange());
+        return nullptr;
+    }
+    const auto &data = dataVal->getValue();
     ssize_t bytesSent = Utils::sendSocket(sockfd, data.c_str(), data.size(), 0);
     if (bytesSent < 0)
     {
@@ -877,6 +946,11 @@ shared_ptr<Value> Builtins::receiveSocket(Interpreter &interpreter, const vector
     }
 
     auto socketValue = dynamic_pointer_cast<NumberValue>(args[0]);
+    if (!socketValue)
+    {
+        error("tcp_receive() internal error: failed to cast socket value", args[0]->getRange());
+        return nullptr;
+    }
     int sockfd = static_cast<int>(socketValue->getValue());
     if (sockfd < 0)
     {
@@ -884,7 +958,13 @@ shared_ptr<Value> Builtins::receiveSocket(Interpreter &interpreter, const vector
         return nullptr;
     }
 
-    int size = static_cast<int>(dynamic_pointer_cast<NumberValue>(args[1])->getValue());
+    auto sizeVal = dynamic_pointer_cast<NumberValue>(args[1]);
+    if (!sizeVal)
+    {
+        error("tcp_receive() internal error: failed to cast size value", args[1]->getRange());
+        return nullptr;
+    }
+    int size = static_cast<int>(sizeVal->getValue());
     char *buffer = new char[size];
     ssize_t bytesReceived = Utils::receiveSocket(sockfd, buffer, size, 0);
     if (bytesReceived < 0)
@@ -917,13 +997,19 @@ shared_ptr<Value> Builtins::runShellCommand(Interpreter &interpreter, const vect
         return nullptr;
     }
 
-    if (args[0]->getType() != Value::Type::string)
+    if (args[0]->getType() != Value::Type::string_)
     {
         error("expected a string argument, but got " + args[0]->typeAsString(), range);
         return nullptr;
     }
 
-    const auto &command = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+    auto commandVal = dynamic_pointer_cast<StringValue>(args[0]);
+    if (!commandVal)
+    {
+        error("system() internal error: failed to cast command value", args[0]->getRange());
+        return nullptr;
+    }
+    const auto &command = commandVal->getValue();
 
     // use execvp to run the command and pipe to get the string output
     int pipefd[2];
@@ -1012,9 +1098,17 @@ shared_ptr<Value> Builtins::dumpenv(Interpreter &interpreter, const vector<share
                 env = object->getEnvironment();
             }
         }
+        else if (args[0]->getType() == Value::Type::function)
+        {
+            auto function = dynamic_pointer_cast<FunctionValue>(args[0]);
+            if (function)
+            {
+                env = function->getEnvironment();
+            }
+        }
         else if (args[0]->getType() != Value::Type::null)
         {
-            error("dumpenv() expects an object or nothing, but got " + args[0]->typeAsString(), args[0]->getRange());
+            error("env() expects an object or nothing, but got " + args[0]->typeAsString(), args[0]->getRange());
             return nullptr;
         }
     }
@@ -1029,6 +1123,7 @@ shared_ptr<Value> Builtins::dumpenv(Interpreter &interpreter, const vector<share
     {
         cout << "No environment available." << endl;
     }
+
     return nullptr;
 }
 
@@ -1049,7 +1144,13 @@ shared_ptr<Value> Builtins::sleep(Interpreter &interpreter, const vector<shared_
         return nullptr;
     }
 
-    double seconds = dynamic_pointer_cast<NumberValue>(args[0])->getValue();
+    auto numberVal = dynamic_pointer_cast<NumberValue>(args[0]);
+    if (!numberVal)
+    {
+        error("sleep() internal error: failed to cast number value", args[0]->getRange());
+        return nullptr;
+    }
+    double seconds = numberVal->getValue();
     if (seconds < 0)
     {
         error("sleep() expects a non-negative number, but got " + to_string(seconds), args[0]->getRange());
@@ -1103,9 +1204,18 @@ shared_ptr<Value> Builtins::rgb(Interpreter &interpreter, const vector<shared_pt
         }
     }
 
-    double r = dynamic_pointer_cast<NumberValue>(args[0])->getValue();
-    double g = dynamic_pointer_cast<NumberValue>(args[1])->getValue();
-    double b = dynamic_pointer_cast<NumberValue>(args[2])->getValue();
+    auto rVal = dynamic_pointer_cast<NumberValue>(args[0]);
+    auto gVal = dynamic_pointer_cast<NumberValue>(args[1]);
+    auto bVal = dynamic_pointer_cast<NumberValue>(args[2]);
+    if (!rVal || !gVal || !bVal)
+    {
+        error("rgb() internal error: failed to cast color values", range);
+        return nullptr;
+    }
+
+    double r = rVal->getValue();
+    double g = gVal->getValue();
+    double b = bVal->getValue();
 
     // create ansi rgb string and return it
     return make_shared<StringValue>("\033[38;2;" + to_string(static_cast<int>(r)) + ";" + to_string(static_cast<int>(g)) + ";" + to_string(static_cast<int>(b)) + "m", range);
@@ -1122,13 +1232,19 @@ shared_ptr<Value> Builtins::listdir(Interpreter &interpreter, const vector<share
         return nullptr;
     }
 
-    if (args[0]->getType() != Value::Type::string)
+    if (args[0]->getType() != Value::Type::string_)
     {
         error("listdir() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange());
         return nullptr;
     }
 
-    string path = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+    auto pathVal = dynamic_pointer_cast<StringValue>(args[0]);
+    if (!pathVal)
+    {
+        error("listdir() internal error: failed to cast path value", args[0]->getRange());
+        return nullptr;
+    }
+    string path = pathVal->getValue();
     vector<string> contents = Utils::listDirectory(path);
     if (contents.empty())
     {
@@ -1176,13 +1292,19 @@ shared_ptr<Value> Builtins::chdir(Interpreter &interpreter, const vector<shared_
         return nullptr;
     }
 
-    if (args[0]->getType() != Value::Type::string)
+    if (args[0]->getType() != Value::Type::string_)
     {
         error("chdir() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange());
         return nullptr;
     }
 
-    string path = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+    auto pathVal = dynamic_pointer_cast<StringValue>(args[0]);
+    if (!pathVal)
+    {
+        error("chdir() internal error: failed to cast path value", args[0]->getRange());
+        return nullptr;
+    }
+    string path = pathVal->getValue();
     if (!Utils::changeDirectory(path))
     {
         return make_shared<BooleanValue>(false, range);
@@ -1226,13 +1348,19 @@ shared_ptr<Value> Builtins::getenv(Interpreter &interpreter, const vector<shared
         return nullptr;
     }
 
-    if (args[0]->getType() != Value::Type::string)
+    if (args[0]->getType() != Value::Type::string_)
     {
         error("getenv() expects a string argument, but got " + args[0]->typeAsString(), args[0]->getRange());
         return nullptr;
     }
 
-    string var = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+    auto varVal = dynamic_pointer_cast<StringValue>(args[0]);
+    if (!varVal)
+    {
+        error("getenv() internal error: failed to cast variable name value", args[0]->getRange());
+        return nullptr;
+    }
+    string var = varVal->getValue();
     const char *value = ::getenv(var.c_str());
     if (value)
     {
@@ -1250,12 +1378,18 @@ shared_ptr<Value> Builtins::dumpstack(Interpreter &interpreter, const vector<sha
     
     if (args.size() == 1)
     {
-        if (args[0]->getType() != Value::Type::string)
+        if (args[0]->getType() != Value::Type::string_)
         {
             error("dumpstack() format argument must be a string", args[0]->getRange());
             return nullptr;
         }
-        format = dynamic_pointer_cast<StringValue>(args[0])->getValue();
+        auto formatVal = dynamic_pointer_cast<StringValue>(args[0]);
+        if (!formatVal)
+        {
+            error("dumpstack() internal error: failed to cast format value", args[0]->getRange());
+            return nullptr;
+        }
+        format = formatVal->getValue();
         
         if (format != "table" && format != "raw")
         {

@@ -782,8 +782,8 @@ Result<StringNode> Parser::parseModuleName()
         Range range(identifier.getRange().getStart(), secondIdentifier.getRange().getEnd());
         // Create a new token that combines the two identifiers, replace the . with a / since it will be
         // used as a path separator in the import statement.
-        Token token(Token::STRING, range, identifier.getValue() + "/" + secondIdentifier.getValue());
-        auto moduleName = make_shared<StringNode>(token);
+        Token combinedToken(Token::STRING, range, identifier.getValue() + "/" + secondIdentifier.getValue());
+        auto moduleName = make_shared<StringNode>(combinedToken);
 
         accept(moduleName);
     }
@@ -1443,8 +1443,8 @@ Result<ExpressionNode> Parser::parsePrimary()
     {
         Token openBracketToken = expectToken('[');
 
-        Token token = peekToken();
-        if (token == ']')
+        Token nextToken = peekToken();
+        if (nextToken == ']')
         {
             advanceToken(); // consume ']'
             auto arrayNode = make_shared<ArrayNode>();

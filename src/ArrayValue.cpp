@@ -272,7 +272,7 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
             }
 
             // Only allow sorting for numbers and strings
-            if (firstType != Value::Type::number && firstType != Value::Type::string)
+            if (firstType != Value::Type::number && firstType != Value::Type::string_)
             {
                 errorAt("sort() only works with arrays of numbers or strings", range.getStart(), range);
                 return nullptr;
@@ -288,7 +288,7 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
                               return numA->getValue() < numB->getValue();
                           });
             }
-            else // firstType == Value::Type::string
+            else // firstType == Value::Type::string_
             {
                 std::sort(elements.begin(), elements.end(),
                           [](const shared_ptr<Value>& a, const shared_ptr<Value>& b) 
@@ -299,7 +299,7 @@ ArrayValue::ArrayValue(const vector<shared_ptr<Value>> &arr, const Range &range)
                           });
             }
 
-            return make_shared<NullValue>(range);
+            return nullptr; // Return null to indicate success
         },
         getRange()
     ), true);

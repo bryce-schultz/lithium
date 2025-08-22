@@ -13,8 +13,8 @@ using std::vector;
 class CallEntry
 {
 public:
-    CallEntry(const string &name, const Range &range) : name(name),
-                                                        range(range)
+    CallEntry(const string &functionName, const Range &functionRange) : name(functionName),
+                                                        range(functionRange)
     {
         timestamp = time(nullptr);
     }

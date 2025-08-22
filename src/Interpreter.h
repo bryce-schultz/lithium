@@ -5,6 +5,7 @@
 #include <memory>
 #include <set>
 #include <functional>
+#include <unordered_map>
 
 #include "Visitor.h"
 #include "Environment.h"
@@ -21,7 +22,7 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 
-constexpr const char *INTERPRETER_VERSION = "0.4";
+constexpr const char *INTERPRETER_VERSION = "0.5";
 
 class Interpreter : public Visitor
 {
@@ -108,6 +109,17 @@ private:
     // Track nesting level for interactive mode printing
     int nestingLevel;
 
+    // Variable lookup cache for performance optimization
+    mutable std::unordered_map<std::string, std::pair<std::shared_ptr<Environment>, std::shared_ptr<Value>>> varCache;
+    mutable size_t cacheVersion = 0;  // Invalidate cache when environment changes
+
+    // Common value cache for frequently used literals
+    std::shared_ptr<Value> cachedTrue;
+    std::shared_ptr<Value> cachedFalse;
+    std::shared_ptr<Value> cachedNull;
+    std::shared_ptr<Value> cachedZero;
+    std::shared_ptr<Value> cachedOne;
+
     // Track temporary environments for cleanup during chained calls
     std::vector<std::shared_ptr<Environment>> tempEnvironments;
 
@@ -118,4 +130,12 @@ private:
     void cleanupTempEnvironments();
     void finalCleanup();
     void aggressiveCleanup();
+
+    // Cache management for performance optimization
+    void invalidateVarCache() const { ++cacheVersion; varCache.clear(); }
+    std::shared_ptr<Value> cachedLookup(const std::string& name) const;
+
+    // Move optimization helper
+    template<typename T>
+    void setReturnValue(T&& value) { returnValue = std::forward<T>(value); }
 };

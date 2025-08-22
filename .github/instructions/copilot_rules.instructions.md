@@ -15,6 +15,14 @@ Follow these C++ coding style guidelines:
 - Use meaningful variable and function names
 - Always include proper error handling
 
+For classes use base member initialization and the format:
+
+Class::Constructor(type value):
+    member(value),
+    otherMember(value)
+{
+}
+
 ---
 applyTo: '**/*.{md}'
 ---
@@ -33,3 +41,4 @@ General coding standards for all files:
 - Use consistent line endings (LF for Unix/Linux systems)
 - If you add new lithium tests for any reason add them to the proper place in the test directory. If they are temporary or for debugging, add tmp to the end of the test name then remove them when they are no longer needed.
 - Do not suggest code that has been deleted or is no longer relevant.
+- If you add code that needs to go to a second line, only ever indent it with one tab-width of space.

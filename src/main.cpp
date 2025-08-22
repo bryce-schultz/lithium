@@ -38,7 +38,7 @@ int runFileMode(const vector<string> &args);
 
 int main(int argc, char **argv)
 {
-    srandom(time(nullptr) ^ getpid());
+    srandom(static_cast<unsigned int>(time(nullptr) ^ getpid()));
 
     vector<string> args;
     if (argc > 1)
